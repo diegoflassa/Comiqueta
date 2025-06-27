@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="matricula">Matrícula</string>
+    <string name="senha">Senha</string>
+    <string name="entrar">Entrar</string>
+    <string name="credenciais_invalidas">Usuário ou senha inválidos.</string>
+    <string name="versao">Versão %1$s</string>
+    <string name="ambiente">Ambiente %1$s</string>
+    <string name="indisponivel">Indisponível</string>
+</resources>

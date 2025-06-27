@@ -1,0 +1,303 @@
+[versions]
+
+#Common
+gradle = "8.10.1"
+kotlin = "2.2.0"
+
+#App
+firebase-perf-gradle = "1.4.2"
+
+#Project build.gradle
+google-services = "4.4.3"
+firebase-crashlytics-gradle = "3.0.4"
+perf-plugin = "1.4.2"
+
+#Module build.gradle
+#ax-baselineprofile = "1.3.4"
+
+#Common
+core-ktx = "1.16.0"
+material = "1.12.0"
+
+#Common Testing
+junit = "4.13.2"
+junit-ktx = "1.2.1"
+ax-test-rules = "1.6.1"
+ax-test-runner = "1.6.2"
+uiautomator = "2.3.0"
+benchmark-macro-junit4 = "1.3.4"
+
+#Firebase
+firebase-bom = "33.16.0"
+
+#Timber
+com-jakewharton-timber = "5.0.1"
+
+#Compose
+compose-bom = "2025.06.01"
+ax-constraintlayout-compose = "1.1.1"
+ax-activity-compose = "1.10.1"
+lifecycle-viewmodel-compose = "2.9.1"
+ax-navigation-compose = "2.9.0"
+kotlinx-serialization-json = "1.9.0"
+
+#Compose Testing
+org-mockito-android = "5.18.0"
+#org-jetbrains-kotlinx-coroutines-test = "1.10.2"
+
+#Realm
+io-realm-kotlin-library-base = "3.0.0"
+
+#Room
+room-runtime = "2.7.2"
+room-compiler = "2.7.2"
+room-ktx = "2.7.2"
+room-testing = "2.7.2"
+
+#Koin
+io-insert-koin-bom = "4.1.0"
+io-insert-koin-compose = "4.1.0"
+
+#OkHttp
+okhttp-bom = "4.12.0"
+
+#Moshi
+moshi-kotlin = "1.15.2"
+moshi-kotlin-codegen = "1.15.2"
+
+#Retrofit 2
+retrofit2 = "3.0.0"
+retrofit2-adapter-rxjava3 = "3.0.0"
+retrofit2-converter-moshi = "3.0.0"
+retrofit2-converter-gson = "3.0.0"
+
+#Lifecycle
+ax-lifecycle-runtime-ktx = "2.9.1"
+ax-lifecycle-common = "2.9.1"
+ax-lifecycle-common-java8 = "2.9.1"
+ax-lifecycle-viewmodel-savedstate = "2.9.1"
+ax-lifecycle-livedata-ktx = "2.9.1"
+ax-lifecycle-viewmodel-ktx = "2.9.1"
+
+#Lifecycle Extensions
+ax-lifecycle-extensions = "2.2.0"
+
+#Work
+ax-work-runtime-ktx = "2.10.2"
+
+#Documenfile
+ax-documentfile = "1.1.0"
+
+#RecyclerView
+ax-recyclerview = "1.4.0"
+ax-recyclerview-selection = "1.2.0"
+
+#SwipeRefreshLayout
+ax-swiperefreshlayout = "1.1.0"
+
+#DataStore
+ax-datastore = "1.1.7"
+
+#Splashscreen
+ax-splashscreen = "1.0.1"
+
+#Profile Installer
+#ax-profileinstaller = "1.4.1"
+
+#App Search
+ax-appsearch = "1.1.0-rc01"
+ax-appsearch-compiler = "1.1.0-rc01"
+ax-appsearch-local-storage = "1.1.0-rc01"
+
+#Startup
+ax-startup-runtime = "1.2.0"
+
+#Play Services Auth
+play-services-auth = "21.3.0"
+play-services-auth-api-phone = "18.2.0"
+
+com-google-android-play-app-update = "2.1.0"
+
+#Other
+clarity-compose = "3.4.0"
+com-google-auto-value = "1.11.0"
+play-services-ads = "24.4.0"
+io-coil-kt-coil-compose = "2.7.0"
+
+#Plugins
+#Root build.gradle
+com-osacky-doctor = "0.11.0"
+org-jetbrains-kotlinx-kover = "0.9.1"
+
+#Common
+io-realm-kotlin = "3.0.0"
+com-google-devtools-ksp = "2.2.0-2.0.2"
+
+
+[libraries]
+
+#build-logic
+android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "com-google-devtools-ksp" }
+
+#Project build.gradle
+google-services = { module = "com.google.gms:google-services", version.ref = "google-services" }
+firebase-crashlytics-gradle = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "firebase-crashlytics-gradle" }
+perf-plugin = { module = "com.google.firebase:perf-plugin", version.ref = "perf-plugin" }
+
+#Common
+ax-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
+com-google-android-material = { module = "com.google.android.material:material", version.ref = "material" }
+
+#Common Testing
+junit = { module = "junit:junit", version.ref = "junit" }
+ax-test-ext-junit-ktx = { module = "androidx.test.ext:junit-ktx", version.ref = "junit-ktx" }
+ax-test-rules = { module = "androidx.test:rules", version.ref = "ax-test-rules" }
+ax-test-runner = { module = "androidx.test:runner", version.ref = "ax-test-runner" }
+ax-test-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
+ax-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark-macro-junit4" }
+
+#Firebase
+com-google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+com-google-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx" }
+com-google-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx" }
+com-google-firebase-perf-ktx = { module = "com.google.firebase:firebase-perf-ktx" }
+com-google-firebase-config-ktx = { module = "com.google.firebase:firebase-config-ktx" }
+
+#Timber
+com-jakewharton-timber = { module = "com.jakewharton.timber:timber", version.ref = "com-jakewharton-timber" }
+
+#Compose
+ax-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+ax-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+ax-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+ax-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+ax-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+ax-compose-ui-viewbinding = { group = "androidx.compose.ui", name = "ui-viewbinding" }
+ax-compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
+ax-compose-runtime-rxjava3 = { group = "androidx.compose.runtime", name = "runtime-rxjava3" }
+ax-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+ax-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
+ax-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+ax-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "ax-constraintlayout-compose" }
+ax-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "ax-activity-compose" }
+ax-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle-viewmodel-compose" }
+ax-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "ax-navigation-compose" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+
+#Compose Testing
+ax-compose-ui-test = { module = "androidx.compose.ui:ui-test" }
+ax-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+ax-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+org-mockito-android = { module = "org.mockito:mockito-android", version.ref = "org-mockito-android" }
+#org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "org-jetbrains-kotlinx-coroutines-test" }
+
+#Realm
+io-realm-kotlin-library-base = { module = "io.realm.kotlin:library-base", version.ref = "io-realm-kotlin-library-base" }
+
+#Room
+ax-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room-runtime" }
+ax-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room-compiler" }
+ax-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room-ktx" }
+#Room Testing
+ax-room-testing = { module = "androidx.room:room-testing", version.ref = "room-testing" }
+
+#Koin
+io-insert-koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "io-insert-koin-bom" }
+io-insert-koin-core = { module = "io.insert-koin:koin-core" }
+io-insert-koin-android = { module = "io.insert-koin:koin-android" }
+io-insert-koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "io-insert-koin-compose" }
+
+#OkHttp
+com-squareup-okhttp3-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp-bom" }
+com-squareup-okhttp3 = { module = "com.squareup.okhttp3:okhttp" }
+com-squareup-okhttp3-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor" }
+
+#Moshi
+com-squareup-moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi-kotlin" }
+com-squareup-moshi-kotlin-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi-kotlin-codegen" }
+
+#Retrofit 2
+com-squareup-retrofit2-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit2" }
+com-squareup-retrofit2-adapter-rxjava3 = { module = "com.squareup.retrofit2:adapter-rxjava3", version.ref = "retrofit2-adapter-rxjava3" }
+com-squareup-retrofit2-converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofit2-converter-moshi" }
+com-squareup-retrofit2-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit2-converter-gson" }
+
+#Lifecycle
+ax-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "ax-lifecycle-runtime-ktx" }
+ax-lifecycle-common = { module = "androidx.lifecycle:lifecycle-common", version.ref = "ax-lifecycle-common" }
+ax-lifecycle-common-java8 = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "ax-lifecycle-common-java8" }
+ax-lifecycle-viewmodel-savedstate = { module = "androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "ax-lifecycle-viewmodel-savedstate" }
+ax-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "ax-lifecycle-livedata-ktx" }
+ax-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "ax-lifecycle-viewmodel-ktx" }
+
+#Lifecycle Extensions
+ax-lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "ax-lifecycle-extensions" }
+
+#Work
+ax-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "ax-work-runtime-ktx" }
+
+#Documentfile
+ax-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "ax-documentfile" }
+
+#RecyclerView
+ax-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "ax-recyclerview" }
+ax-recyclerview-selection = { module = "androidx.recyclerview:recyclerview-selection", version.ref = "ax-recyclerview-selection" }
+
+#SwipeRefreshLayout
+ax-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "ax-swiperefreshlayout" }
+
+#DataStore
+ax-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "ax-datastore" }
+
+#App Search
+ax-appsearch = { module = "androidx.appsearch:appsearch", version.ref = "ax-appsearch" }
+ax-appsearch-compiler = { module = "androidx.appsearch:appsearch-compiler", version.ref = "ax-appsearch-compiler" }
+ax-appsearch-local-storage = { module = "androidx.appsearch:appsearch-local-storage", version.ref = "ax-appsearch-local-storage" }
+
+#Splashscreen
+ax-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "ax-splashscreen" }
+
+#Profile Installer
+#ax-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "ax-profileinstaller" }
+
+#Play Services Auth
+com-google-android-gms-play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-auth" }
+
+#Play Services Auth APi Phone
+com-google-android-gms-play-services-auth-api-phone = { module = "com.google.android.gms:play-services-auth-api-phone", version.ref = "play-services-auth-api-phone" }
+
+com-google-android-play-app-update = { module = "com.google.android.play:app-update", version.ref = "com-google-android-play-app-update" }
+
+#Startup
+ax-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "ax-startup-runtime" }
+
+#Other
+com-microsoft-clarity-compose = { module = "com.microsoft.clarity:clarity-compose", version.ref = "clarity-compose" }
+
+com-google-auto-value = { module = "com.google.auto.value:auto-value", version.ref = "com-google-auto-value" }
+
+play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services-ads" }
+
+io-coil-kt-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "io-coil-kt-coil-compose" }
+
+
+[plugins]
+
+#Root build.gradle
+com-osacky-doctor = { id = "com.osacky.doctor", version.ref = "com-osacky-doctor" }
+org-jetbrains-kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "org-jetbrains-kotlinx-kover" }
+
+#Common
+com-android-application = { id = "com.android.application", version.ref = "gradle" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "com-google-devtools-ksp" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
+firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebase-perf-gradle" }
+io-realm-kotlin = { id = "io.realm.kotlin", version.ref = "io-realm-kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+#ax-baselineprofile = { id = "androidx.baselineprofile", version.ref = "ax-baselineprofile" }

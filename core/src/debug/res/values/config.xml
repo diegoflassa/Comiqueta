@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ENABLE_ADS" translatable="false">false</string>
+    <string name="APP_ADS_ID" translatable="false">YOUR_ADMOB_APP_ID</string>
+    <string name="ADMOB_ID" translatable="false">YOUR_ADMOB_ID</string>
+    <string name="ADD_BANNER_ID" translatable="false">YOUR_ADD_BANNER_ID</string>
+    <string name="ADD_INTERSTITIAL_ID" translatable="false">YOUR_ADD_INTERSTITIAL_ID</string>
+    <string name="ADD_REWARDED_ID" translatable="false">YOUR_ADD_REWARDED_ID</string>
+    <string name="ADD_NATIVE_ID" translatable="false">YOUR_ADD_NATIVE_ID</string>
+    <string name="ADD_APP_OPEN_ID" translatable="false">YOUR_ADD_APP_OPEN_ID</string>
+</resources>
