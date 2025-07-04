@@ -55,13 +55,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_21 // Recommended for modern AGP
     }
 
-    // Kotlin options are often configured globally via kotlin {} block if needed
-    // If you need library-specific Kotlin options:
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_21.toString()
-        // freeCompilerArgs += "-Xcontext-receivers" // Example
-    }
-
     // For libraries, you often don't need 'packagingOptions' unless there are specific conflicts
     // to resolve that the library itself introduces.
 

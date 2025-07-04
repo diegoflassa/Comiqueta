@@ -1,8 +1,11 @@
 [versions]
 
 #Common
-gradle = "8.10.1"
+gradle = "8.11.0"
 kotlin = "2.2.0"
+
+#Project build.gradle
+hilt-android-gradle-plugin = "2.56.2"
 
 #App
 firebase-perf-gradle = "1.4.2"
@@ -38,21 +41,29 @@ compose-bom = "2025.06.01"
 ax-constraintlayout-compose = "1.1.1"
 ax-activity-compose = "1.10.1"
 lifecycle-viewmodel-compose = "2.9.1"
-ax-navigation-compose = "2.9.0"
+ax-navigation-compose = "2.9.1"
 kotlinx-serialization-json = "1.9.0"
 
 #Compose Testing
 org-mockito-android = "5.18.0"
 #org-jetbrains-kotlinx-coroutines-test = "1.10.2"
 
-#Realm
-io-realm-kotlin-library-base = "3.0.0"
-
 #Room
 room-runtime = "2.7.2"
 room-compiler = "2.7.2"
 room-ktx = "2.7.2"
 room-testing = "2.7.2"
+
+#Dagger & Hilt
+hilt-android = "2.56.2"
+hilt-junit-jupiter = "5.13.2"
+hilt-android-compiler = "2.56.2"
+hilt-common = "1.2.0"
+hilt-compiler = "1.2.0"
+hilt-navigation-fragment = "1.2.0"
+ax-hilt-navigation-compose = "1.2.0"
+hilt-work = "1.2.0"
+hilt-android-testing = "2.56.2"
 
 #Koin
 io-insert-koin-bom = "4.1.0"
@@ -105,9 +116,9 @@ ax-splashscreen = "1.0.1"
 #ax-profileinstaller = "1.4.1"
 
 #App Search
-ax-appsearch = "1.1.0-rc01"
-ax-appsearch-compiler = "1.1.0-rc01"
-ax-appsearch-local-storage = "1.1.0-rc01"
+ax-appsearch = "1.1.0"
+ax-appsearch-compiler = "1.1.0"
+ax-appsearch-local-storage = "1.1.0"
 
 #Startup
 ax-startup-runtime = "1.2.0"
@@ -130,21 +141,20 @@ com-osacky-doctor = "0.11.0"
 org-jetbrains-kotlinx-kover = "0.9.1"
 
 #Common
-io-realm-kotlin = "3.0.0"
 com-google-devtools-ksp = "2.2.0-2.0.2"
 
 
 [libraries]
 
 #build-logic
-android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
-kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
-ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "com-google-devtools-ksp" }
+android-gradle-plugin-library = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
+kotlin-gradle-plugin-library = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradle-plugin-library = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "com-google-devtools-ksp" }
 
 #Project build.gradle
-google-services = { module = "com.google.gms:google-services", version.ref = "google-services" }
-firebase-crashlytics-gradle = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "firebase-crashlytics-gradle" }
-perf-plugin = { module = "com.google.firebase:perf-plugin", version.ref = "perf-plugin" }
+google-services-library = { module = "com.google.gms:google-services", version.ref = "google-services" }
+firebase-crashlytics-gradle-library = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "firebase-crashlytics-gradle" }
+perf-plugin-library = { module = "com.google.firebase:perf-plugin", version.ref = "perf-plugin" }
 
 #Common
 ax-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
@@ -193,15 +203,25 @@ ax-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" 
 org-mockito-android = { module = "org.mockito:mockito-android", version.ref = "org-mockito-android" }
 #org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "org-jetbrains-kotlinx-coroutines-test" }
 
-#Realm
-io-realm-kotlin-library-base = { module = "io.realm.kotlin:library-base", version.ref = "io-realm-kotlin-library-base" }
-
 #Room
 ax-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room-runtime" }
 ax-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room-compiler" }
 ax-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room-ktx" }
 #Room Testing
 ax-room-testing = { module = "androidx.room:room-testing", version.ref = "room-testing" }
+
+#Dagger & Hilt
+com-google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
+org-junit-jupiter-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "hilt-junit-jupiter" }
+com-google-dagger-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt-android-compiler" }
+ax-hilt-common = { module = "androidx.hilt:hilt-common", version.ref = "hilt-common" }
+ax-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt-compiler" }
+ax-hilt-navigation-fragment = { module = "androidx.hilt:hilt-navigation-fragment", version.ref = "hilt-navigation-fragment" }
+ax-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "ax-hilt-navigation-compose" }
+ax-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hilt-work" }
+
+#Dagger & Hilt Testing
+com-google-dagger-hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt-android-testing" }
 
 #Koin
 io-insert-koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "io-insert-koin-bom" }
@@ -291,6 +311,7 @@ org-jetbrains-kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref 
 
 #Common
 com-android-application = { id = "com.android.application", version.ref = "gradle" }
+com-android-library = { id = "com.android.library", version.ref = "gradle" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
@@ -298,6 +319,8 @@ com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "com-g
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
 firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebase-perf-gradle" }
-io-realm-kotlin = { id = "io.realm.kotlin", version.ref = "io-realm-kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 #ax-baselineprofile = { id = "androidx.baselineprofile", version.ref = "ax-baselineprofile" }
+
+#Project build.gradle
+hilt-android-gradle-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android-gradle-plugin" }

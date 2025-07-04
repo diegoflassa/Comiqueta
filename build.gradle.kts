@@ -5,9 +5,9 @@ val verifyKeystore = extra["verifyKeystore"] as () -> Unit
 
 buildscript {
     dependencies {
-        classpath(libs.google.services)
-        classpath(libs.firebase.crashlytics.gradle)
-        classpath(libs.perf.plugin)
+        classpath(libs.google.services.library)
+        classpath(libs.firebase.crashlytics.gradle.library)
+        classpath(libs.perf.plugin.library)
     }
 }
 
@@ -23,7 +23,7 @@ plugins {
     alias(libs.plugins.firebase.crashlytics) apply false
     alias(libs.plugins.firebase.perf) apply false
     alias(libs.plugins.compose.compiler) apply false
-    //alias(libs.plugins.io.realm.kotlin) apply false
+    alias(libs.plugins.hilt.android.gradle.plugin) apply false
 }
 
 verifyKeystore()

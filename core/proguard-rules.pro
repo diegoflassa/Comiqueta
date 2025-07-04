@@ -29,3 +29,7 @@
     public static int v(...);
     public static int println(...);
 }
+
+-keepclassmembers class dev.diegoflassa.comiqueta.core.data.worker.SafFolderScanWorker {
+    public <init>(android.content.Context, androidx.work.WorkerParameters);
+}

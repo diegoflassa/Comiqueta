@@ -1,15 +1,20 @@
 plugins {
     id("android-library-convention")
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-parcelize")
-    alias(libs.plugins.com.google.devtools.ksp)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.com.google.devtools.ksp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.hilt.android.gradle.plugin)
 }
 
 android {
     namespace = "dev.diegoflassa.comiqueta.core"
+}
+
+kotlin {
+    jvmToolchain(JavaVersion.VERSION_21.toString().toInt())
 }
 
 dependencies {
@@ -54,12 +59,28 @@ dependencies {
     implementation(platform(libs.com.google.firebase.bom))
     implementation(libs.com.google.firebase.crashlytics.ktx)
 
+    //Timber
+    implementation(libs.com.jakewharton.timber)
+
     //Room
     implementation(libs.ax.room.runtime)
     ksp(libs.ax.room.compiler)
     implementation(libs.ax.room.ktx)
     //Room Testing
     androidTestImplementation(libs.ax.room.testing)
+
+    //Dagger & Hilt
+    implementation(libs.com.google.dagger.hilt.android)
+    ksp(libs.com.google.dagger.hilt.android.compiler)
+    implementation(libs.ax.hilt.common)
+    ksp(libs.ax.hilt.compiler)
+    implementation(libs.ax.hilt.navigation.fragment)
+    implementation(libs.ax.hilt.work)
+    //Dagger & Hilt Testing
+    testImplementation(libs.com.google.dagger.hilt.android.testing)
+    kspTest(libs.com.google.dagger.hilt.android.compiler)
+    androidTestImplementation(libs.com.google.dagger.hilt.android.testing)
+    kspAndroidTest(libs.com.google.dagger.hilt.android.compiler)
 
     //Koin
     implementation(platform(libs.io.insert.koin.bom))

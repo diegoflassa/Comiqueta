@@ -67,18 +67,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_21.toString()
-    }
+
     buildFeatures {
         compose = true
-    }
-
-    testOptions {
-        @Suppress("UnstableApiUsage")
-        emulatorSnapshots {
-            compressSnapshots = true
-        }
     }
 
     ksp {

@@ -10,7 +10,11 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.firebase.perf)
     alias(libs.plugins.compose.compiler)
-    //id("io.realm.kotlin")
+    alias(libs.plugins.hilt.android.gradle.plugin)
+}
+
+kotlin {
+    jvmToolchain(JavaVersion.VERSION_21.toString().toInt())
 }
 
 dependencies {
@@ -64,14 +68,24 @@ dependencies {
     //Timber
     implementation(libs.com.jakewharton.timber)
 
-    //Realm
-    implementation(libs.io.realm.kotlin.library.base)
-
     //Koin
     implementation(platform(libs.io.insert.koin.bom))
     implementation(libs.io.insert.koin.core)
     implementation(libs.io.insert.koin.compose)
     implementation(libs.io.insert.koin.android)
+
+    //Dagger & Hilt
+    implementation(libs.com.google.dagger.hilt.android)
+    ksp(libs.com.google.dagger.hilt.android.compiler)
+    implementation(libs.ax.hilt.common)
+    ksp(libs.ax.hilt.compiler)
+    implementation(libs.ax.hilt.navigation.fragment)
+    implementation(libs.ax.hilt.work)
+    //Dagger & Hilt Testing
+    testImplementation(libs.com.google.dagger.hilt.android.testing)
+    kspTest(libs.com.google.dagger.hilt.android.compiler)
+    androidTestImplementation(libs.com.google.dagger.hilt.android.testing)
+    kspAndroidTest(libs.com.google.dagger.hilt.android.compiler)
 
     //OkHttp
     implementation(platform(libs.com.squareup.okhttp3.bom))
