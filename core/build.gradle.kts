@@ -55,6 +55,10 @@ dependencies {
     debugImplementation(libs.ax.compose.ui.test.manifest)
     debugImplementation(libs.ax.compose.ui.tooling)
 
+    //Compose Navigation 3
+    implementation(libs.ax.navigation3.runtime)
+    implementation(libs.ax.navigation3.ui)
+
     //Firebase
     implementation(platform(libs.com.google.firebase.bom))
     implementation(libs.com.google.firebase.crashlytics.ktx)
@@ -74,19 +78,13 @@ dependencies {
     ksp(libs.com.google.dagger.hilt.android.compiler)
     implementation(libs.ax.hilt.common)
     ksp(libs.ax.hilt.compiler)
-    implementation(libs.ax.hilt.navigation.fragment)
+    implementation(libs.ax.hilt.navigation.compose)
     implementation(libs.ax.hilt.work)
     //Dagger & Hilt Testing
     testImplementation(libs.com.google.dagger.hilt.android.testing)
     kspTest(libs.com.google.dagger.hilt.android.compiler)
     androidTestImplementation(libs.com.google.dagger.hilt.android.testing)
     kspAndroidTest(libs.com.google.dagger.hilt.android.compiler)
-
-    //Koin
-    implementation(platform(libs.io.insert.koin.bom))
-    implementation(libs.io.insert.koin.core)
-    implementation(libs.io.insert.koin.compose)
-    implementation(libs.io.insert.koin.android)
 
     //OkHttp
     implementation(platform(libs.com.squareup.okhttp3.bom))
@@ -119,6 +117,9 @@ dependencies {
 
     //Splashscreen
     implementation(libs.ax.core.splashscreen)
+
+    //Splashscreen
+    implementation(libs.org.apache.commons.compress)
 
     //Other
     implementation(libs.com.microsoft.clarity.compose)

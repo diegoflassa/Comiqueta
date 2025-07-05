@@ -1,5 +1,6 @@
 package dev.diegoflassa.comiqueta.core.data.database.entity
 
+import android.net.Uri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -8,10 +9,10 @@ import androidx.room.PrimaryKey
 data class ComicEntity(
     @PrimaryKey
     @ColumnInfo(name = "file_path")
-    val filePath: String = "", // Storing Uri.toString()
+    val filePath: Uri = Uri.EMPTY,
 
     @ColumnInfo(name = "cover_path")
-    val coverPath: String? = null, // Storing Uri.toString(), nullable if cover might not exist initially
+    val coverPath: Uri? = null,
 
     @ColumnInfo(name = "title")
     val title: String? = null,
@@ -26,5 +27,8 @@ data class ComicEntity(
     val isNew: Boolean = true,
 
     @ColumnInfo(name = "has_been_read")
-    val hasBeenRead: Boolean = false
+    val hasBeenRead: Boolean = false,
+
+    @ColumnInfo(name = "last_page")
+    val lastPage: Int = 0
 )

@@ -1,0 +1,15 @@
+package dev.diegoflassa.comiqueta.settings.ui.settings
+
+import android.app.Activity
+
+/**
+ * Represents user actions or events that can modify the state or trigger effects.
+ */
+sealed interface SettingsIntent {
+    data object LoadInitialData : SettingsIntent
+    data class RefreshPermissionStatuses(val activity: Activity) : SettingsIntent
+    data class RequestPermission(val permission: String) : SettingsIntent
+    data class PermissionResults(val results: Map<String, Boolean>) : SettingsIntent
+    data class RemoveFolderClicked(val folder: ComicsFolderEntity) : SettingsIntent
+    data object OpenAppSettingsClicked : SettingsIntent
+}

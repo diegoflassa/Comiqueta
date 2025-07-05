@@ -9,7 +9,7 @@ import androidx.documentfile.provider.DocumentFile
 // Removed unused import: import androidx.work.Worker
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import dev.diegoflassa.comiqueta.core.data.database.dao.ComicDao
+import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.model.ComicFileType
@@ -18,7 +18,7 @@ import dev.diegoflassa.comiqueta.core.model.ComicFileType
 class SafFolderScanWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val comicDao: ComicDao
+    private val comicsDao: ComicsDao
 ) : CoroutineWorker(appContext, workerParams) { // Changed to CoroutineWorker
 
     override suspend fun doWork(): Result { // Added suspend
@@ -87,13 +87,13 @@ class SafFolderScanWorker @AssistedInject constructor(
                     }) {
                     TimberLogger.logI("SafFolderScanWorker", "Found comic: $name. Saving to DB.")
                     val comicEntity = ComicEntity(
-                        filePath = fileUriString,
+                        filePath = file.uri,
                         title = file.name?.let { it.substringBeforeLast('.', it) }
                             ?: "Unknown Title",
                         // Other fields will use defaults: coverPath=null, genre=null, isFavorite=false, isNew=true, hasBeenRead=false
                     )
                     try {
-                        comicDao.insertComic(comicEntity) // This is a suspend function
+                        comicsDao.insertComic(comicEntity) // This is a suspend function
                         TimberLogger.logD("SafFolderScanWorker", "Successfully inserted: $name")
                     } catch (e: Exception) {
                         TimberLogger.logE(

@@ -48,6 +48,12 @@ kotlinx-serialization-json = "1.9.0"
 org-mockito-android = "5.18.0"
 #org-jetbrains-kotlinx-coroutines-test = "1.10.2"
 
+#Compose Navigation 3
+ax-navigation3-runtime = "1.0.0-alpha05"
+ax-navigation3-ui = "1.0.0-alpha05"
+ax-navigation3-viewmodel = "1.0.0-alpha03"
+ax-navigation3-adaptive = "1.0.0-SNAPSHOT"
+
 #Room
 room-runtime = "2.7.2"
 room-compiler = "2.7.2"
@@ -56,21 +62,16 @@ room-testing = "2.7.2"
 
 #Dagger & Hilt
 hilt-android = "2.56.2"
-hilt-junit-jupiter = "5.13.2"
+hilt-junit-jupiter = "5.13.3"
 hilt-android-compiler = "2.56.2"
 hilt-common = "1.2.0"
 hilt-compiler = "1.2.0"
-hilt-navigation-fragment = "1.2.0"
 ax-hilt-navigation-compose = "1.2.0"
 hilt-work = "1.2.0"
 hilt-android-testing = "2.56.2"
 
-#Koin
-io-insert-koin-bom = "4.1.0"
-io-insert-koin-compose = "4.1.0"
-
 #OkHttp
-okhttp-bom = "4.12.0"
+okhttp-bom = "5.0.0"
 
 #Moshi
 moshi-kotlin = "1.15.2"
@@ -123,6 +124,9 @@ ax-appsearch-local-storage = "1.1.0"
 #Startup
 ax-startup-runtime = "1.2.0"
 
+#Apache Commons Compress
+org-apache-commons-compress = "1.27.1"
+
 #Play Services Auth
 play-services-auth = "21.3.0"
 play-services-auth-api-phone = "18.2.0"
@@ -130,7 +134,7 @@ play-services-auth-api-phone = "18.2.0"
 com-google-android-play-app-update = "2.1.0"
 
 #Other
-clarity-compose = "3.4.0"
+clarity-compose = "3.4.1"
 com-google-auto-value = "1.11.0"
 play-services-ads = "24.4.0"
 io-coil-kt-coil-compose = "2.7.0"
@@ -203,6 +207,15 @@ ax-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" 
 org-mockito-android = { module = "org.mockito:mockito-android", version.ref = "org-mockito-android" }
 #org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "org-jetbrains-kotlinx-coroutines-test" }
 
+#Compose Navigation 3
+##Core Navigation 3 libraries
+ax-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "ax-navigation3-runtime" }
+ax-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "ax-navigation3-ui" }
+
+##Optional add-on libraries for ViewModel integration and adaptive layouts
+ax-navigation3-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "ax-navigation3-viewmodel" }
+ax-navigation3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation3", version.ref = "ax-navigation3-adaptive" }
+
 #Room
 ax-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room-runtime" }
 ax-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room-compiler" }
@@ -216,18 +229,11 @@ org-junit-jupiter-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", 
 com-google-dagger-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt-android-compiler" }
 ax-hilt-common = { module = "androidx.hilt:hilt-common", version.ref = "hilt-common" }
 ax-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt-compiler" }
-ax-hilt-navigation-fragment = { module = "androidx.hilt:hilt-navigation-fragment", version.ref = "hilt-navigation-fragment" }
 ax-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "ax-hilt-navigation-compose" }
 ax-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hilt-work" }
 
 #Dagger & Hilt Testing
 com-google-dagger-hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt-android-testing" }
-
-#Koin
-io-insert-koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "io-insert-koin-bom" }
-io-insert-koin-core = { module = "io.insert-koin:koin-core" }
-io-insert-koin-android = { module = "io.insert-koin:koin-android" }
-io-insert-koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "io-insert-koin-compose" }
 
 #OkHttp
 com-squareup-okhttp3-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp-bom" }
@@ -292,6 +298,9 @@ com-google-android-play-app-update = { module = "com.google.android.play:app-upd
 
 #Startup
 ax-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "ax-startup-runtime" }
+
+#Apache Commons Compress
+org-apache-commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "org-apache-commons-compress" }
 
 #Other
 com-microsoft-clarity-compose = { module = "com.microsoft.clarity:clarity-compose", version.ref = "clarity-compose" }

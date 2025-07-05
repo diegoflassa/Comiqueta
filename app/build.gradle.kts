@@ -20,7 +20,8 @@ kotlin {
 dependencies {
     //Modules
     implementation(project(":core"))
-    implementation(project(":feature-settings"))
+    implementation(project(":settings"))
+    implementation(project(":home"))
 
     // Common
     implementation(libs.ax.core.ktx)
@@ -58,6 +59,12 @@ dependencies {
     debugImplementation(libs.ax.compose.ui.test.manifest)
     debugImplementation(libs.ax.compose.ui.tooling)
 
+    //Compose Navigation 3
+    implementation(libs.ax.navigation3.runtime)
+    implementation(libs.ax.navigation3.ui)
+    implementation(libs.ax.navigation3.viewmodel)
+    implementation(libs.ax.navigation3.adaptive)
+
     //Firebase
     implementation(platform(libs.com.google.firebase.bom))
     implementation(libs.com.google.firebase.crashlytics.ktx)
@@ -68,18 +75,12 @@ dependencies {
     //Timber
     implementation(libs.com.jakewharton.timber)
 
-    //Koin
-    implementation(platform(libs.io.insert.koin.bom))
-    implementation(libs.io.insert.koin.core)
-    implementation(libs.io.insert.koin.compose)
-    implementation(libs.io.insert.koin.android)
-
     //Dagger & Hilt
     implementation(libs.com.google.dagger.hilt.android)
     ksp(libs.com.google.dagger.hilt.android.compiler)
     implementation(libs.ax.hilt.common)
     ksp(libs.ax.hilt.compiler)
-    implementation(libs.ax.hilt.navigation.fragment)
+    implementation(libs.ax.hilt.navigation.compose)
     implementation(libs.ax.hilt.work)
     //Dagger & Hilt Testing
     testImplementation(libs.com.google.dagger.hilt.android.testing)

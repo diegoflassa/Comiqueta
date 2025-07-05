@@ -13,9 +13,13 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://androidx.dev/snapshots/builds/13508953/artifacts/repository")
+        }
     }
 }
 rootProject.name = "Comiqueta"
 include(":app")
 include(":core")
-include(":feature-settings")
+include(":settings")
+include(":home")

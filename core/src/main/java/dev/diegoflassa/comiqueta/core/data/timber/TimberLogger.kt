@@ -40,7 +40,7 @@ object TimberLogger {
 
     fun logA(tag: String? = null, mensagem: String, throwable: Throwable? = null) {
         if (tag.isNullOrEmpty()) {
-            Timber.wtf(throwable, "%s", mensagem) // Corrected to Timber.wtf for ASSERT level
+            Timber.wtf(throwable, "%s", mensagem)
         } else {
             Timber.tag(tag).log(Log.ASSERT, throwable, "%s", mensagem)
         }

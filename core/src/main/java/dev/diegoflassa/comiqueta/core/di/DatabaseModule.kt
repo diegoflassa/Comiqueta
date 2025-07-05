@@ -7,7 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.diegoflassa.comiqueta.core.data.database.ComicDatabase
-import dev.diegoflassa.comiqueta.core.data.database.dao.ComicDao
+import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import javax.inject.Singleton
 
 @Module
@@ -21,9 +21,9 @@ object DatabaseModule {
     }
 
     @Provides
-    @Singleton // Or another appropriate scope if ComicDatabase is not a Singleton
-    fun provideComicDao(database: ComicDatabase): ComicDao {
-        return database.comicDao() // Ensure comicDao() is a method in your ComicDatabase class
+    @Singleton
+    fun provideComicsDao(database: ComicDatabase): ComicsDao {
+        return database.comicsDao()
     }
 }
     

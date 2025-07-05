@@ -4,14 +4,21 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import dev.diegoflassa.comiqueta.core.data.database.dao.ComicDao
+import androidx.room.TypeConverters
+import dev.diegoflassa.comiqueta.core.data.database.converters.UriConverter
+import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.data.extensions.modoDebugHabilitado
 
-@Database(entities = [ComicEntity::class], version = 1, exportSchema = false)
+@TypeConverters(UriConverter::class)
+@Database(
+    entities = [ComicEntity::class],
+    version = 1,
+    exportSchema = false
+)
 abstract class ComicDatabase : RoomDatabase() {
 
-    abstract fun comicDao(): ComicDao
+    abstract fun comicsDao(): ComicsDao
 
     companion object {
         @Volatile
