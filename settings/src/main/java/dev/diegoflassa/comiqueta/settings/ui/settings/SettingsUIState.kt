@@ -1,5 +1,7 @@
 package dev.diegoflassa.comiqueta.settings.ui.settings
 
+import android.net.Uri
+
 /**
  * Represents the complete state of the Settings screen.
  * @param comicsFolders List of monitored comic folders.
@@ -7,7 +9,7 @@ package dev.diegoflassa.comiqueta.settings.ui.settings
  * @param isLoading True if initial data is being loaded.
  */
 data class SettingsUIState(
-    val comicsFolders: List<ComicsFolderEntity> = emptyList(),
+    val comicsFolders: List<Uri> = emptyList(),
     val permissionDisplayStatuses: Map<String, PermissionDisplayStatus> = emptyMap(),
     val isLoading: Boolean = true
 )

@@ -13,8 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-// import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsFoldersDao // REMOVED
-// import dev.diegoflassa.comiqueta.core.data.database.entity.ComicsFolderEntity // REMOVED or not used directly
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.diegoflassa.comiqueta.core.data.repository.ComicsFolderRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -27,27 +26,6 @@ data class PermissionDisplayStatus(
     val isGranted: Boolean,
     val shouldShowRationale: Boolean
 )
-
-data class SettingsUIState(
-    val comicsFolders: List<Uri> = emptyList(), // Changed to List<Uri>
-    val permissionDisplayStatuses: Map<String, PermissionDisplayStatus> = emptyMap(),
-    val isLoading: Boolean = false
-)
-
-sealed interface SettingsEffect {
-    data class LaunchPermissionRequest(val permissionsToRequest: List<String>) : SettingsEffect
-    data object NavigateToAppSettingsScreen : SettingsEffect
-    data class ShowToast(val message: String) : SettingsEffect
-}
-
-sealed interface SettingsIntent {
-    data object LoadInitialData : SettingsIntent // To explicitly load/refresh folders
-    data class RefreshPermissionStatuses(val activity: Activity) : SettingsIntent
-    data class RequestPermission(val permission: String) : SettingsIntent
-    data class PermissionResults(val results: Map<String, Boolean>) : SettingsIntent
-    data class RemoveFolderClicked(val folderUri: Uri) : SettingsIntent // Changed to Uri
-    data object OpenAppSettingsClicked : SettingsIntent
-}
 
 // Helper functions (can be here or in a separate utility file within the module)
 fun getPermissionFriendlyNameSettings(permission: String): String {
@@ -74,28 +52,28 @@ fun getPermissionRationaleSettings(permission: String): String {
 
 @HiltViewModel
 open class SettingsViewModel @Inject constructor(
-    private val comicsFolderRepository: ComicsFolderRepository, // For URI permissions
-    // private val comicsFoldersDao: ComicsFoldersDao, // REMOVED
-    private val applicationContext: Context
+    private val comicsFolderRepository: ComicsFolderRepository,
+    @param:ApplicationContext private val applicationContext: Context
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(SettingsUIState(isLoading = true)) // Start with loading true
+    private val _uiState =
+        MutableStateFlow(SettingsUIState(isLoading = true)) // Start with loading true
     open val uiState: StateFlow<SettingsUIState> = _uiState.asStateFlow()
 
     private val _effect = Channel<SettingsEffect>(Channel.BUFFERED)
     open val effect: Flow<SettingsEffect> = _effect.receiveAsFlow()
 
     init {
-        // Initial load of data
         processIntent(SettingsIntent.LoadInitialData)
 
-        // Initial permission status check (for non-folder related permissions if any)
-        val initialPermissions = getRelevantOsPermissions() // Renamed for clarity
+        val initialPermissions = getRelevantOsPermissions()
         val initialGrantStatuses = initialPermissions.associateWith { permission ->
             PermissionDisplayStatus(
-                isGranted = ContextCompat.checkSelfPermission(applicationContext, permission) == PackageManager.PERMISSION_GRANTED,
-                shouldShowRationale = false // Rationale needs an Activity context, refresh later
-            )
+                isGranted = ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    permission
+                ) == PackageManager.PERMISSION_GRANTED,
+                shouldShowRationale = false            )
         }
         _uiState.update { it.copy(permissionDisplayStatuses = initialGrantStatuses) }
     }
@@ -106,7 +84,10 @@ open class SettingsViewModel @Inject constructor(
             try {
                 val persistedUris = comicsFolderRepository.getPersistedPermissions()
                 _uiState.update { currentState ->
-                    currentState.copy(comicsFolders = persistedUris, isLoading = false)
+                    currentState.copy(
+                        comicsFolders = persistedUris,
+                        isLoading = false
+                    )
                 }
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Error loading persisted folders", e)
@@ -126,18 +107,23 @@ open class SettingsViewModel @Inject constructor(
                     // For instance, if an activity is passed with LoadInitialData, use it.
                     // Otherwise, they will be refreshed when RefreshPermissionStatuses is called.
                 }
+
                 is SettingsIntent.RefreshPermissionStatuses -> {
                     refreshOsPermissionDisplayStatuses(intent.activity) // Renamed for clarity
                 }
+
                 is SettingsIntent.RequestPermission -> {
                     _effect.send(SettingsEffect.LaunchPermissionRequest(listOf(intent.permission)))
                 }
+
                 is SettingsIntent.PermissionResults -> {
                     handleOsPermissionResults(intent.results) // Renamed for clarity
                 }
+
                 is SettingsIntent.RemoveFolderClicked -> {
                     removeFolder(intent.folderUri)
                 }
+
                 is SettingsIntent.OpenAppSettingsClicked -> {
                     _effect.send(SettingsEffect.NavigateToAppSettingsScreen)
                 }
@@ -163,8 +149,15 @@ open class SettingsViewModel @Inject constructor(
         }
 
         val newStatuses = relevantPermissions.associateWith { permission ->
-            val isGranted = ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
-            val shouldShowRationale = !isGranted && ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
+            val isGranted = ContextCompat.checkSelfPermission(
+                activity,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
+            val shouldShowRationale =
+                !isGranted && ActivityCompat.shouldShowRequestPermissionRationale(
+                    activity,
+                    permission
+                )
             PermissionDisplayStatus(isGranted, shouldShowRationale)
         }
         _uiState.update { currentState ->
@@ -177,12 +170,13 @@ open class SettingsViewModel @Inject constructor(
         _uiState.update { currentState ->
             val updatedStatuses = currentState.permissionDisplayStatuses.toMutableMap()
             results.forEach { (permission, isGranted) ->
-                updatedStatuses[permission] = currentState.permissionDisplayStatuses[permission]?.copy(
-                    isGranted = isGranted,
-                    // Rationale should be re-checked with ActivityCompat after a denial if needed
-                    // For simplicity, keeping it false here, rely on next RefreshPermissionStatuses call
-                    shouldShowRationale = false
-                ) ?: PermissionDisplayStatus(isGranted = isGranted, shouldShowRationale = false)
+                updatedStatuses[permission] =
+                    currentState.permissionDisplayStatuses[permission]?.copy(
+                        isGranted = isGranted,
+                        // Rationale should be re-checked with ActivityCompat after a denial if needed
+                        // For simplicity, keeping it false here, rely on next RefreshPermissionStatuses call
+                        shouldShowRationale = false
+                    ) ?: PermissionDisplayStatus(isGranted = isGranted, shouldShowRationale = false)
             }
             currentState.copy(permissionDisplayStatuses = updatedStatuses)
         }
@@ -206,7 +200,15 @@ open class SettingsViewModel @Inject constructor(
         } else {
             Log.w("SettingsViewModel", "Failed to release permission for $folderUri.")
             // Optionally, inform the user more specifically if the folder wasn't in the persisted list.
-            _effect.send(SettingsEffect.ShowToast("Could not release access for folder '${Uri.decode(folderUri.toString())}'."))
+            _effect.send(
+                SettingsEffect.ShowToast(
+                    "Could not release access for folder '${
+                        Uri.decode(
+                            folderUri.toString()
+                        )
+                    }'."
+                )
+            )
             // Refresh the list anyway, in case the internal state of persisted permissions changed for other reasons.
             loadPersistedFolders()
         }

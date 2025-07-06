@@ -28,20 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
-// import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsFoldersDao // Removed
-import dev.diegoflassa.comiqueta.core.data.repository.ComicsFolderRepository
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
-
-// Definitions for State and Effects - ASSUMING SettingsUIState WILL CHANGE
-// data class ComicsFolderEntity(val folderPath: Uri) // Simplified for this example if original is gone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,9 +38,9 @@ fun SettingsScreen(
     navigationViewModel: NavigationViewModel? = null,
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val uiState by settingsViewModel.uiState.collectAsState()
     val context = LocalContext.current
     val activity = context as? Activity
+    val settingsUIState: SettingsUIState by settingsViewModel.uiState.collectAsState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -87,6 +75,22 @@ fun SettingsScreen(
         }
     }
 
+    SettingsScreenContent(
+        modifier = modifier,
+        navigationViewModel = navigationViewModel,
+        settingsUIState = settingsUIState
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreenContent(
+    modifier: Modifier = Modifier,
+    navigationViewModel: NavigationViewModel? = null,
+    settingsViewModel: SettingsViewModel? = null,
+    settingsUIState: SettingsUIState = SettingsUIState()
+) {
+    val uiState = settingsViewModel?.uiState?.collectAsState()?.value ?: settingsUIState
     BackHandler {
         navigationViewModel?.goBack()
     }
@@ -133,14 +137,14 @@ fun SettingsScreen(
                             permission = permission,
                             status = status,
                             onRequestPermissionClick = {
-                                settingsViewModel.processIntent(
+                                settingsViewModel?.processIntent(
                                     SettingsIntent.RequestPermission(
                                         permission
                                     )
                                 )
                             },
                             onOpenSettingsClick = {
-                                settingsViewModel.processIntent(SettingsIntent.OpenAppSettingsClicked)
+                                settingsViewModel?.processIntent(SettingsIntent.OpenAppSettingsClicked)
                             }
                         )
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -172,13 +176,14 @@ fun SettingsScreen(
                     )
                 } else {
                     LazyColumn(modifier = Modifier.weight(1f)) {
-                        items(uiState.comicsFolders.size, key = { it.toString() }) { index ->
+                        items(
+                            uiState.comicsFolders.size,
+                            key = { it.toString() }) { index ->
                             val folderUri = uiState.comicsFolders[index]
-                            ComicsFolderUriItem( // Renamed for clarity, accepts Uri
+                            ComicsFolderUriItem(
                                 folderUri = folderUri,
                                 onRemoveClick = {
-                                    // Assuming SettingsIntent.RemoveFolderClicked now takes a Uri
-                                    settingsViewModel.processIntent(
+                                    settingsViewModel?.processIntent(
                                         SettingsIntent.RemoveFolderClicked(
                                             folderUri
                                         )
@@ -260,7 +265,7 @@ fun PermissionItem(
 }
 
 @Composable
-fun ComicsFolderUriItem( // Renamed and changed to accept Uri
+fun ComicsFolderUriItem(
     folderUri: Uri,
     onRemoveClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -309,14 +314,14 @@ fun openAppSettings(context: Context) {
 @Preview(showBackground = true, name = "Settings Screen - Default")
 @Composable
 fun SettingsScreenMviDefaultPreview() {
+    val uri1 = "file://storage/emulated/0/DCIM/".toUri()
+    val uri2 = "file://storage/emulated/0/Download/Comics/".toUri()
+
+    val dummyComicsFolderUris = listOf(uri1, uri2)
+
     ComiquetaTheme {
-        val currentContext = LocalContext.current
-        val dummyComicsFolderUris = listOf( // Now List<Uri>
-            "content://com.android.externalstorage.documents/tree/primary%3ADCIM".toUri(),
-            "content://com.android.externalstorage.documents/tree/primary%3ADownload%2FComics".toUri()
-        )
-        val initialDummyState = SettingsUIState( // Renamed for clarity for initial state
-            comicsFolders = dummyComicsFolderUris, // Using List<Uri>
+        val initialDummyState = SettingsUIState(
+            comicsFolders = dummyComicsFolderUris,
             permissionDisplayStatuses = mapOf(
                 Manifest.permission.READ_EXTERNAL_STORAGE to PermissionDisplayStatus(
                     isGranted = true,
@@ -325,149 +330,20 @@ fun SettingsScreenMviDefaultPreview() {
             ),
             isLoading = false
         )
-
-        val mockComicsFolderRepository = object : ComicsFolderRepository(currentContext) {
-            // Using a var to hold the list so releasePersistablePermission can modify it for the preview
-            private var currentPersistedUris: MutableList<Uri> =
-                dummyComicsFolderUris.toMutableList()
-
-            override fun getPersistedPermissions(): List<Uri> {
-                return currentPersistedUris.toList() // Return a copy
-            }
-
-            override fun releasePersistablePermission(uri: Uri, flags: Int): Boolean {
-                val removed = currentPersistedUris.remove(uri)
-                if (removed) {
-                    // Simulate the repository successfully releasing permission
-                    return true
-                }
-                return false // URI wasn't in the list or couldn't be removed
-            }
-
-            // Add takePersistablePermission mock if your preview adds folders
-            override fun takePersistablePermission(uri: Uri, flags: Int): Boolean {
-                if (!currentPersistedUris.contains(uri)) {
-                    currentPersistedUris.add(uri)
-                }
-                return true // Simulate success
-            }
-        }
-
-        val previewViewModel = object : SettingsViewModel(
-            comicsFolderRepository = mockComicsFolderRepository,
-            // comicsFoldersDao = /* REMOVED */,
-            applicationContext = currentContext
-        ) {
-            // This is the MutableStateFlow that backs the uiState
-            private val _previewUiState = MutableStateFlow(initialDummyState)
-            override val uiState: StateFlow<SettingsUIState> =
-                _previewUiState.asStateFlow() // Expose as StateFlow
-
-            override val effect: Flow<SettingsEffect> =
-                flowOf() // No effects for this simple preview
-
-            // Mocking processIntent to update the _previewUiState
-            override fun processIntent(intent: SettingsIntent) {
-                // We are overriding the ViewModel's processIntent, so no call to super is needed here
-                // unless the base ViewModel has some abstract behavior we want to trigger.
-                // For this preview, we handle specific intents directly.
-                when (intent) {
-                    is SettingsIntent.RemoveFolderClicked -> {
-                        viewModelScope.launch { // Simulate ViewModel's coroutine scope
-                            // Tell the mock repository to release permission
-                            val released = mockComicsFolderRepository.releasePersistablePermission(
-                                intent.folderUri,
-                                Intent.FLAG_GRANT_READ_URI_PERMISSION // Assuming this flag
-                            )
-                            if (released) {
-                                // If released, update the UI state by getting the new list from the mock repo
-                                val updatedFolders =
-                                    mockComicsFolderRepository.getPersistedPermissions()
-                                _previewUiState.value =
-                                    _previewUiState.value.copy(comicsFolders = updatedFolders)
-                                // Optionally send a toast effect for the preview
-                                // _effect.send(SettingsEffect.ShowToast("Folder removed (Preview)"))
-                            } else {
-                                // Optionally send a toast effect for failure
-                                // _effect.send(SettingsEffect.ShowToast("Failed to remove folder (Preview)"))
-                            }
-                        }
-                    }
-
-                    is SettingsIntent.LoadInitialData -> {
-                        viewModelScope.launch {
-                            _previewUiState.value = _previewUiState.value.copy(isLoading = true)
-                            val folders = mockComicsFolderRepository.getPersistedPermissions()
-                            // Also update permissionDisplayStatuses if they can change in preview
-                            _previewUiState.value = _previewUiState.value.copy(
-                                comicsFolders = folders,
-                                isLoading = false
-                                // permissionDisplayStatuses = ... // if needed for preview
-                            )
-                        }
-                    }
-                    // Handle other intents if necessary for the preview's behavior
-                    else -> {
-                        // Log.d("PreviewViewModel", "Unhandled intent: $intent")
-                    }
-                }
-            }
-        }
-        SettingsScreen(settingsViewModel = previewViewModel)
+        SettingsScreenContent(settingsUIState = initialDummyState)
     }
 }
+
 
 @Preview(showBackground = true, name = "Settings Screen - API 33", apiLevel = 33)
 @Composable
 fun SettingsScreenMviApi33Preview() {
     ComiquetaTheme {
-        val currentContext = LocalContext.current
-        val initialDummyStateApi33 = SettingsUIState( // Renamed for clarity
-            comicsFolders = emptyList(), // List<Uri>
-            permissionDisplayStatuses = emptyMap(), // No legacy permissions expected on API 33+
+        val initialDummyStateApi33 = SettingsUIState(
+            comicsFolders = emptyList(),
+            permissionDisplayStatuses = emptyMap(),
             isLoading = false
         )
-
-        val mockComicsFolderRepositoryApi33 = object : ComicsFolderRepository(currentContext) {
-            override fun getPersistedPermissions(): List<Uri> {
-                return emptyList() // No folders initially
-            }
-
-            // Mocks for take/release if your API 33 preview interacts with adding/removing
-            override fun releasePersistablePermission(uri: Uri, flags: Int): Boolean = true
-            override fun takePersistablePermission(uri: Uri, flags: Int): Boolean = true
-        }
-
-        val previewViewModel = object : SettingsViewModel(
-            comicsFolderRepository = mockComicsFolderRepositoryApi33,
-            // comicsFoldersDao = /* REMOVED */,
-            applicationContext = currentContext
-        ) {
-            private val _previewUiState = MutableStateFlow(initialDummyStateApi33)
-            override val uiState: StateFlow<SettingsUIState> = _previewUiState.asStateFlow()
-            override val effect: Flow<SettingsEffect> = flowOf()
-
-            override fun processIntent(intent: SettingsIntent) {
-                // Similar to the default preview, handle intents as needed for API 33 scenario
-                when (intent) {
-                    is SettingsIntent.LoadInitialData -> {
-                        viewModelScope.launch {
-                            _previewUiState.value = _previewUiState.value.copy(isLoading = true)
-                            val folders = mockComicsFolderRepositoryApi33.getPersistedPermissions()
-                            _previewUiState.value = _previewUiState.value.copy(
-                                comicsFolders = folders,
-                                isLoading = false,
-                                permissionDisplayStatuses = emptyMap() // Explicitly empty for API 33+
-                            )
-                        }
-                    }
-                    // Handle RemoveFolderClicked if applicable to this preview's test case
-                    else -> {
-                        // Log.d("PreviewViewModelApi33", "Unhandled intent: $intent")
-                    }
-                }
-            }
-        }
-        SettingsScreen(settingsViewModel = previewViewModel)
+        SettingsScreenContent(settingsUIState = initialDummyStateApi33)
     }
 }

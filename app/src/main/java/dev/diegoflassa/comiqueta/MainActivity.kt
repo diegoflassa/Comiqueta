@@ -22,18 +22,25 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.gms.ads.MobileAds
+import com.microsoft.clarity.Clarity
+import com.microsoft.clarity.ClarityConfig
 import dagger.hilt.android.AndroidEntryPoint
+import dev.diegoflassa.comiqueta.core.data.config.IConfig
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.data.worker.SafFolderScanWorker
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.navigation.NavDisplay
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private lateinit var openDirectoryLauncher: ActivityResultLauncher<Uri?>
     private lateinit var runtimePermissionLauncher: ActivityResultLauncher<String>
+
+    @Inject
+    lateinit var config: IConfig
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +63,7 @@ class MainActivity : ComponentActivity() {
                 navigationViewModel.goBack()
             }
         }
+        inicializarClarity()
     }
 
     private fun setupLaunchers() {
@@ -104,6 +112,13 @@ class MainActivity : ComponentActivity() {
                     TimberLogger.logD("MainActivity", "No folder selected.")
                 }
             }
+    }
+
+    private fun inicializarClarity() {
+        if (config.clarityId.isNotEmpty()) {
+            val config = ClarityConfig(config.clarityId)
+            Clarity.initialize(applicationContext, config)
+        }
     }
 
     /**
