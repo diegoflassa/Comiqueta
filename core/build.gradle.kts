@@ -118,8 +118,11 @@ dependencies {
     //Splashscreen
     implementation(libs.ax.core.splashscreen)
 
-    //Splashscreen
+    //Apache Commons Compress
     implementation(libs.org.apache.commons.compress)
+
+    //Rar File
+    implementation(libs.org.github.junrar)
 
     //Other
     implementation(libs.com.microsoft.clarity.compose)

@@ -13,4 +13,6 @@ sealed interface SettingsIntent {
     data class PermissionResults(val results: Map<String, Boolean>) : SettingsIntent
     data class RemoveFolderClicked(val folderUri: Uri) : SettingsIntent
     data object OpenAppSettingsClicked : SettingsIntent
+    data object RequestAddFolder : SettingsIntent
+    data class FolderSelected(val uri: Uri) : SettingsIntent
 }

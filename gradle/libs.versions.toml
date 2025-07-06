@@ -127,6 +127,9 @@ ax-startup-runtime = "1.2.0"
 #Apache Commons Compress
 org-apache-commons-compress = "1.27.1"
 
+#Rar files
+org-github-junrar = "7.5.5"
+
 #Play Services Auth
 play-services-auth = "21.3.0"
 play-services-auth-api-phone = "18.2.0"
@@ -301,6 +304,9 @@ ax-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref 
 
 #Apache Commons Compress
 org-apache-commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "org-apache-commons-compress" }
+
+#Rar files
+org-github-junrar = { module = "com.github.junrar:junrar", version.ref = "org-github-junrar" }
 
 #Other
 com-microsoft-clarity-compose = { module = "com.microsoft.clarity:clarity-compose", version.ref = "clarity-compose" }

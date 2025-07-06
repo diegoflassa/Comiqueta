@@ -1,12 +1,14 @@
 package dev.diegoflassa.comiqueta.core.data.repository // Or your equivalent package structure
 
+import android.net.Uri
 import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton // Often repositories are singletons
+@Singleton
+open // Often repositories are singletons
 class ComicsRepository @Inject constructor(
     private val comicsDao: ComicsDao
 ) {
@@ -58,24 +60,33 @@ class ComicsRepository @Inject constructor(
     }
 
     /**
+     * Retrieves a comic by its Uri file path directly.
+     * Returns null if no comic with the given file path is found.
+     * This is a suspend function suitable for one-off checks (e.g., in a Worker).
+     */
+    suspend fun getComicByFilePath(filePath: Uri): ComicEntity? {
+        return comicsDao.getComicByFilePath(filePath)
+    }
+
+    /**
      * Retrieves all comics from the database, ordered by title, as a Flow.
      * The Flow will emit a new list whenever the comics data changes.
      */
-    fun getAllComics(): Flow<List<ComicEntity>> {
+    open fun getAllComics(): Flow<List<ComicEntity>> {
         return comicsDao.getAllComics()
     }
 
     /**
      * Retrieves all favorite comics, ordered by title, as a Flow.
      */
-    fun getFavoriteComics(): Flow<List<ComicEntity>> {
+    open fun getFavoriteComics(): Flow<List<ComicEntity>> {
         return comicsDao.getFavoriteComics()
     }
 
     /**
      * Retrieves all new comics, ordered by title, as a Flow.
      */
-    fun getNewComics(): Flow<List<ComicEntity>> {
+    open fun getNewComics(): Flow<List<ComicEntity>> {
         return comicsDao.getNewComics()
     }
 

@@ -7,4 +7,5 @@ sealed interface SettingsEffect {
     data class LaunchPermissionRequest(val permissionsToRequest: List<String>) : SettingsEffect
     data object NavigateToAppSettingsScreen : SettingsEffect
     data class ShowToast(val message: String) : SettingsEffect
+    data object LaunchFolderPicker : SettingsEffect
 }

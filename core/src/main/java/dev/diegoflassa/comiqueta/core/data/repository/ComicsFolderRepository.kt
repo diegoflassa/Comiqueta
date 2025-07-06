@@ -4,22 +4,75 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
  * Manages persistable URI permissions using Android's ContentResolver.
- * This class does NOT interact with the application's database.
- * Database operations for comic folders should be handled separately, typically by injecting ComicsFoldersDao
- * directly into ViewModels or UseCases.
+ * This class also provides a flow to observe changes to the persisted permissions.
+ * It does NOT interact with the application's database.
+ * Database operations for comic folders should be handled separately.
  */
 @Singleton
 open class ComicsFolderRepository @Inject constructor(context: Context) {
 
     private val contentResolver = context.contentResolver
 
+    // MutableStateFlow to hold the list of persisted URIs
+    private val _persistedFoldersFlow = MutableStateFlow<List<Uri>>(emptyList())
+
+    init {
+        // Initialize the flow with the current persisted permissions
+        _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
+    }
+
+    /**
+     * Fetches the current list of persisted URIs directly from the ContentResolver.
+     */
+    private fun fetchCurrentPersistedPermissions(): List<Uri> {
+        return try {
+            contentResolver.persistedUriPermissions.map { it.uri }
+        } catch (e: Exception) {
+            TimberLogger.logE(
+                "ComicsFolderRepository",
+                "Error retrieving persisted URI permissions",
+                e
+            )
+            emptyList()
+        }
+    }
+
+    /**
+     * Provides a Flow that emits the current list of persisted folder URIs
+     * and subsequent updates when permissions are taken or released via this repository.
+     *
+     * @return A StateFlow emitting a list of Uris.
+     */
+    open fun getPersistedPermissionsFlow(): StateFlow<List<Uri>> {
+        return _persistedFoldersFlow.asStateFlow()
+    }
+
+    /**
+     * Retrieves all persistable URI permissions currently held by the application.
+     * This method provides a snapshot and does not update reactively.
+     * For reactive updates, use [getPersistedPermissionsFlow].
+     *
+     * @return A list of Uris for which the app holds persistable permissions.
+     */
+    open fun getPersistedPermissions(): List<Uri> {
+        // Return the current value from the flow, which is kept up-to-date,
+        // or fetch directly if a fresh, non-cached read is strictly needed.
+        // For simplicity and consistency with the flow, using its current value.
+        // Alternatively, call: return fetchCurrentPersistedPermissions()
+        return _persistedFoldersFlow.value
+    }
+
     /**
      * Takes persistable URI permission for the given URI.
+     * Updates the persisted permissions flow on success.
      *
      * @param uri The Uri for which to take permission.
      * @param flags The Intent flags for the permission (e.g., Intent.FLAG_GRANT_READ_URI_PERMISSION).
@@ -32,6 +85,8 @@ open class ComicsFolderRepository @Inject constructor(context: Context) {
         return try {
             contentResolver.takePersistableUriPermission(uri, flags)
             TimberLogger.logD("ComicsFolderRepository", "Successfully took permission for $uri")
+            // Update the flow with the new list of permissions
+            _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
             true
         } catch (e: SecurityException) {
             TimberLogger.logE(
@@ -48,6 +103,7 @@ open class ComicsFolderRepository @Inject constructor(context: Context) {
 
     /**
      * Releases persistable URI permission for the given URI.
+     * Updates the persisted permissions flow on success.
      *
      * @param uri The Uri for which to release permission.
      * @param flags The Intent flags used when the permission was taken (e.g., Intent.FLAG_GRANT_READ_URI_PERMISSION).
@@ -60,6 +116,8 @@ open class ComicsFolderRepository @Inject constructor(context: Context) {
         return try {
             contentResolver.releasePersistableUriPermission(uri, flags)
             TimberLogger.logD("ComicsFolderRepository", "Successfully released permission for $uri")
+            // Update the flow with the new list of permissions
+            _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
             true
         } catch (e: SecurityException) {
             TimberLogger.logE(
@@ -72,25 +130,6 @@ open class ComicsFolderRepository @Inject constructor(context: Context) {
         } catch (e: Exception) {
             TimberLogger.logE("ComicsFolderRepository", "Error releasing permission for $uri", e)
             false
-        }
-    }
-
-    /**
-     * Retrieves all persistable URI permissions currently held by the application.
-     * This can be used for debugging or to get a raw list of all granted folder/document URIs.
-     *
-     * @return A list of Uris for which the app holds persistable permissions.
-     */
-    open fun getPersistedPermissions(): List<Uri> {
-        return try {
-            contentResolver.persistedUriPermissions.map { it.uri }
-        } catch (e: Exception) {
-            TimberLogger.logE(
-                "ComicsFolderRepository",
-                "Error retrieving persisted URI permissions",
-                e
-            )
-            emptyList()
         }
     }
 }

@@ -30,5 +30,11 @@ data class ComicEntity(
     val hasBeenRead: Boolean = false,
 
     @ColumnInfo(name = "last_page")
-    val lastPage: Int = 0
+    val lastPage: Int = 0,
+
+    @ColumnInfo(name = "last_modified")
+    val lastModified: Long = 0,
+
+    @ColumnInfo(name = "created", defaultValue = "0")
+    val created: Long = System.currentTimeMillis()
 )

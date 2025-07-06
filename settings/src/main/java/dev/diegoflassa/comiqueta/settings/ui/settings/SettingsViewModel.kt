@@ -1,71 +1,54 @@
 package dev.diegoflassa.comiqueta.settings.ui.settings
 
-import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.util.Log
+import androidx.compose.animation.core.copy
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dev.diegoflassa.comiqueta.core.data.repository.ComicsFolderRepository
+import dev.diegoflassa.comiqueta.settings.ui.settings.PermissionDisplayStatus
+import dev.diegoflassa.comiqueta.core.domain.usecase.folder.AddMonitoredFolderUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.folder.GetMonitoredFoldersUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.folder.RemoveMonitoredFolderUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.permission.GetRelevantOsPermissionsUseCase
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-// Definitions for State, Intent, and Effect (co-located or in separate files)
-
-data class PermissionDisplayStatus(
-    val isGranted: Boolean,
-    val shouldShowRationale: Boolean
-)
-
-// Helper functions (can be here or in a separate utility file within the module)
-fun getPermissionFriendlyNameSettings(permission: String): String {
-    return when (permission) {
-        Manifest.permission.READ_EXTERNAL_STORAGE -> "Read External Storage"
-        else -> permission.substringAfterLast(".").replace("_", " ")
-    }
-}
-
-fun getPermissionDescriptionSettings(permission: String): String {
-    return when (permission) {
-        Manifest.permission.READ_EXTERNAL_STORAGE -> "Allows access to files on your device's storage to read comic files (for older Android versions)."
-        else -> "This permission is required for certain app features to work correctly."
-    }
-}
-
-fun getPermissionRationaleSettings(permission: String): String {
-    return when (permission) {
-        Manifest.permission.READ_EXTERNAL_STORAGE -> "To load your comics on this Android version, the app needs to access files. Please grant access."
-        else -> "This permission is important for the feature you are trying to use."
-    }
-}
 
 
 @HiltViewModel
 open class SettingsViewModel @Inject constructor(
-    private val comicsFolderRepository: ComicsFolderRepository,
-    @param:ApplicationContext private val applicationContext: Context
+    @param:ApplicationContext private val applicationContext: Context,
+    private val getMonitoredFoldersUseCase: GetMonitoredFoldersUseCase,
+    private val addMonitoredFolderUseCase: AddMonitoredFolderUseCase,
+    private val removeMonitoredFolderUseCase: RemoveMonitoredFolderUseCase,
+    private val getRelevantOsPermissionsUseCase: GetRelevantOsPermissionsUseCase
 ) : ViewModel() {
 
-    private val _uiState =
-        MutableStateFlow(SettingsUIState(isLoading = true)) // Start with loading true
+    private val _uiState = MutableStateFlow(SettingsUIState(isLoading = true))
     open val uiState: StateFlow<SettingsUIState> = _uiState.asStateFlow()
 
     private val _effect = Channel<SettingsEffect>(Channel.BUFFERED)
     open val effect: Flow<SettingsEffect> = _effect.receiveAsFlow()
 
     init {
+        // Initial data load and permission status setup
         processIntent(SettingsIntent.LoadInitialData)
-
         val initialPermissions = getRelevantOsPermissions()
         val initialGrantStatuses = initialPermissions.associateWith { permission ->
             PermissionDisplayStatus(
@@ -73,7 +56,8 @@ open class SettingsViewModel @Inject constructor(
                     applicationContext,
                     permission
                 ) == PackageManager.PERMISSION_GRANTED,
-                shouldShowRationale = false            )
+                shouldShowRationale = false
+            )
         }
         _uiState.update { it.copy(permissionDisplayStatuses = initialGrantStatuses) }
     }
@@ -82,34 +66,31 @@ open class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                val persistedUris = comicsFolderRepository.getPersistedPermissions()
+                val persistedUris = getMonitoredFoldersUseCase().first()
                 _uiState.update { currentState ->
-                    currentState.copy(
-                        comicsFolders = persistedUris,
-                        isLoading = false
-                    )
+                    currentState.copy(comicsFolders = persistedUris, isLoading = false)
                 }
             } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Error loading persisted folders", e)
+                Log.e("SettingsViewModel", "Error loading persisted folders via UseCase", e)
                 _uiState.update { it.copy(isLoading = false) }
-                _effect.send(SettingsEffect.ShowToast("Error loading folders: ${e.message}"))
+                viewModelScope.launch { _effect.send(SettingsEffect.ShowToast("Error loading folders: ${e.message}")) }
             }
         }
     }
 
-
+    // THIS IS THE UPDATED FUNCTION
     open fun processIntent(intent: SettingsIntent) {
         viewModelScope.launch {
             when (intent) {
                 is SettingsIntent.LoadInitialData -> {
                     loadPersistedFolders()
-                    // Optionally, also refresh OS permission statuses if activity context isn't available yet
-                    // For instance, if an activity is passed with LoadInitialData, use it.
-                    // Otherwise, they will be refreshed when RefreshPermissionStatuses is called.
+                    // Optionally, if an activity context were available here without an explicit Refresh intent,
+                    // one could call refreshOsPermissionDisplayStatuses. However, it's usually triggered
+                    // by the UI when it becomes active.
                 }
 
                 is SettingsIntent.RefreshPermissionStatuses -> {
-                    refreshOsPermissionDisplayStatuses(intent.activity) // Renamed for clarity
+                    refreshOsPermissionDisplayStatuses(intent.activity)
                 }
 
                 is SettingsIntent.RequestPermission -> {
@@ -117,7 +98,7 @@ open class SettingsViewModel @Inject constructor(
                 }
 
                 is SettingsIntent.PermissionResults -> {
-                    handleOsPermissionResults(intent.results) // Renamed for clarity
+                    handleOsPermissionResults(intent.results)
                 }
 
                 is SettingsIntent.RemoveFolderClicked -> {
@@ -127,27 +108,30 @@ open class SettingsViewModel @Inject constructor(
                 is SettingsIntent.OpenAppSettingsClicked -> {
                     _effect.send(SettingsEffect.NavigateToAppSettingsScreen)
                 }
+
+                // --- ADDED CASES ---
+                is SettingsIntent.RequestAddFolder -> {
+                    _effect.send(SettingsEffect.LaunchFolderPicker)
+                }
+
+                is SettingsIntent.FolderSelected -> {
+                    addFolder(intent.uri)
+                }
+                // --- END OF ADDED CASES ---
             }
         }
     }
 
-    // Renamed to avoid confusion with folder/URI permissions
     private fun getRelevantOsPermissions(): List<String> {
-        return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-            listOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-        } else {
-            emptyList() // No specific OS-level file permissions needed for SAF access on Android T+
-        }
+        return getRelevantOsPermissionsUseCase()
     }
 
-    // Renamed to avoid confusion
     private fun refreshOsPermissionDisplayStatuses(activity: Activity) {
         val relevantPermissions = getRelevantOsPermissions()
         if (relevantPermissions.isEmpty()) {
-            _uiState.update { it.copy(permissionDisplayStatuses = emptyMap()) } // Removed isLoading update here
+            _uiState.update { it.copy(permissionDisplayStatuses = emptyMap()) }
             return
         }
-
         val newStatuses = relevantPermissions.associateWith { permission ->
             val isGranted = ContextCompat.checkSelfPermission(
                 activity,
@@ -161,11 +145,10 @@ open class SettingsViewModel @Inject constructor(
             PermissionDisplayStatus(isGranted, shouldShowRationale)
         }
         _uiState.update { currentState ->
-            currentState.copy(permissionDisplayStatuses = newStatuses) // Removed isLoading update
+            currentState.copy(permissionDisplayStatuses = newStatuses)
         }
     }
 
-    // Renamed to avoid confusion
     private fun handleOsPermissionResults(results: Map<String, Boolean>) {
         _uiState.update { currentState ->
             val updatedStatuses = currentState.permissionDisplayStatuses.toMutableMap()
@@ -173,9 +156,7 @@ open class SettingsViewModel @Inject constructor(
                 updatedStatuses[permission] =
                     currentState.permissionDisplayStatuses[permission]?.copy(
                         isGranted = isGranted,
-                        // Rationale should be re-checked with ActivityCompat after a denial if needed
-                        // For simplicity, keeping it false here, rely on next RefreshPermissionStatuses call
-                        shouldShowRationale = false
+                        shouldShowRationale = false // Rationale needs re-check via ActivityCompat if denied
                     ) ?: PermissionDisplayStatus(isGranted = isGranted, shouldShowRationale = false)
             }
             currentState.copy(permissionDisplayStatuses = updatedStatuses)
@@ -183,34 +164,40 @@ open class SettingsViewModel @Inject constructor(
     }
 
     private suspend fun removeFolder(folderUri: Uri) {
-        // 1. Release persistable URI permission using ComicsFolderRepository
-        val permissionReleased = comicsFolderRepository.releasePersistablePermission(
-            uri = folderUri,
-            // Ensure these are the flags used when the permission was taken.
-            // Typically READ for folders. Add WRITE if it was also taken.
-            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-        )
-
-        if (permissionReleased) {
-            Log.d("SettingsViewModel", "Successfully released permission for $folderUri")
-            // 2. Refresh the list of folders from the repository
-            loadPersistedFolders() // This will update the UI state
-            _effect.send(SettingsEffect.ShowToast("Folder '${Uri.decode(folderUri.toString())}' access released."))
-
-        } else {
-            Log.w("SettingsViewModel", "Failed to release permission for $folderUri.")
-            // Optionally, inform the user more specifically if the folder wasn't in the persisted list.
-            _effect.send(
-                SettingsEffect.ShowToast(
-                    "Could not release access for folder '${
-                        Uri.decode(
-                            folderUri.toString()
-                        )
-                    }'."
-                )
-            )
-            // Refresh the list anyway, in case the internal state of persisted permissions changed for other reasons.
+        try {
+            val success = removeMonitoredFolderUseCase(folderUri)
+            if (success) {
+                Log.d("SettingsViewModel", "Successfully removed folder via UseCase: $folderUri")
+                _effect.send(SettingsEffect.ShowToast("Folder '${Uri.decode(folderUri.toString())}' access removed."))
+            } else {
+                Log.w("SettingsViewModel", "Failed to remove folder via UseCase: $folderUri.")
+                _effect.send(SettingsEffect.ShowToast("Could not remove access for folder '${Uri.decode(folderUri.toString())}'."))
+            }
+        } catch (e: Exception) {
+            Log.e("SettingsViewModel", "Error removing folder $folderUri via UseCase", e)
+            _effect.send(SettingsEffect.ShowToast("Error removing folder: ${e.message}"))
+        } finally {
             loadPersistedFolders()
+        }
+    }
+
+    private suspend fun addFolder(uri: Uri) {
+        // Assumption: The UI layer (SettingsScreen) has already successfully called
+        // contentResolver.takePersistableUriPermission() before sending the FolderSelected intent.
+        try {
+            val success = addMonitoredFolderUseCase(uri)
+            if (success) {
+                Log.d("SettingsViewModel", "Successfully added folder via UseCase: $uri")
+                _effect.send(SettingsEffect.ShowToast("Folder '${Uri.decode(uri.toString())}' added."))
+            } else {
+                Log.w("SettingsViewModel", "Failed to add folder via UseCase: $uri.")
+                _effect.send(SettingsEffect.ShowToast("Could not save access for folder '${Uri.decode(uri.toString())}'."))
+            }
+        } catch (e: Exception) {
+            Log.e("SettingsViewModel", "Error adding folder $uri via UseCase", e)
+            _effect.send(SettingsEffect.ShowToast("Error adding folder: ${e.message}"))
+        } finally {
+            loadPersistedFolders() // Refresh the list from the source of truth
         }
     }
 }

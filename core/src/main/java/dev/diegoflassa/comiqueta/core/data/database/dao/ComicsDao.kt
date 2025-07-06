@@ -1,5 +1,6 @@
 package dev.diegoflassa.comiqueta.core.data.database.dao
 
+import android.net.Uri
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -28,6 +29,9 @@ interface ComicsDao {
 
     @Query("SELECT * FROM comics WHERE file_path = :filePath")
     fun getComicByPath(filePath: String): Flow<ComicEntity?>
+
+    @Query("SELECT * FROM comics WHERE file_path = :filePath LIMIT 1")
+    suspend fun getComicByFilePath(filePath: Uri): ComicEntity?
 
     @Query("SELECT * FROM comics ORDER BY title ASC")
     fun getAllComics(): Flow<List<ComicEntity>>
