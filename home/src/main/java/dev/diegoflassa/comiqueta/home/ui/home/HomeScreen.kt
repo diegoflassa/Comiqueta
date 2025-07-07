@@ -1,6 +1,5 @@
 package dev.diegoflassa.comiqueta.home.ui.home
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -30,7 +29,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -52,19 +50,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
-import dev.diegoflassa.comiqueta.core.data.repository.ComicsFolderRepository
-import dev.diegoflassa.comiqueta.core.data.repository.ComicsRepository
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.navigation.Screen
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flowOf
-import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.zIndex
+import androidx.core.net.toUri
 
 
 @Composable
@@ -74,14 +66,12 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsState()
 
     val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { treeUri: Uri? ->
         treeUri?.let {
             try {
-                // IMPORTANT: UI layer takes persistable URI permission
                 val takeFlags: Int =
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 context.contentResolver.takePersistableUriPermission(it, takeFlags)
@@ -103,7 +93,6 @@ fun HomeScreen(
     ) { isGranted: Boolean ->
         viewModel.processIntent(HomeIntent.FolderPermissionResult(isGranted))
     }
-
     LaunchedEffect(key1 = viewModel) {
         viewModel.effect.collectLatest { effect ->
             when (effect) {
@@ -113,20 +102,37 @@ fun HomeScreen(
                     Toast.LENGTH_SHORT
                 ).show()
 
-                is HomeEffect.LaunchFolderPicker -> folderPickerLauncher.launch(null) // Launch without specific URI for tree selection
+                is HomeEffect.LaunchFolderPicker -> folderPickerLauncher.launch(null)
                 is HomeEffect.RequestStoragePermission -> runtimePermissionLauncher.launch(effect.permission)
             }
         }
     }
+    val homeUIState = viewModel.uiState.collectAsState().value
+    HomeScreenContent(
+        modifier = modifier,
+        navigationViewModel = navigationViewModel,
+        uiState = homeUIState
+    ) {
+        viewModel.processIntent(it)
+    }
 
-    ComiquetaScreenContent( // Renamed to avoid conflict, and to pass state/intents
+}
+
+@Composable
+fun HomeScreenContent(
+    modifier: Modifier = Modifier,
+    navigationViewModel: NavigationViewModel? = null,
+    uiState: HomeUIState = HomeUIState(),
+    onIntent: ((HomeIntent) -> Unit)? = null,
+) {
+    ComiquetaScreenContent(
         modifier = modifier,
         uiState = uiState,
         onNavigate = { screen -> navigationViewModel?.navigateTo(screen = screen) },
-        onAddFolderClicked = { viewModel.processIntent(HomeIntent.AddFolderClicked) },
-        onSearchQueryChanged = { query -> viewModel.processIntent(HomeIntent.SearchComics(query)) },
+        onAddFolderClicked = { onIntent?.invoke(HomeIntent.AddFolderClicked) },
+        onSearchQueryChanged = { query -> onIntent?.invoke(HomeIntent.SearchComics(query)) },
         onCategorySelected = { category ->
-            viewModel.processIntent(
+            onIntent?.invoke(
                 HomeIntent.SelectCategory(
                     category
                 )
@@ -145,7 +151,7 @@ fun ComiquetaScreenContent( // This is the main UI structure, previously Comique
     onSearchQueryChanged: (String) -> Unit,
     onCategorySelected: (String) -> Unit
 ) {
-    val isEmpty = uiState.allComics.isEmpty() && !uiState.isLoading // Consider loading state
+    val isEmpty = uiState.allComics.isEmpty() && uiState.isLoading.not()
     val fabDiameter = 56.dp
     val bottomBarHeight = 64.dp
 
@@ -155,7 +161,7 @@ fun ComiquetaScreenContent( // This is the main UI structure, previously Comique
             TopAppBar(
                 title = { Text("Comiqueta", fontWeight = FontWeight.Bold) },
                 actions = {
-                    if (!isEmpty) { // Show settings only if there's content, or always if preferred
+                    if (isEmpty.not()) {
                         IconButton(onClick = { onNavigate(Screen.Settings) }) {
                             Icon(Icons.Default.Settings, "Settings")
                         }
@@ -164,94 +170,91 @@ fun ComiquetaScreenContent( // This is the main UI structure, previously Comique
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddFolderClicked, // Changed to onAddFolderClicked
-                shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.primary,
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
                 modifier = Modifier
-                    .size(fabDiameter)
-                    .shadow(10.dp, CircleShape)
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .background(Color(0xFFF0F0F0))
             ) {
-                Icon(
-                    modifier = Modifier.size(fabDiameter * 0.6f),
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Folder", // Changed description
-                    tint = Color.White,
-                )
+                if (uiState.isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else if (isEmpty) {
+                    EmptyStateContent()
+                } else {
+                    ComicsContent(
+                        uiState = uiState,
+                        onSearchQueryChanged = onSearchQueryChanged,
+                        onCategorySelected = onCategorySelected
+                    )
+                }
             }
-        },
-        floatingActionButtonPosition = FabPosition.Center,
-        bottomBar = {
-            Surface(
+
+            // BottomAppBar at bottom
+            BottomAppBar(
                 modifier = Modifier
+                    .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .height(bottomBarHeight)
                     .graphicsLayer(
                         shape = BottomBarArcShape(fabDiameter, 24.dp, 8.dp),
                         clip = true
                     ),
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = BottomAppBarDefaults.ContainerElevation
+                containerColor = MaterialTheme.colorScheme.surface,
+                tonalElevation = 4.dp,
+                content = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        BottomNavItem(
+                            Icons.Default.Home,
+                            "Home",
+                            true,
+                            { onNavigate(Screen.Home) },
+                            Modifier.weight(1f)
+                        )
+                        BottomNavItem(
+                            Icons.Default.Star,
+                            "Catalog",
+                            false,
+                            { onNavigate(Screen.Catalog) },
+                            Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(fabDiameter + 16.dp))
+                        BottomNavItem(
+                            Icons.AutoMirrored.Filled.List,
+                            "Bookmark",
+                            false,
+                            { onNavigate(Screen.Bookmark) },
+                            Modifier.weight(1f)
+                        )
+                        BottomNavItem(
+                            Icons.Default.Favorite,
+                            "Favorites",
+                            false,
+                            { onNavigate(Screen.Favorites) },
+                            Modifier.weight(1f)
+                        )
+                    }
+                }
+            )
+
+            FloatingActionButton(
+                onClick = { },
+                shape = CircleShape,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .zIndex(1F)
+                    .offset(y = (-32).dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    BottomNavItem(
-                        Icons.Default.Home,
-                        "Home",
-                        true,
-                        { onNavigate(Screen.Home) },
-                        Modifier.weight(1f)
-                    )
-                    BottomNavItem(
-                        Icons.Default.Star,
-                        "Catalog",
-                        false,
-                        { onNavigate(Screen.Catalog) },
-                        Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(fabDiameter + 16.dp))
-                    BottomNavItem(
-                        Icons.AutoMirrored.Filled.List,
-                        "Bookmark",
-                        false,
-                        { onNavigate(Screen.Bookmark) },
-                        Modifier.weight(1f)
-                    )
-                    BottomNavItem(
-                        Icons.Default.Favorite,
-                        "Favorites",
-                        false,
-                        { onNavigate(Screen.Favorites) },
-                        Modifier.weight(1f)
-                    )
-                }
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color(0xFFF0F0F0))
-        ) {
-            if (uiState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else if (isEmpty) {
-                EmptyStateContent() // Extracted empty state
-            } else {
-                ComicsContent( // Extracted comics display
-                    uiState = uiState,
-                    onSearchQueryChanged = onSearchQueryChanged,
-                    onCategorySelected = onCategorySelected
-                )
+                Icon(Icons.Filled.Add, contentDescription = "Add")
             }
         }
     }
@@ -408,9 +411,6 @@ fun ComicsContent(
     }
 }
 
-
-// ComicCoverCard, ComicListItem, BottomNavItem, BottomBarArcShape remain the same
-// ... (paste your existing ComicCoverCard, ComicListItem, BottomNavItem, BottomBarArcShape here)
 @Composable
 fun ComicCoverCard(comic: ComicEntity, modifier: Modifier = Modifier) {
     Card(
@@ -493,7 +493,7 @@ fun ComicListItem(comic: ComicEntity, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun RowScope.BottomNavItem(
+fun BottomNavItem(
     icon: ImageVector,
     label: String,
     isSelected: Boolean,
@@ -582,17 +582,8 @@ class BottomBarArcShape(
 @Composable
 fun HomeScreenPreviewEmptyMVI() {
     ComiquetaTheme {
-        val mockViewModel = HomeViewModel(
-            comicsRepository = MockComicsRepository(
-                allComicsToReturn = emptyList(),
-                favoriteComicsToReturn = emptyList(),
-                newComicsToReturn = emptyList()
-            ),
-            comicsFolderRepository = MockComicsFolderRepository(LocalContext.current),
-            applicationContext = LocalContext.current
-        )
-
-        HomeScreen(viewModel = mockViewModel)
+        val homeUIState = HomeUIState()
+        HomeScreenContent(uiState = homeUIState)
     }
 }
 
@@ -600,110 +591,27 @@ fun HomeScreenPreviewEmptyMVI() {
 @Composable
 fun HomeScreenPreviewContentMVI() {
     ComiquetaTheme {
-        val context = LocalContext.current
         val sampleComics = listOf(
             ComicEntity(
-                filePath = Uri.parse("file:///preview/1"),
+                filePath = "file:///preview/1".toUri(),
                 title = "The Hero's Journey",
-                coverPath = Uri.parse("https://placehold.co/150x220/E0E0E0/333333?text=Comic+1"),
+                coverPath = "https://placehold.co/150x220/E0E0E0/333333?text=Comic+1".toUri(),
                 isFavorite = true,
                 genre = "Action",
                 isNew = true,
                 hasBeenRead = false
             ),
             ComicEntity(
-                filePath = Uri.parse("file:///preview/2"),
+                filePath = "file:///preview/2".toUri(),
                 title = "Cosmic Saga",
-                coverPath = Uri.parse("https://placehold.co/150x220/D0D0D0/333333?text=Comic+2"),
+                coverPath = "https://placehold.co/150x220/D0D0D0/333333?text=Comic+2".toUri(),
                 isFavorite = false,
                 genre = "Sci-Fi",
                 isNew = true,
                 hasBeenRead = false
             )
         )
-
-        val mockViewModel = HomeViewModel(
-            // Provide the mock repository configured with sample data
-            comicsRepository = MockComicsRepository(
-                allComicsToReturn = sampleComics
-                // favoriteComicsToReturn and newComicsToReturn will be derived if not specified
-            ),
-            comicsFolderRepository = MockComicsFolderRepository(context),
-            applicationContext = context
-        )
-
-        HomeScreen(viewModel = mockViewModel)
+        val homeUIState = HomeUIState(allComics = sampleComics)
+        HomeScreenContent(uiState = homeUIState)
     }
-}
-
-class MockComicsRepository(
-    private val allComicsToReturn: List<ComicEntity> = emptyList(),
-    // Allow specifying separate lists for favorites and new,
-    // or let them be derived from allComicsToReturn if null.
-    private val favoriteComicsToReturn: List<ComicEntity>? = null,
-    private val newComicsToReturn: List<ComicEntity>? = null
-) : ComicsRepository(FakeComicDao()) { // Assuming ComicsRepository takes a Dao
-
-    override fun getAllComics(): Flow<List<ComicEntity>> = flowOf(allComicsToReturn)
-
-    override fun getFavoriteComics(): Flow<List<ComicEntity>> = flowOf(
-        favoriteComicsToReturn ?: allComicsToReturn.filter { it.isFavorite }
-    )
-
-    override fun getNewComics(): Flow<List<ComicEntity>> = flowOf(
-        newComicsToReturn ?: allComicsToReturn.filter { it.isNew }
-    )
-}
-
-
-class MockComicsFolderRepository(context: Context) : ComicsFolderRepository(context) {
-    override fun takePersistablePermission(uri: Uri, flags: Int): Boolean = true
-    override fun getPersistedPermissionsFlow(): StateFlow<List<Uri>> =
-        MutableStateFlow<List<Uri>>(emptyList()).asStateFlow()
-}
-
-// Fake Dao for MockComicsRepository (if ComicsRepository depends on a Dao)
-// You'll need to define FakeComicDao based on your actual ComicDao interface
-class FakeComicDao : ComicsDao {
-    override suspend fun insertComic(comic: ComicEntity) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun insertComics(comics: List<ComicEntity>) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun updateComic(comic: ComicEntity) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun deleteComic(comic: ComicEntity) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun deleteAllComics() {
-        TODO("Not yet implemented")
-    }
-
-    override fun getComicByPath(filePath: String): Flow<ComicEntity?> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getComicByFilePath(filePath: Uri): ComicEntity? {
-        TODO("Not yet implemented")
-    }
-
-    override fun getAllComics(): Flow<List<ComicEntity>> = flowOf(emptyList())
-    override fun getFavoriteComics(): Flow<List<ComicEntity>> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getNewComics(): Flow<List<ComicEntity>> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getUnreadComics(): Flow<List<ComicEntity>> {
-        TODO("Not yet implemented")
-    }
-    // ... implement other methods if ComicsRepository uses them
 }

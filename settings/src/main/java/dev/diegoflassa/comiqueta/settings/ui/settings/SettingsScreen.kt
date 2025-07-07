@@ -137,9 +137,10 @@ fun SettingsScreen(
     SettingsScreenContent(
         modifier = modifier,
         navigationViewModel = navigationViewModel,
-        settingsViewModel = settingsViewModel,
-        settingsUIState = settingsUIState
-    )
+        uiState = settingsUIState
+    ) {
+        settingsViewModel.processIntent(it)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -147,10 +148,9 @@ fun SettingsScreen(
 fun SettingsScreenContent(
     modifier: Modifier = Modifier,
     navigationViewModel: NavigationViewModel? = null,
-    settingsViewModel: SettingsViewModel? = null,
-    settingsUIState: SettingsUIState = SettingsUIState()
+    uiState: SettingsUIState = SettingsUIState(),
+    onIntent: ((SettingsIntent) -> Unit)? = null
 ) {
-    val uiState = settingsViewModel?.uiState?.collectAsState()?.value ?: settingsUIState
     BackHandler {
         navigationViewModel?.goBack()
     }
@@ -197,14 +197,14 @@ fun SettingsScreenContent(
                             permission = permission,
                             status = status,
                             onRequestPermissionClick = {
-                                settingsViewModel?.processIntent(
+                                onIntent?.invoke(
                                     SettingsIntent.RequestPermission(
                                         permission
                                     )
                                 )
                             },
                             onOpenSettingsClick = {
-                                settingsViewModel?.processIntent(SettingsIntent.OpenAppSettingsClicked)
+                                onIntent?.invoke(SettingsIntent.OpenAppSettingsClicked)
                             }
                         )
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -243,7 +243,7 @@ fun SettingsScreenContent(
                             ComicsFolderUriItem(
                                 folderUri = folderUri,
                                 onRemoveClick = {
-                                    settingsViewModel?.processIntent(
+                                    onIntent?.invoke(
                                         SettingsIntent.RemoveFolderClicked(
                                             folderUri
                                         )
@@ -392,15 +392,15 @@ fun SettingsScreenContentWithMockStateApi29Preview() { // Renamed
             // Initialize any other fields of SettingsUIState as needed for your preview
         )
 
-        SettingsScreenContent(
-            settingsUIState = mockUiState,
-            settingsViewModel = null, // No ViewModel interactions in this specific preview
-            navigationViewModel = null
-        )
+        SettingsScreenContent(uiState = mockUiState)
     }
 }
 
-@Preview(showBackground = true, name = "Settings Screen Content - Mock State API 33+", apiLevel = 33)
+@Preview(
+    showBackground = true,
+    name = "Settings Screen Content - Mock State API 33+",
+    apiLevel = 33
+)
 @Composable
 fun SettingsScreenContentWithMockStateApi33Preview() { // Added API 33+ version
     ComiquetaTheme {
@@ -417,11 +417,7 @@ fun SettingsScreenContentWithMockStateApi33Preview() { // Added API 33+ version
             isLoading = false
         )
 
-        SettingsScreenContent(
-            settingsUIState = mockUiState,
-            settingsViewModel = null,
-            navigationViewModel = null
-        )
+        SettingsScreenContent(uiState = mockUiState)
     }
 }
 

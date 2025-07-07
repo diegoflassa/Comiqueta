@@ -18,7 +18,7 @@ data class HomeUIState(
         "Horror",
         "Adventure",
         "Mystery"
-    ), // Could be dynamic
+    ),
     val showPermissionRationale: Boolean = false,
     val isFolderPermissionGranted: Boolean? = null
 )
