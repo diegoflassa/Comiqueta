@@ -50,6 +50,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 
+private const val tag = "SettingsScreen"
+
 private fun getPermissionFriendlyNameSettings(permission: String): String {
     return when (permission) {
         Manifest.permission.READ_EXTERNAL_STORAGE -> "Storage Access"
@@ -371,7 +373,12 @@ fun openAppSettings(context: Context) {
     }
 }
 
-@Preview(showBackground = true, name = "Settings Screen Content - Mock State API 29")
+@Preview(
+    name = "$tag:360x640", locale = "pt-rBR", showBackground = true, widthDp = 360, heightDp = 640
+)
+@Preview(
+    name = "$tag:720x1600", locale = "pt-rBR", showBackground = true, widthDp = 720, heightDp = 1600
+)
 @Composable
 fun SettingsScreenContentWithMockStateApi29Preview() { // Renamed
     ComiquetaTheme {
@@ -397,8 +404,19 @@ fun SettingsScreenContentWithMockStateApi29Preview() { // Renamed
 }
 
 @Preview(
+    name = "$tag:360x640",
+    locale = "pt-rBR",
     showBackground = true,
-    name = "Settings Screen Content - Mock State API 33+",
+    widthDp = 360,
+    heightDp = 640,
+    apiLevel = 33
+)
+@Preview(
+    name = "$tag:720x1600",
+    locale = "pt-rBR",
+    showBackground = true,
+    widthDp = 720,
+    heightDp = 1600,
     apiLevel = 33
 )
 @Composable
@@ -420,5 +438,3 @@ fun SettingsScreenContentWithMockStateApi33Preview() { // Added API 33+ version
         SettingsScreenContent(uiState = mockUiState)
     }
 }
-
-

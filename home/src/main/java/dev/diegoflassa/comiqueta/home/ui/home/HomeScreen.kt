@@ -29,35 +29,32 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
+import dev.diegoflassa.comiqueta.home.R
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.navigation.Screen
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.draw.paint
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
+import dev.diegoflassa.comiqueta.core.theme.LocalDimen
 
+private const val tag ="HomeScreen"
 
 @Composable
 fun HomeScreen(
@@ -66,7 +63,6 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-
     val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { treeUri: Uri? ->
@@ -80,9 +76,7 @@ fun HomeScreen(
             } catch (e: SecurityException) {
                 Log.e("HomeScreen", "Failed to take persistable URI permission by UI for $it", e)
                 Toast.makeText(
-                    context,
-                    "Failed to get long-term access to the folder.",
-                    Toast.LENGTH_LONG
+                    context, "Failed to get long-term access to the folder.", Toast.LENGTH_LONG
                 ).show()
             }
         }
@@ -97,9 +91,7 @@ fun HomeScreen(
         viewModel.effect.collectLatest { effect ->
             when (effect) {
                 is HomeEffect.ShowToast -> Toast.makeText(
-                    context,
-                    effect.message,
-                    Toast.LENGTH_SHORT
+                    context, effect.message, Toast.LENGTH_SHORT
                 ).show()
 
                 is HomeEffect.LaunchFolderPicker -> folderPickerLauncher.launch(null)
@@ -109,9 +101,7 @@ fun HomeScreen(
     }
     val homeUIState = viewModel.uiState.collectAsState().value
     HomeScreenContent(
-        modifier = modifier,
-        navigationViewModel = navigationViewModel,
-        uiState = homeUIState
+        modifier = modifier, navigationViewModel = navigationViewModel, uiState = homeUIState
     ) {
         viewModel.processIntent(it)
     }
@@ -137,13 +127,12 @@ fun HomeScreenContent(
                     category
                 )
             )
-        }
-    )
+        })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ComiquetaScreenContent( // This is the main UI structure, previously ComiquetaScreen
+fun ComiquetaScreenContent(
     modifier: Modifier = Modifier,
     uiState: HomeUIState,
     onNavigate: (Screen) -> Unit,
@@ -152,8 +141,8 @@ fun ComiquetaScreenContent( // This is the main UI structure, previously Comique
     onCategorySelected: (String) -> Unit
 ) {
     val isEmpty = uiState.allComics.isEmpty() && uiState.isLoading.not()
-    val fabDiameter = 56.dp
-    val bottomBarHeight = 64.dp
+    val fabDiameter = 52.dp
+    val bottomBarHeight = 56.dp
 
     Scaffold(
         modifier = modifier,
@@ -193,17 +182,16 @@ fun ComiquetaScreenContent( // This is the main UI structure, previously Comique
                 }
             }
 
-            // BottomAppBar at bottom
             BottomAppBar(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .height(bottomBarHeight)
-                    .graphicsLayer(
-                        shape = BottomBarArcShape(fabDiameter, 24.dp, 8.dp),
-                        clip = true
+                    .paint(
+                        painter = painterResource(id = R.drawable.background_bottom_app_bar),
+                        contentScale = ContentScale.FillBounds
                     ),
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = Color.Transparent,
                 tonalElevation = 4.dp,
                 content = {
                     Row(
@@ -215,14 +203,14 @@ fun ComiquetaScreenContent( // This is the main UI structure, previously Comique
                     ) {
                         BottomNavItem(
                             Icons.Default.Home,
-                            "Home",
+                            stringResource(R.string.home),
                             true,
                             { onNavigate(Screen.Home) },
                             Modifier.weight(1f)
                         )
                         BottomNavItem(
                             Icons.Default.Star,
-                            "Catalog",
+                            stringResource(R.string.catalog),
                             false,
                             { onNavigate(Screen.Catalog) },
                             Modifier.weight(1f)
@@ -230,29 +218,29 @@ fun ComiquetaScreenContent( // This is the main UI structure, previously Comique
                         Spacer(modifier = Modifier.width(fabDiameter + 16.dp))
                         BottomNavItem(
                             Icons.AutoMirrored.Filled.List,
-                            "Bookmark",
+                            stringResource(R.string.bookmarks),
                             false,
                             { onNavigate(Screen.Bookmark) },
                             Modifier.weight(1f)
                         )
                         BottomNavItem(
                             Icons.Default.Favorite,
-                            "Favorites",
+                            stringResource(R.string.favorites),
                             false,
                             { onNavigate(Screen.Favorites) },
                             Modifier.weight(1f)
                         )
                     }
-                }
-            )
+                })
 
-            FloatingActionButton(
+            ExtendedFloatingActionButton(
                 onClick = { },
                 shape = CircleShape,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .zIndex(1F)
-                    .offset(y = (-32).dp)
+                    .size(fabDiameter)
+                    .offset(y = (-20).dp)
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Add")
             }
@@ -284,9 +272,12 @@ fun EmptyStateContent() {
             modifier = Modifier.padding(bottom = 32.dp)
         )
         Icon(
-            Icons.Filled.Add, "Add book icon", modifier = Modifier
+            Icons.Filled.Add,
+            "Add book icon",
+            modifier = Modifier
                 .size(128.dp)
-                .padding(bottom = 16.dp), tint = Color.Gray
+                .padding(bottom = 16.dp),
+            tint = Color.Gray
         )
     }
 }
@@ -380,10 +371,8 @@ fun ComicsContent(
             remember(uiState.allComics, uiState.searchQuery, uiState.selectedCategory) {
                 uiState.allComics.filter { comic ->
                     (uiState.searchQuery.isEmpty() || comic.title?.contains(
-                        uiState.searchQuery,
-                        ignoreCase = true
-                    ) == true) &&
-                            (uiState.selectedCategory == "All" || comic.genre == uiState.selectedCategory)
+                        uiState.searchQuery, ignoreCase = true
+                    ) == true) && (uiState.selectedCategory == "All" || comic.genre == uiState.selectedCategory)
                 }
             }
 
@@ -433,9 +422,7 @@ fun ComicCoverCard(comic: ComicEntity, modifier: Modifier = Modifier) {
             )
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(
-                    text = comic.title ?: "No Title",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    text = comic.title ?: "No Title", fontWeight = FontWeight.Bold, fontSize = 14.sp
                 )
             }
         }
@@ -476,9 +463,7 @@ fun ComicListItem(comic: ComicEntity, modifier: Modifier = Modifier) {
                         fontSize = 16.sp
                     )
                     Text(
-                        text = comic.genre ?: "No Genre",
-                        fontSize = 14.sp,
-                        color = Color.Gray
+                        text = comic.genre ?: "No Genre", fontSize = 14.sp, color = Color.Gray
                     )
                 }
             }
@@ -500,6 +485,7 @@ fun BottomNavItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val bottomAppBarIconSize = LocalDimen.current.bottomAppBarIconSize
     Column(
         modifier = modifier
             .clickable(onClick = onClick)
@@ -508,10 +494,10 @@ fun BottomNavItem(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
+            modifier = Modifier.size(bottomAppBarIconSize),
             imageVector = icon,
             contentDescription = label,
             tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
-            modifier = Modifier.size(24.dp)
         )
         Text(
             text = label,
@@ -521,64 +507,12 @@ fun BottomNavItem(
     }
 }
 
-class BottomBarArcShape(
-    private val fabDiameter: Dp,
-    private val fabCradleRoundedCornerRadius: Dp = 16.dp,
-    private val fabMargin: Dp = 8.dp
-) : Shape {
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
-    ): Outline {
-        return Outline.Generic(Path().apply {
-            val fabDiameterPx = with(density) { fabDiameter.toPx() }
-            val cornerRadiusPx = with(density) { fabCradleRoundedCornerRadius.toPx() }
-            val fabMarginPx = with(density) { fabMargin.toPx() }
-
-            val barWidth = size.width
-            val barHeight = size.height
-
-            val cradleDepthFromTop = (fabDiameterPx / 2f) + fabMarginPx
-            val cradleWidth = fabDiameterPx + (fabMarginPx * 2f)
-
-            val cradleStartX = (barWidth - cradleWidth) / 2f
-            val cradleEndX = cradleStartX + cradleWidth
-
-            moveTo(0f, 0f)
-            lineTo(cradleStartX - cornerRadiusPx, 0f)
-
-            quadraticTo(
-                x1 = cradleStartX, y1 = 0f,
-                x2 = cradleStartX, y2 = cornerRadiusPx
-            )
-
-            arcTo(
-                rect = Rect(
-                    left = cradleStartX,
-                    top = -cradleDepthFromTop,
-                    right = cradleEndX,
-                    bottom = cradleDepthFromTop
-                ),
-                startAngleDegrees = 180f,
-                sweepAngleDegrees = -180f,
-                forceMoveTo = false
-            )
-
-            quadraticTo(
-                x1 = cradleEndX, y1 = 0f,
-                x2 = cradleEndX + cornerRadiusPx, y2 = 0f
-            )
-
-            lineTo(barWidth, 0f)
-            lineTo(barWidth, barHeight)
-            lineTo(0f, barHeight)
-            close()
-        })
-    }
-}
-
-@Preview(showBackground = true, name = "Home Screen Empty MVI")
+@Preview(
+    name = "$tag:360x640", locale = "pt-rBR", showBackground = true, widthDp = 360, heightDp = 640
+)
+@Preview(
+    name = "$tag:720x1600", locale = "pt-rBR", showBackground = true, widthDp = 720, heightDp = 1600
+)
 @Composable
 fun HomeScreenPreviewEmptyMVI() {
     ComiquetaTheme {
@@ -587,7 +521,12 @@ fun HomeScreenPreviewEmptyMVI() {
     }
 }
 
-@Preview(showBackground = true, name = "Home Screen Content MVI")
+@Preview(
+    name = "$tag:360x640", locale = "pt-rBR", showBackground = true, widthDp = 360, heightDp = 640
+)
+@Preview(
+    name = "$tag:720x1600", locale = "pt-rBR", showBackground = true, widthDp = 720, heightDp = 1600
+)
 @Composable
 fun HomeScreenPreviewContentMVI() {
     ComiquetaTheme {
@@ -600,8 +539,7 @@ fun HomeScreenPreviewContentMVI() {
                 genre = "Action",
                 isNew = true,
                 hasBeenRead = false
-            ),
-            ComicEntity(
+            ), ComicEntity(
                 filePath = "file:///preview/2".toUri(),
                 title = "Cosmic Saga",
                 coverPath = "https://placehold.co/150x220/D0D0D0/333333?text=Comic+2".toUri(),

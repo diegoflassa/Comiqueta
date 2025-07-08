@@ -45,6 +45,7 @@ fun ComiquetaTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    val dimen = LocalDimen.current
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current

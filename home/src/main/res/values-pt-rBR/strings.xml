@@ -1,2 +1,6 @@
 <resources>
+    <string name="home">Início</string>
+    <string name="catalog">Catálogo</string>
+    <string name="bookmarks">Favoritos</string>
+    <string name="favorites">Coleções</string>
 </resources>
