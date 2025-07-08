@@ -374,10 +374,32 @@ fun openAppSettings(context: Context) {
 }
 
 @Preview(
-    name = "$tag:360x640", locale = "pt-rBR", showBackground = true, widthDp = 360, heightDp = 640
+    name = "$tag:360x640",
+    locale = "pt-rBR",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 640
 )
 @Preview(
-    name = "$tag:720x1600", locale = "pt-rBR", showBackground = true, widthDp = 720, heightDp = 1600
+    name = "$tag:720x1600",
+    locale = "pt-rBR",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260
+)
+@Preview(
+    name = "${tag}:720x1600",
+    locale = "en-rUS",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260
+)
+@Preview(
+    name = "${tag}:720x1600",
+    locale = "de",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260
 )
 @Composable
 fun SettingsScreenContentWithMockStateApi29Preview() { // Renamed
@@ -415,8 +437,24 @@ fun SettingsScreenContentWithMockStateApi29Preview() { // Renamed
     name = "$tag:720x1600",
     locale = "pt-rBR",
     showBackground = true,
-    widthDp = 720,
-    heightDp = 1600,
+    widthDp = 540,
+    heightDp = 1260,
+    apiLevel = 33
+)
+@Preview(
+    name = "$tag:720x1600",
+    locale = "en-rUS",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260,
+    apiLevel = 33
+)
+@Preview(
+    name = "$tag:720x1600",
+    locale = "de",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260,
     apiLevel = 33
 )
 @Composable

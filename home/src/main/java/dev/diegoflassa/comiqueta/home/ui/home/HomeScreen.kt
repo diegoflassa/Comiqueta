@@ -53,8 +53,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
 import dev.diegoflassa.comiqueta.core.theme.LocalDimen
+import dev.diegoflassa.comiqueta.core.theme.bottomAppBar
 
-private const val tag ="HomeScreen"
+private const val tag = "HomeScreen"
 
 @Composable
 fun HomeScreen(
@@ -108,37 +109,13 @@ fun HomeScreen(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenContent(
     modifier: Modifier = Modifier,
     navigationViewModel: NavigationViewModel? = null,
     uiState: HomeUIState = HomeUIState(),
     onIntent: ((HomeIntent) -> Unit)? = null,
-) {
-    ComiquetaScreenContent(
-        modifier = modifier,
-        uiState = uiState,
-        onNavigate = { screen -> navigationViewModel?.navigateTo(screen = screen) },
-        onAddFolderClicked = { onIntent?.invoke(HomeIntent.AddFolderClicked) },
-        onSearchQueryChanged = { query -> onIntent?.invoke(HomeIntent.SearchComics(query)) },
-        onCategorySelected = { category ->
-            onIntent?.invoke(
-                HomeIntent.SelectCategory(
-                    category
-                )
-            )
-        })
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ComiquetaScreenContent(
-    modifier: Modifier = Modifier,
-    uiState: HomeUIState,
-    onNavigate: (Screen) -> Unit,
-    onAddFolderClicked: () -> Unit,
-    onSearchQueryChanged: (String) -> Unit,
-    onCategorySelected: (String) -> Unit
 ) {
     val isEmpty = uiState.allComics.isEmpty() && uiState.isLoading.not()
     val fabDiameter = 52.dp
@@ -151,7 +128,7 @@ fun ComiquetaScreenContent(
                 title = { Text("Comiqueta", fontWeight = FontWeight.Bold) },
                 actions = {
                     if (isEmpty.not()) {
-                        IconButton(onClick = { onNavigate(Screen.Settings) }) {
+                        IconButton(onClick = { navigationViewModel?.navigateTo(Screen.Settings) }) {
                             Icon(Icons.Default.Settings, "Settings")
                         }
                     }
@@ -176,8 +153,7 @@ fun ComiquetaScreenContent(
                 } else {
                     ComicsContent(
                         uiState = uiState,
-                        onSearchQueryChanged = onSearchQueryChanged,
-                        onCategorySelected = onCategorySelected
+                        onIntent = onIntent,
                     )
                 }
             }
@@ -205,14 +181,14 @@ fun ComiquetaScreenContent(
                             Icons.Default.Home,
                             stringResource(R.string.home),
                             true,
-                            { onNavigate(Screen.Home) },
+                            { navigationViewModel?.navigateTo(Screen.Home) },
                             Modifier.weight(1f)
                         )
                         BottomNavItem(
                             Icons.Default.Star,
                             stringResource(R.string.catalog),
                             false,
-                            { onNavigate(Screen.Catalog) },
+                            { navigationViewModel?.navigateTo(Screen.Catalog) },
                             Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(fabDiameter + 16.dp))
@@ -220,14 +196,14 @@ fun ComiquetaScreenContent(
                             Icons.AutoMirrored.Filled.List,
                             stringResource(R.string.bookmarks),
                             false,
-                            { onNavigate(Screen.Bookmark) },
+                            { navigationViewModel?.navigateTo(Screen.Bookmark) },
                             Modifier.weight(1f)
                         )
                         BottomNavItem(
                             Icons.Default.Favorite,
                             stringResource(R.string.favorites),
                             false,
-                            { onNavigate(Screen.Favorites) },
+                            { navigationViewModel?.navigateTo(Screen.Favorites) },
                             Modifier.weight(1f)
                         )
                     }
@@ -285,8 +261,7 @@ fun EmptyStateContent() {
 @Composable
 fun ComicsContent(
     uiState: HomeUIState,
-    onSearchQueryChanged: (String) -> Unit,
-    onCategorySelected: (String) -> Unit
+    onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -297,7 +272,7 @@ fun ComicsContent(
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = uiState.searchQuery,
-            onValueChange = onSearchQueryChanged,
+            onValueChange = { onIntent?.invoke(HomeIntent.SearchComics(it)) },
             label = { Text("Search Comics") },
             leadingIcon = { Icon(Icons.Default.Search, "Search") },
             modifier = Modifier.fillMaxWidth(),
@@ -315,7 +290,7 @@ fun ComicsContent(
         ) {
             items(uiState.categories) { category ->
                 Button(
-                    onClick = { onCategorySelected(category) },
+                    onClick = { onIntent?.invoke(HomeIntent.SelectCategory(category)) },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (uiState.selectedCategory == category) MaterialTheme.colorScheme.primary else Color(
                             0xFFE0E0E0
@@ -501,6 +476,7 @@ fun BottomNavItem(
         )
         Text(
             text = label,
+            style = bottomAppBar,
             fontSize = 10.sp,
             color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
         )
@@ -508,10 +484,32 @@ fun BottomNavItem(
 }
 
 @Preview(
-    name = "$tag:360x640", locale = "pt-rBR", showBackground = true, widthDp = 360, heightDp = 640
+    name = "$tag:360x640",
+    locale = "pt-rBR",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 640
 )
 @Preview(
-    name = "$tag:720x1600", locale = "pt-rBR", showBackground = true, widthDp = 720, heightDp = 1600
+    name = "$tag:720x1600",
+    locale = "pt-rBR",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260
+)
+@Preview(
+    name = "$tag:720x1600",
+    locale = "en-rUS",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260
+)
+@Preview(
+    name = "$tag:720x1600",
+    locale = "de",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260
 )
 @Composable
 fun HomeScreenPreviewEmptyMVI() {
@@ -522,10 +520,32 @@ fun HomeScreenPreviewEmptyMVI() {
 }
 
 @Preview(
-    name = "$tag:360x640", locale = "pt-rBR", showBackground = true, widthDp = 360, heightDp = 640
+    name = "$tag:360x640",
+    locale = "pt-rBR",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 640
 )
 @Preview(
-    name = "$tag:720x1600", locale = "pt-rBR", showBackground = true, widthDp = 720, heightDp = 1600
+    name = "$tag:720x1600",
+    locale = "pt-rBR",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260
+)
+@Preview(
+    name = "$tag:720x1600",
+    locale = "en-rUS",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260
+)
+@Preview(
+    name = "$tag:720x1600",
+    locale = "de",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260
 )
 @Composable
 fun HomeScreenPreviewContentMVI() {
