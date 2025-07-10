@@ -18,6 +18,9 @@ kotlin {
 }
 
 dependencies {
+    //Common
+    implementation(libs.ui.text.google.fonts)
+
     //Common Testing
     testImplementation(libs.junit)
     testImplementation(libs.ax.test.ext.junit.ktx)

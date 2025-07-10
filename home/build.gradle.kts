@@ -57,7 +57,7 @@ dependencies {
     implementation(libs.ax.navigation3.runtime)
     implementation(libs.ax.navigation3.ui)
     implementation(libs.ax.navigation3.viewmodel)
-    implementation(libs.ax.navigation3.adaptive)
+    //implementation(libs.ax.navigation3.adaptive)
 
     //Firebase
     implementation(platform(libs.com.google.firebase.bom))

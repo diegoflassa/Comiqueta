@@ -15,7 +15,7 @@ import com.microsoft.clarity.ClarityConfig
 import dagger.hilt.android.AndroidEntryPoint
 import dev.diegoflassa.comiqueta.core.data.config.IConfig
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
-import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.navigation.NavDisplay
 import javax.inject.Inject
@@ -28,13 +28,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setTheme(com.google.android.material.R.style.Theme_Material3_DayNight_NoActionBar)
         MobileAds.initialize(this) {}
         enableEdgeToEdge()
-        setTheme(R.style.Theme_Comiqueta)
 
         setContent {
             val navigationViewModel: NavigationViewModel = hiltActivityViewModel()
-            ComiquetaTheme {
+            ComiquetaThemeContent {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

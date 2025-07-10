@@ -21,6 +21,7 @@ perf-plugin = "1.4.2"
 #Common
 core-ktx = "1.16.0"
 material = "1.12.0"
+ui-text-google-fonts = "1.8.3"
 
 #Common Testing
 junit = "4.13.2"
@@ -52,7 +53,7 @@ org-mockito-android = "5.18.0"
 ax-navigation3-runtime = "1.0.0-alpha05"
 ax-navigation3-ui = "1.0.0-alpha05"
 ax-navigation3-viewmodel = "1.0.0-alpha03"
-ax-navigation3-adaptive = "1.0.0-SNAPSHOT"
+#ax-navigation3-adaptive = "1.0.0-SNAPSHOT"
 
 #Room
 room-runtime = "2.7.2"
@@ -150,7 +151,6 @@ org-jetbrains-kotlinx-kover = "0.9.1"
 #Common
 com-google-devtools-ksp = "2.2.0-2.0.2"
 
-
 [libraries]
 
 #build-logic
@@ -166,6 +166,7 @@ perf-plugin-library = { module = "com.google.firebase:perf-plugin", version.ref 
 #Common
 ax-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 com-google-android-material = { module = "com.google.android.material:material", version.ref = "material" }
+ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "ui-text-google-fonts" }
 
 #Common Testing
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -217,7 +218,7 @@ ax-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.re
 
 ##Optional add-on libraries for ViewModel integration and adaptive layouts
 ax-navigation3-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "ax-navigation3-viewmodel" }
-ax-navigation3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation3", version.ref = "ax-navigation3-adaptive" }
+#ax-navigation3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation3", version.ref = "ax-navigation3-adaptive" }
 
 #Room
 ax-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room-runtime" }
@@ -316,7 +317,6 @@ com-google-auto-value = { module = "com.google.auto.value:auto-value", version.r
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services-ads" }
 
 io-coil-kt-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "io-coil-kt-coil-compose" }
-
 
 [plugins]
 

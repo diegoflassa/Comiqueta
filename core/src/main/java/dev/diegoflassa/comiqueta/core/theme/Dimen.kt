@@ -4,8 +4,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-val LocalDimen = staticCompositionLocalOf { Dimen() }
+val LocalComiquetaDimen = staticCompositionLocalOf { ComiquetaDimen() }
 
-data class Dimen(
+data class ComiquetaDimen(
     val bottomAppBarIconSize: Dp = 19.dp
 )

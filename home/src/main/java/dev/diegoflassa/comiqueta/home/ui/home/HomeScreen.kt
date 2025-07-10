@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package dev.diegoflassa.comiqueta.home.ui.home
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -10,6 +13,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -45,15 +49,16 @@ import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.navigation.Screen
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
+import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.draw.paint
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
-import dev.diegoflassa.comiqueta.core.theme.LocalDimen
-import dev.diegoflassa.comiqueta.core.theme.bottomAppBar
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
+
+private const val COMIC_COVERT_ASPECT_RATIO = 2f / 3f
 
 private const val tag = "HomeScreen"
 
@@ -109,7 +114,6 @@ fun HomeScreen(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenContent(
     modifier: Modifier = Modifier,
@@ -118,11 +122,11 @@ fun HomeScreenContent(
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
     val isEmpty = uiState.allComics.isEmpty() && uiState.isLoading.not()
-    val fabDiameter = 52.dp
-    val bottomBarHeight = 56.dp
+    val fabDiameter = 48.dp.scaled()
+    val bottomBarHeight = 50.dp.scaled()
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = { Text("Comiqueta", fontWeight = FontWeight.Bold) },
@@ -133,16 +137,20 @@ fun HomeScreenContent(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = ComiquetaTheme.colorScheme.surface)
             )
         },
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
-                    .background(Color(0xFFF0F0F0))
+                    .padding(bottom = paddingValues.calculateBottomPadding())
+                    .background(ComiquetaTheme.colorScheme.surfaceContainer)
             ) {
                 if (uiState.isLoading) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -163,17 +171,17 @@ fun HomeScreenContent(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .height(bottomBarHeight)
-                    .paint(
-                        painter = painterResource(id = R.drawable.background_bottom_app_bar),
-                        contentScale = ContentScale.FillBounds
+                    .graphicsLayer(
+                        shape = ComiquetaTheme.shapes.bottomBarShape,
+                        clip = true
                     ),
-                containerColor = Color.Transparent,
-                tonalElevation = 4.dp,
+                containerColor = ComiquetaTheme.colorScheme.primaryContainer,
+                tonalElevation = 4.dp.scaled(),
                 content = {
                     Row(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 8.dp),
+                            .padding(horizontal = 8.dp.scaled()),
                         horizontalArrangement = Arrangement.SpaceAround,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -191,7 +199,7 @@ fun HomeScreenContent(
                             { navigationViewModel?.navigateTo(Screen.Catalog) },
                             Modifier.weight(1f)
                         )
-                        Spacer(modifier = Modifier.width(fabDiameter + 16.dp))
+                        Spacer(modifier = Modifier.width(fabDiameter + 16.dp.scaled()))
                         BottomNavItem(
                             Icons.AutoMirrored.Filled.List,
                             stringResource(R.string.bookmarks),
@@ -210,13 +218,14 @@ fun HomeScreenContent(
                 })
 
             ExtendedFloatingActionButton(
-                onClick = { },
-                shape = CircleShape,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .zIndex(1F)
                     .size(fabDiameter)
-                    .offset(y = (-20).dp)
+                    .offset(y = (-17).dp.scaled()),
+                onClick = { onIntent?.invoke(HomeIntent.AddFolderClicked) },
+                shape = CircleShape,
+                containerColor = ComiquetaTheme.colorScheme.primaryContainer,
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Add")
             }
@@ -225,34 +234,34 @@ fun HomeScreenContent(
 }
 
 @Composable
-fun EmptyStateContent() {
+fun EmptyStateContent(modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp.scaled()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
             "No comics found yet.",
-            fontSize = 18.sp,
+            fontSize = 18.sp.scaled(),
             textAlign = TextAlign.Center,
             color = Color.DarkGray,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp.scaled())
         )
         Text(
             "Click the '+' button to select a folder with your comics.",
-            fontSize = 16.sp,
+            fontSize = 16.sp.scaled(),
             textAlign = TextAlign.Center,
             color = Color.Gray,
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(bottom = 32.dp.scaled())
         )
         Icon(
             Icons.Filled.Add,
             "Add book icon",
             modifier = Modifier
-                .size(128.dp)
-                .padding(bottom = 16.dp),
+                .size(128.dp.scaled())
+                .padding(bottom = 16.dp.scaled()),
             tint = Color.Gray
         )
     }
@@ -260,16 +269,17 @@ fun EmptyStateContent() {
 
 @Composable
 fun ComicsContent(
+    modifier: Modifier = Modifier,
     uiState: HomeUIState,
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp.scaled())
             .verticalScroll(rememberScrollState()) // Consider if LazyColumn is better for overall screen
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp.scaled()))
         OutlinedTextField(
             value = uiState.searchQuery,
             onValueChange = { onIntent?.invoke(HomeIntent.SearchComics(it)) },
@@ -277,69 +287,72 @@ fun ComicsContent(
             leadingIcon = { Icon(Icons.Default.Search, "Search") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(8.dp.scaled()),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                focusedBorderColor = ComiquetaTheme.colorScheme.primary,
                 unfocusedBorderColor = Color.LightGray
             )
         )
-        Spacer(modifier = Modifier.height(16.dp)) // Reduced from 24dp
-        LazyRow( // For categories
+        Spacer(modifier = Modifier.height(16.dp.scaled()))
+        LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp) // Spacing between buttons
+            horizontalArrangement = Arrangement.spacedBy(8.dp.scaled())
         ) {
             items(uiState.categories) { category ->
                 Button(
                     onClick = { onIntent?.invoke(HomeIntent.SelectCategory(category)) },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (uiState.selectedCategory == category) MaterialTheme.colorScheme.primary else Color(
+                        containerColor = if (uiState.selectedCategory == category) ComiquetaTheme.colorScheme.primary else Color(
                             0xFFE0E0E0
                         ),
                         contentColor = if (uiState.selectedCategory == category) Color.White else Color.DarkGray
                     ),
                     shape = RoundedCornerShape(50),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                    contentPadding = PaddingValues(
+                        horizontal = 16.dp.scaled(),
+                        vertical = 8.dp.scaled()
+                    )
                 ) {
-                    Text(text = category, fontSize = 12.sp)
+                    Text(text = category, fontSize = 12.sp.scaled())
                 }
             }
         }
-        Spacer(modifier = Modifier.height(24.dp)) // Reduced from 32dp
+        Spacer(modifier = Modifier.height(24.dp.scaled())) // Reduced from 32dp.scaled()
 
         if (uiState.latestComics.isNotEmpty()) {
             Text(
                 "Latest",
-                fontSize = 18.sp,
+                fontSize = 18.sp.scaled(),
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            ) // Reduced bottom from 16dp
+                modifier = Modifier.padding(bottom = 8.dp.scaled())
+            ) // Reduced bottom from 16dp.scaled()
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 4.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp.scaled()),
+                contentPadding = PaddingValues(horizontal = 4.dp.scaled())
             ) {
                 items(uiState.latestComics) { comic -> ComicCoverCard(comic = comic) }
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp.scaled()))
         }
 
         if (uiState.favoriteComics.isNotEmpty()) {
             Text(
                 "Favorites",
-                fontSize = 18.sp,
+                fontSize = 18.sp.scaled(),
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp.scaled())
             )
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 4.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp.scaled()),
+                contentPadding = PaddingValues(horizontal = 4.dp.scaled())
             ) {
                 items(uiState.favoriteComics) { comic -> ComicCoverCard(comic = comic) }
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp.scaled()))
         }
 
-        Text("All Comics", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(8.dp))
+        Text("All Comics", fontSize = 18.sp.scaled(), fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(8.dp.scaled()))
 
         // Filtered list for "All Comics" section
         val filteredComics =
@@ -355,7 +368,7 @@ fun ComicsContent(
             Text(
                 "No comics match your current filter.",
                 modifier = Modifier
-                    .padding(vertical = 16.dp)
+                    .padding(vertical = 16.dp.scaled())
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 color = Color.Gray
@@ -367,11 +380,11 @@ fun ComicsContent(
             Column(modifier = Modifier.fillMaxWidth()) { // No fixed height, let it expand in verticalScroll
                 filteredComics.forEach { comic ->
                     ComicListItem(comic = comic)
-                    Spacer(modifier = Modifier.height(8.dp)) // Spacing between items
+                    Spacer(modifier = Modifier.height(8.dp.scaled())) // Spacing between items
                 }
             }
         }
-        Spacer(modifier = Modifier.height(24.dp)) // Footer spacing
+        Spacer(modifier = Modifier.height(24.dp.scaled())) // Footer spacing
     }
 }
 
@@ -379,28 +392,22 @@ fun ComicsContent(
 fun ComicCoverCard(comic: ComicEntity, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
-            .width(120.dp)
-            .height(200.dp)
-            .padding(4.dp),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .height(200.dp.scaled())
+            .aspectRatio(COMIC_COVERT_ASPECT_RATIO)
+            .padding(4.dp.scaled()),
+        shape = RoundedCornerShape(8.dp.scaled()),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp.scaled())
     ) {
-        Column {
-            Image(
-                painter = rememberAsyncImagePainter(comic.coverPath),
-                contentDescription = comic.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(140.dp)
-                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-            )
-            Column(modifier = Modifier.padding(8.dp)) {
-                Text(
-                    text = comic.title ?: "No Title", fontWeight = FontWeight.Bold, fontSize = 14.sp
-                )
-            }
-        }
+        Image(
+            painter = rememberAsyncImagePainter(comic.coverPath),
+            contentDescription = comic.title,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(140.dp.scaled())
+                .aspectRatio(COMIC_COVERT_ASPECT_RATIO)
+                .clip(RoundedCornerShape(topStart = 8.dp.scaled(), topEnd = 8.dp.scaled()))
+        )
     }
 }
 
@@ -409,14 +416,14 @@ fun ComicListItem(comic: ComicEntity, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 4.dp),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .padding(horizontal = 4.dp.scaled(), vertical = 4.dp.scaled()),
+        shape = RoundedCornerShape(8.dp.scaled()),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp.scaled())
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(8.dp.scaled()),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -426,27 +433,29 @@ fun ComicListItem(comic: ComicEntity, modifier: Modifier = Modifier) {
                     contentDescription = comic.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .size(64.dp.scaled())
+                        .clip(RoundedCornerShape(8.dp.scaled()))
                         .background(Color.LightGray)
                 )
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(16.dp.scaled()))
                 Column {
                     Text(
                         text = comic.title ?: "No Title",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 16.sp.scaled()
                     )
                     Text(
-                        text = comic.genre ?: "No Genre", fontSize = 14.sp, color = Color.Gray
+                        text = comic.genre ?: "No Genre",
+                        fontSize = 14.sp.scaled(),
+                        color = Color.Gray
                     )
                 }
             }
             Icon(
                 imageVector = if (comic.isFavorite) Icons.Filled.Favorite else Icons.Default.Star,
                 contentDescription = if (comic.isFavorite) "Favorite" else "Not Favorite",
-                tint = if (comic.isFavorite) MaterialTheme.colorScheme.primary else Color.Gray,
-                modifier = Modifier.size(20.dp)
+                tint = if (comic.isFavorite) ComiquetaTheme.colorScheme.primary else Color.Gray,
+                modifier = Modifier.size(20.dp.scaled())
             )
         }
     }
@@ -460,11 +469,11 @@ fun BottomNavItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val bottomAppBarIconSize = LocalDimen.current.bottomAppBarIconSize
+    val bottomAppBarIconSize = ComiquetaTheme.dimen.bottomAppBarIconSize.scaled()
     Column(
         modifier = modifier
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp, horizontal = 12.dp),
+            .wrapContentHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -472,40 +481,51 @@ fun BottomNavItem(
             modifier = Modifier.size(bottomAppBarIconSize),
             imageVector = icon,
             contentDescription = label,
-            tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
+            tint = if (isSelected) ComiquetaTheme.colorScheme.primary else Color.Gray,
         )
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = label,
-            style = bottomAppBar,
-            fontSize = 10.sp,
-            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
+            style = ComiquetaTheme.typography.bottomAppBar.scaled(),
+            color = if (isSelected) ComiquetaTheme.colorScheme.primary else Color.Gray,
+            maxLines = 2
         )
     }
 }
 
 @Preview(
-    name = "$tag:360x640",
+    name = "${tag}Empty:360x640",
     locale = "pt-rBR",
     showBackground = true,
     widthDp = 360,
-    heightDp = 640
+    heightDp = 640,
+    showSystemUi = true
 )
 @Preview(
-    name = "$tag:720x1600",
+    name = "${tag}Empty:540x1260",
     locale = "pt-rBR",
     showBackground = true,
     widthDp = 540,
-    heightDp = 1260
+    heightDp = 1260,
+    showSystemUi = true
 )
 @Preview(
-    name = "$tag:720x1600",
+    name = "${tag}Empty:540x1260 Dark",
+    locale = "pt-rBR",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Preview(
+    name = "${tag}Empty:540x1260",
     locale = "en-rUS",
     showBackground = true,
     widthDp = 540,
     heightDp = 1260
 )
 @Preview(
-    name = "$tag:720x1600",
+    name = "${tag}Empty:540x1260",
     locale = "de",
     showBackground = true,
     widthDp = 540,
@@ -513,7 +533,7 @@ fun BottomNavItem(
 )
 @Composable
 fun HomeScreenPreviewEmptyMVI() {
-    ComiquetaTheme {
+    ComiquetaThemeContent {
         val homeUIState = HomeUIState()
         HomeScreenContent(uiState = homeUIState)
     }
@@ -527,21 +547,29 @@ fun HomeScreenPreviewEmptyMVI() {
     heightDp = 640
 )
 @Preview(
-    name = "$tag:720x1600",
+    name = "$tag:540x1260",
     locale = "pt-rBR",
     showBackground = true,
     widthDp = 540,
     heightDp = 1260
 )
 @Preview(
-    name = "$tag:720x1600",
+    name = "$tag:540x1260 Dark",
+    locale = "pt-rBR",
+    showBackground = true,
+    widthDp = 540,
+    heightDp = 1260,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Preview(
+    name = "$tag:540x1260",
     locale = "en-rUS",
     showBackground = true,
     widthDp = 540,
     heightDp = 1260
 )
 @Preview(
-    name = "$tag:720x1600",
+    name = "$tag:540x1260",
     locale = "de",
     showBackground = true,
     widthDp = 540,
@@ -549,7 +577,7 @@ fun HomeScreenPreviewEmptyMVI() {
 )
 @Composable
 fun HomeScreenPreviewContentMVI() {
-    ComiquetaTheme {
+    ComiquetaThemeContent {
         val sampleComics = listOf(
             ComicEntity(
                 filePath = "file:///preview/1".toUri(),

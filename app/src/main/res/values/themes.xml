@@ -12,6 +12,8 @@
         <item name="postSplashScreenTheme">@style/Theme.Comiqueta</item>
     </style>
 
-    <style name="Theme.Comiqueta" parent="Theme.Material3.DayNight.NoActionBar" />
+    <style name="Theme.Comiqueta" parent="Theme.Material3.DayNight.NoActionBar" >
+        <item name="windowActionBar">false</item>
+    </style>
 
 </resources>
