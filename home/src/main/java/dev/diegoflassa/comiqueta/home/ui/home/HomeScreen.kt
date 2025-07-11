@@ -14,17 +14,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -53,9 +56,12 @@ import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
+import coil.compose.AsyncImage
+import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 
 private const val COMIC_COVERT_ASPECT_RATIO = 2f / 3f
@@ -273,190 +279,155 @@ fun ComicsContent(
     uiState: HomeUIState,
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
-    Column(
-        modifier = modifier
+    LazyColumn(
+        modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp.scaled())
-            .verticalScroll(rememberScrollState()) // Consider if LazyColumn is better for overall screen
+            .background(Color(0xFF222222)),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(16.dp.scaled()))
-        OutlinedTextField(
-            value = uiState.searchQuery,
-            onValueChange = { onIntent?.invoke(HomeIntent.SearchComics(it)) },
-            label = { Text("Search Comics") },
-            leadingIcon = { Icon(Icons.Default.Search, "Search") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            shape = RoundedCornerShape(8.dp.scaled()),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = ComiquetaTheme.colorScheme.primary,
-                unfocusedBorderColor = Color.LightGray
-            )
-        )
-        Spacer(modifier = Modifier.height(16.dp.scaled()))
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp.scaled())
-        ) {
-            items(uiState.categories) { category ->
-                Button(
-                    onClick = { onIntent?.invoke(HomeIntent.SelectCategory(category)) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (uiState.selectedCategory == category) ComiquetaTheme.colorScheme.primary else Color(
-                            0xFFE0E0E0
-                        ),
-                        contentColor = if (uiState.selectedCategory == category) Color.White else Color.DarkGray
-                    ),
-                    shape = RoundedCornerShape(50),
-                    contentPadding = PaddingValues(
-                        horizontal = 16.dp.scaled(),
-                        vertical = 8.dp.scaled()
+        item {
+            // Search Bar
+            OutlinedTextField(
+                value = "",
+                onValueChange = { /* TODO: Handle search input */ },
+                placeholder = { Text("Search", color = Color.Gray) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = "Search Icon",
+                        tint = Color.Gray
                     )
-                ) {
-                    Text(text = category, fontSize = 12.sp.scaled())
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(24.dp.scaled())) // Reduced from 32dp.scaled()
-
-        if (uiState.latestComics.isNotEmpty()) {
-            Text(
-                "Latest",
-                fontSize = 18.sp.scaled(),
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp.scaled())
-            ) // Reduced bottom from 16dp.scaled()
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp.scaled()),
-                contentPadding = PaddingValues(horizontal = 4.dp.scaled())
-            ) {
-                items(uiState.latestComics) { comic -> ComicCoverCard(comic = comic) }
-            }
-            Spacer(modifier = Modifier.height(24.dp.scaled()))
-        }
-
-        if (uiState.favoriteComics.isNotEmpty()) {
-            Text(
-                "Favorites",
-                fontSize = 18.sp.scaled(),
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp.scaled())
-            )
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp.scaled()),
-                contentPadding = PaddingValues(horizontal = 4.dp.scaled())
-            ) {
-                items(uiState.favoriteComics) { comic -> ComicCoverCard(comic = comic) }
-            }
-            Spacer(modifier = Modifier.height(24.dp.scaled()))
-        }
-
-        Text("All Comics", fontSize = 18.sp.scaled(), fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(8.dp.scaled()))
-
-        // Filtered list for "All Comics" section
-        val filteredComics =
-            remember(uiState.allComics, uiState.searchQuery, uiState.selectedCategory) {
-                uiState.allComics.filter { comic ->
-                    (uiState.searchQuery.isEmpty() || comic.title?.contains(
-                        uiState.searchQuery, ignoreCase = true
-                    ) == true) && (uiState.selectedCategory == "All" || comic.genre == uiState.selectedCategory)
-                }
-            }
-
-        if (filteredComics.isEmpty() && (uiState.searchQuery.isNotEmpty() || uiState.selectedCategory != "All")) {
-            Text(
-                "No comics match your current filter.",
+                },
                 modifier = Modifier
-                    .padding(vertical = 16.dp.scaled())
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                color = Color.Gray
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF444444)),
+                colors = OutlinedTextFieldDefaults.colors().copy(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    cursorColor = Color.White,
+                    focusedTextColor = Color.White
+                )
             )
-        } else {
-            // This LazyColumn should not be nested in a verticalScroll if it's meant to scroll independently.
-            // For now, giving it a fixed height to prevent crashes in a verticalScroll.
-            // A better approach is to make the whole screen a LazyColumn if possible.
-            Column(modifier = Modifier.fillMaxWidth()) { // No fixed height, let it expand in verticalScroll
-                filteredComics.forEach { comic ->
-                    ComicListItem(comic = comic)
-                    Spacer(modifier = Modifier.height(8.dp.scaled())) // Spacing between items
+        }
+        val categories = uiState.categories
+        item {
+            // Categories
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                categories.forEach { category ->
+                    Text(
+                        text = category.name ?: "",
+                        color = if (category.name == "All") MaterialTheme.colorScheme.primary else Color.Gray,
+                        fontWeight = if (category.name == "All") FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
                 }
             }
         }
-        Spacer(modifier = Modifier.height(24.dp.scaled())) // Footer spacing
-    }
-}
-
-@Composable
-fun ComicCoverCard(comic: ComicEntity, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier
-            .height(200.dp.scaled())
-            .aspectRatio(COMIC_COVERT_ASPECT_RATIO)
-            .padding(4.dp.scaled()),
-        shape = RoundedCornerShape(8.dp.scaled()),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp.scaled())
-    ) {
-        Image(
-            painter = rememberAsyncImagePainter(comic.coverPath),
-            contentDescription = comic.title,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(140.dp.scaled())
-                .aspectRatio(COMIC_COVERT_ASPECT_RATIO)
-                .clip(RoundedCornerShape(topStart = 8.dp.scaled(), topEnd = 8.dp.scaled()))
-        )
-    }
-}
-
-@Composable
-fun ComicListItem(comic: ComicEntity, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 4.dp.scaled(), vertical = 4.dp.scaled()),
-        shape = RoundedCornerShape(8.dp.scaled()),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp.scaled())
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp.scaled()),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = rememberAsyncImagePainter(comic.coverPath),
-                    contentDescription = comic.title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(64.dp.scaled())
-                        .clip(RoundedCornerShape(8.dp.scaled()))
-                        .background(Color.LightGray)
+        val latestComics = uiState.latestComics
+        item {
+            // Latest Section
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            ) {
+                Text(
+                    text = "Latest",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
                 )
-                Spacer(modifier = Modifier.width(16.dp.scaled()))
-                Column {
-                    Text(
-                        text = comic.title ?: "No Title",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp.scaled()
-                    )
-                    Text(
-                        text = comic.genre ?: "No Genre",
-                        fontSize = 14.sp.scaled(),
-                        color = Color.Gray
-                    )
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(latestComics) { comic ->
+                        ComicCoverItem(comic = comic)
+                    }
                 }
             }
-            Icon(
-                imageVector = if (comic.isFavorite) Icons.Filled.Favorite else Icons.Default.Star,
-                contentDescription = if (comic.isFavorite) "Favorite" else "Not Favorite",
-                tint = if (comic.isFavorite) ComiquetaTheme.colorScheme.primary else Color.Gray,
-                modifier = Modifier.size(20.dp.scaled())
-            )
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+        val favoriteComics = uiState.favoriteComics
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = "Favorites",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
+                )
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(favoriteComics) { comic ->
+                        ComicCoverItem(comic = comic)
+                    }
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Favorites",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Row {
+                        IconButton(onClick = { /* TODO: Handle list view */ }) {
+                            Icon(
+                                Icons.Default.Menu,
+                                contentDescription = "List View",
+                                tint = Color.Gray
+                            )
+                        }
+                        IconButton(onClick = { /* TODO: Handle grid view */ }) {
+                            Icon(
+                                Icons.Default.GridView,
+                                contentDescription = "Grid View",
+                                tint = Color.Gray
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+        val continueReadingComics = uiState.continueReadingComics
+        items(continueReadingComics) { comic ->
+            ContinueReadingItem(comic = comic)
         }
     }
 }
@@ -597,7 +568,215 @@ fun HomeScreenPreviewContentMVI() {
                 hasBeenRead = false
             )
         )
-        val homeUIState = HomeUIState(allComics = sampleComics)
+        val homeUIState = HomeUIState(
+            allComics = sampleComics,
+            categories = categoriesMock,
+            latestComics = latestComicsMock,
+            favoriteComics = favoriteComicsMock,
+            //unreadComics = unreadComicsMock,
+            continueReadingComics = continueReadingComicsMock
+        )
         HomeScreenContent(uiState = homeUIState)
+    }
+}
+
+// Sample Data updated to use ComicEntity
+val latestComicsMock = listOf(
+    ComicEntity(
+        filePath = "file:///comic1.cbr".toUri(),
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+1".toUri(),
+        title = "Titulo",
+        genre = "Action",
+        isNew = true
+    ),
+    ComicEntity(
+        filePath = "file:///comic2.cbr".toUri(),
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+2".toUri(),
+        title = "Titulo",
+        genre = "Action",
+        isNew = true
+    ),
+    ComicEntity(
+        filePath = "file:///comic3.cbr".toUri(),
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+3".toUri(),
+        title = "Titulo",
+        genre = "Horror",
+        isNew = true
+    ),
+    ComicEntity(
+        filePath = "file:///comic4.cbr".toUri(),
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+4".toUri(),
+        title = "Titulo",
+        genre = "Fantasy",
+        isNew = true
+    ),
+    ComicEntity(
+        filePath = "file:///comic5.cbr".toUri(),
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+5".toUri(),
+        title = "Titulo",
+        genre = "Action",
+        isNew = true
+    )
+)
+
+val favoriteComicsMock = listOf(
+    ComicEntity(
+        filePath = "file:///comic6.cbr".toUri(),
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+6".toUri(),
+        title = "Titulo",
+        genre = "Action",
+        isFavorite = true
+    ),
+    ComicEntity(
+        filePath = "file:///comic7.cbr".toUri(),
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+7".toUri(),
+        title = "Titulo",
+        genre = "Action",
+        isFavorite = true
+    ),
+    ComicEntity(
+        filePath = "file:///comic8.cbr".toUri(),
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+8".toUri(),
+        title = "Titulo",
+        genre = "Horror",
+        isFavorite = true
+    ),
+    ComicEntity(
+        filePath = "file:///comic9.cbr".toUri(),
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+9".toUri(),
+        title = "Titulo",
+        genre = "Fantasy",
+        isFavorite = true
+    ),
+    ComicEntity(
+        filePath = "file:///comic10.cbr".toUri(),
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+10".toUri(),
+        title = "Titulo",
+        genre = "Action",
+        isFavorite = true
+    )
+)
+
+val categoriesMock = listOf(
+    CategoryEntity(1, "All"),
+    CategoryEntity(2, "Action"),
+    CategoryEntity(3, "Horror"),
+    CategoryEntity(4, "Fantasy")
+)
+
+val continueReadingComicsMock = listOf(
+    ComicEntity(
+        filePath = "file:///comic11.cbr".toUri(),
+        coverPath = "https://placehold.co/60x90/cccccc/333333?text=Comic+11".toUri(),
+        title = "Titulo",
+        lastPage = 23,
+        hasBeenRead = true
+    ),
+    ComicEntity(
+        filePath = "file:///comic12.cbr".toUri(),
+        coverPath = "https://placehold.co/60x90/cccccc/333333?text=Comic+12".toUri(),
+        title = "Titulo",
+        lastPage = 23,
+        hasBeenRead = true
+    )
+)
+
+@Composable
+fun ComicCoverItem(comic: ComicEntity) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        val imageModifier = Modifier
+            .size(150.dp)
+            .aspectRatio(COMIC_COVERT_ASPECT_RATIO)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.DarkGray)
+
+        if (comic.coverPath != null && comic.coverPath != Uri.EMPTY) {
+            AsyncImage(
+                model = comic.coverPath,
+                contentDescription = comic.title,
+                modifier = imageModifier,
+                contentScale = ContentScale.Crop,
+                placeholder = rememberVectorPainter(Icons.AutoMirrored.Filled.ViewList),
+                error = rememberVectorPainter(Icons.AutoMirrored.Filled.ViewList)
+            )
+        } else {
+            Box(
+                modifier = imageModifier,
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ViewList,
+                    contentDescription = "No Cover Available",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(50.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = comic.title ?: "No Title", color = Color.White, fontSize = 14.sp)
+        Text(text = "Chapter 1", color = Color.Gray, fontSize = 12.sp)
+    }
+}
+
+@Composable
+fun ContinueReadingItem(comic: ComicEntity) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .background(Color(0xFF333333), RoundedCornerShape(8.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            val imageModifier = Modifier
+                .size(60.dp, 90.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(Color.DarkGray)
+
+            if (comic.coverPath != null && comic.coverPath != Uri.EMPTY) {
+                AsyncImage(
+                    model = comic.coverPath,
+                    contentDescription = comic.title,
+                    modifier = imageModifier,
+                    contentScale = ContentScale.Crop,
+                    placeholder = rememberVectorPainter(Icons.AutoMirrored.Filled.ViewList),
+                    error = rememberVectorPainter(Icons.AutoMirrored.Filled.ViewList)
+                )
+            } else {
+                Box(
+                    modifier = imageModifier,
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ViewList,
+                        contentDescription = "No Cover Available",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = comic.title ?: "No Title",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "Chapter X - Page ${comic.lastPage}",
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
+            }
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+            contentDescription = "Go to comic",
+            tint = Color.Gray,
+            modifier = Modifier.size(20.dp)
+        )
     }
 }

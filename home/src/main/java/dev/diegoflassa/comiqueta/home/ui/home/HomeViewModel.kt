@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.data.repository.ComicsFolderRepository
 import dev.diegoflassa.comiqueta.core.data.repository.ComicsRepository
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
@@ -68,6 +69,9 @@ class HomeViewModel @Inject constructor(
                             allComics = allComicsList,
                             latestComics = allComicsList.filter { it.isNew }.take(10),
                             favoriteComics = allComicsList.filter { it.isFavorite }.take(10),
+                            unreadComics = allComicsList.filter { it.hasBeenRead.not() }.take(10),
+                            continueReadingComics = allComicsList.filter { it.hasBeenRead }
+                                .take(10),
                             isLoading = false
                         )
                     }
