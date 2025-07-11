@@ -16,7 +16,7 @@ object TimberLogger {
 
     fun logI(tag: String? = null, mensagem: String, throwable: Throwable? = null) {
         if (tag.isNullOrEmpty()) {
-            Timber.i(throwable, "%s", mensagem) // Corrected to Timber.i
+            Timber.i(throwable, "%s", mensagem)
         } else {
             Timber.tag(tag).log(Log.INFO, throwable, "%s", mensagem)
         }

@@ -21,11 +21,9 @@ open class ComicsFolderRepository @Inject constructor(context: Context) {
 
     private val contentResolver = context.contentResolver
 
-    // MutableStateFlow to hold the list of persisted URIs
     private val _persistedFoldersFlow = MutableStateFlow<List<Uri>>(emptyList())
 
     init {
-        // Initialize the flow with the current persisted permissions
         _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
     }
 
@@ -80,12 +78,11 @@ open class ComicsFolderRepository @Inject constructor(context: Context) {
      */
     open fun takePersistablePermission(
         uri: Uri,
-        flags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION // Default to read permission
+        flags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
     ): Boolean {
         return try {
             contentResolver.takePersistableUriPermission(uri, flags)
             TimberLogger.logD("ComicsFolderRepository", "Successfully took permission for $uri")
-            // Update the flow with the new list of permissions
             _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
             true
         } catch (e: SecurityException) {
@@ -111,12 +108,11 @@ open class ComicsFolderRepository @Inject constructor(context: Context) {
      */
     open fun releasePersistablePermission(
         uri: Uri,
-        flags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION // Default to read permission
+        flags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
     ): Boolean {
         return try {
             contentResolver.releasePersistableUriPermission(uri, flags)
             TimberLogger.logD("ComicsFolderRepository", "Successfully released permission for $uri")
-            // Update the flow with the new list of permissions
             _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
             true
         } catch (e: SecurityException) {
@@ -125,7 +121,7 @@ open class ComicsFolderRepository @Inject constructor(context: Context) {
                 "Failed to release persistable URI permission for $uri",
                 e
             )
-            // This can happen if the permission was not granted or already released.
+            // If the permission was not granted or already released.
             false
         } catch (e: Exception) {
             TimberLogger.logE("ComicsFolderRepository", "Error releasing permission for $uri", e)

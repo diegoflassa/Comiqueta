@@ -5,9 +5,8 @@ import org.gradle.api.JavaVersion
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    // Add other common library plugins here if needed, e.g.:
     // id("org.jetbrains.kotlin.parcelize")
-    // id("com.google.devtools.ksp") // If KSP is used in libraries
+    // id("com.google.devtools.ksp")
 }
 
 // Access the Android Library extension
@@ -16,8 +15,7 @@ plugins {
 android {
     compileSdk = Configuracoes.COMPILE_SDK
     buildToolsVersion = Configuracoes.BUILD_TOOLS_VERSION
-    // buildToolsVersion is generally not needed with modern AGP versions (it uses a suitable version based on compileSdk)
-    // if (Configuracoes.BUILD_TOOLS_VERSION.isNotBlank()) { // Only set if explicitly defined and needed
+    // if (Configuracoes.BUILD_TOOLS_VERSION.isNotBlank()) {
     //    buildToolsVersion = Configuracoes.BUILD_TOOLS_VERSION
     // }
 
@@ -28,45 +26,20 @@ android {
         // targetSdk = Configuracoes.TARGET_SDK
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro") // Standard for libraries
-        // multiDexEnabled for libraries is typically not needed, the app handles multidex.
-        // If your library itself is very large and needs multidex for its own tests, you might enable it.
-        // multiDexEnabled = true
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
-        getByName("release") { // Use getByName for existing types
-            isMinifyEnabled = false // Libraries are typically not minified by default; the app does it.
-            // Set to true if you want to ship a minified library (less common).
-            // isShrinkResources = false // Resource shrinking is done by the app.
-            // Proguard files for libraries usually focus on 'consumer-rules.pro'
-            // to specify rules for apps consuming the library.
-            // If the library itself needs internal proguard rules for its own release build (rare):
-            // proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        getByName("release") {
+            isMinifyEnabled = false
         }
         getByName("debug") {
             isMinifyEnabled = false
-            // isShrinkResources = false
         }
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21 // Recommended for modern AGP
-        targetCompatibility = JavaVersion.VERSION_21 // Recommended for modern AGP
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
-
-    // For libraries, you often don't need 'packagingOptions' unless there are specific conflicts
-    // to resolve that the library itself introduces.
-
-    // If your library uses dataBinding or viewBinding:
-    // buildFeatures {
-    //    dataBinding = true
-    //    viewBinding = true
-    // }
 }
-
-// Common dependencies for your libraries can be added here
-// dependencies {
-//    implementation(libs.androidx.core.ktx)
-//    // api(libs.some.logging.framework) // If all libraries expose this
-// }

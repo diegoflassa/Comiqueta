@@ -44,7 +44,7 @@ class NavigationViewModel @Inject constructor() : ViewModel() {
                 is NavigationIntent.GoToHome -> {
                     // Navigate to Home.
                     // Current logic adds Home to the stack if not already at the top.
-                    // Consider if a true "clear stack and go home" is needed, e.g.,
+                    // Change to if a true "clear stack and go home" is needed, e.g.,
                     // currentState.copy(backStack = listOf(Screen.Home))
                     if (currentState.backStack.lastOrNull() != Screen.Home) {
                         currentState.copy(backStack = currentState.backStack + Screen.Home)

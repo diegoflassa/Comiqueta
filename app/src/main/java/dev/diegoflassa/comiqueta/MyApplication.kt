@@ -1,18 +1,18 @@
 package dev.diegoflassa.comiqueta
 
 import android.app.Application
-import androidx.hilt.work.HiltWorkerFactory // Ensure this import is present
-import androidx.work.Configuration // Ensure this import is present
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import androidx.work.WorkManager
 import dagger.hilt.android.HiltAndroidApp
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.data.timber.TimberManager
-import javax.inject.Inject // Ensure this import is present
+import javax.inject.Inject
 
 @HiltAndroidApp
-class MyApplication : Application(), Configuration.Provider { // Implement Configuration.Provider
+class MyApplication : Application(), Configuration.Provider {
 
-    @Inject // Inject HiltWorkerFactory
+    @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
     companion object {
@@ -26,12 +26,11 @@ class MyApplication : Application(), Configuration.Provider { // Implement Confi
         TimberLogger.logI(TAG, "onCreate")
 
         val hiltWorkManagerConfiguration = Configuration.Builder()
-            .setWorkerFactory(workerFactory) // workerFactory is already @Injected
+            .setWorkerFactory(workerFactory)
             .build()
         WorkManager.initialize(this, hiltWorkManagerConfiguration)
     }
 
-    // Correct way to implement Configuration.Provider by overriding the property
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)

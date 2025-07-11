@@ -1,4 +1,4 @@
-package dev.diegoflassa.comiqueta.core.data.database.converters // Or your chosen package
+package dev.diegoflassa.comiqueta.core.data.database.converters
 
 import android.net.Uri
 import androidx.room.TypeConverter

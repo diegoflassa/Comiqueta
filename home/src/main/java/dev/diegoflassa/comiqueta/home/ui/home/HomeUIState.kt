@@ -11,7 +11,7 @@ data class HomeUIState(
     val continueReadingComics: List<ComicEntity> = emptyList(),
     val isLoading: Boolean = true,
     val searchQuery: String = "",
-    val selectedCategory: String = "All",
+    val selectedCategory: CategoryEntity = CategoryEntity(1, "All"),
     val categories: List<CategoryEntity> = listOf(
         CategoryEntity(1, "All"),
         CategoryEntity(2, "Action"),
@@ -19,5 +19,7 @@ data class HomeUIState(
         CategoryEntity(4, "Fantasy")
     ),
     val showPermissionRationale: Boolean = false,
-    val isFolderPermissionGranted: Boolean? = null
+    val isFolderPermissionGranted: Boolean? = null,
+    val viewMode: ViewMode = ViewMode.LIST,
+    val error: String? = null
 )

@@ -54,9 +54,8 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro" // This file should be in each module that uses this convention (e.g., app/proguard-rules.pro)
+                "proguard-rules.pro"
             )
-            // Apply signing config only if it's properly configured
             if (keystoreProperties.getProperty("KEYSTORE_FILE") != null) {
                 signingConfig = signingConfigs.getByName("release")
             }

@@ -1,4 +1,4 @@
-package dev.diegoflassa.comiqueta.core.data.repository // Or your equivalent package structure
+package dev.diegoflassa.comiqueta.core.data.repository
 
 import android.net.Uri
 import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-open // Often repositories are singletons
+open
 class ComicsRepository @Inject constructor(
     private val comicsDao: ComicsDao
 ) {

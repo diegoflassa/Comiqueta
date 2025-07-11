@@ -16,7 +16,7 @@ open class AddMonitoredFolderUseCase @Inject constructor(
         // It should ideally just be an "addFolder" or "saveFolder" type of method.
         // For now, I'll assume comicsFolderRepository.takePersistablePermission is the method that stores the URI.
         // If it also tries to take permission, this might be redundant or problematic if the UI already did.
-        // Consider renaming repository method to e.g., "storeMonitoredFolderUri"
+        // Change to renaming repository method to e.g., "storeMonitoredFolderUri"
         return comicsFolderRepository.takePersistablePermission(uri, 0) // Flags might be irrelevant if UI handles it
     }
 }

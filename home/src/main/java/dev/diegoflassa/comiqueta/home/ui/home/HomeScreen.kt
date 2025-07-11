@@ -1,175 +1,140 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package dev.diegoflassa.comiqueta.home.ui.home
 
-import android.content.Intent
 import android.content.res.Configuration
-import android.net.Uri
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
-import dev.diegoflassa.comiqueta.home.R
+import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.navigation.Screen
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
-import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
-import kotlinx.coroutines.flow.collectLatest
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.zIndex
-import androidx.core.net.toUri
-import coil.compose.AsyncImage
-import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
-
-private const val COMIC_COVERT_ASPECT_RATIO = 2f / 3f
+import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
+import dev.diegoflassa.comiqueta.home.R
 
 private const val tag = "HomeScreen"
+private const val COMIC_COVER_ASPECT_RATIO = 2f / 3f
+
+// Define ViewMode
+enum class ViewMode {
+    LIST, GRID
+}
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier,
     navigationViewModel: NavigationViewModel? = null,
-    viewModel: HomeViewModel = hiltViewModel()
+    homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
-    val folderPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocumentTree()
-    ) { treeUri: Uri? ->
-        treeUri?.let {
-            try {
-                val takeFlags: Int =
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                context.contentResolver.takePersistableUriPermission(it, takeFlags)
-                Log.d("HomeScreen", "Persistable URI permission taken by UI for: $it")
-                viewModel.processIntent(HomeIntent.FolderSelected(it))
-            } catch (e: SecurityException) {
-                Log.e("HomeScreen", "Failed to take persistable URI permission by UI for $it", e)
-                Toast.makeText(
-                    context, "Failed to get long-term access to the folder.", Toast.LENGTH_LONG
-                ).show()
-            }
-        }
+    val uiState by homeViewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        homeViewModel.processIntent(HomeIntent.LoadInitialData)
     }
 
-    val runtimePermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        viewModel.processIntent(HomeIntent.FolderPermissionResult(isGranted))
-    }
-    LaunchedEffect(key1 = viewModel) {
-        viewModel.effect.collectLatest { effect ->
-            when (effect) {
-                is HomeEffect.ShowToast -> Toast.makeText(
-                    context, effect.message, Toast.LENGTH_SHORT
-                ).show()
-
-                is HomeEffect.LaunchFolderPicker -> folderPickerLauncher.launch(null)
-                is HomeEffect.RequestStoragePermission -> runtimePermissionLauncher.launch(effect.permission)
-            }
-        }
-    }
-    val homeUIState = viewModel.uiState.collectAsState().value
     HomeScreenContent(
-        modifier = modifier, navigationViewModel = navigationViewModel, uiState = homeUIState
-    ) {
-        viewModel.processIntent(it)
-    }
-
+        navigationViewModel = navigationViewModel,
+        uiState = uiState,
+        onIntent = homeViewModel::processIntent
+    )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenContent(
     modifier: Modifier = Modifier,
     navigationViewModel: NavigationViewModel? = null,
-    uiState: HomeUIState = HomeUIState(),
+    uiState: HomeUIState,
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
-    val isEmpty = uiState.allComics.isEmpty() && uiState.isLoading.not()
-    val fabDiameter = 48.dp.scaled()
-    val bottomBarHeight = 50.dp.scaled()
+    val fabDiameter = ComiquetaTheme.dimen.fabDiameter.scaled()
+    val bottomBarHeight = ComiquetaTheme.dimen.bottomBarHeight.scaled()
+    val isEmpty = uiState.allComics.isEmpty() && uiState.searchQuery.isBlank()
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text("Comiqueta", fontWeight = FontWeight.Bold) },
-                actions = {
-                    if (isEmpty.not()) {
-                        IconButton(onClick = { navigationViewModel?.navigateTo(Screen.Settings) }) {
-                            Icon(Icons.Default.Settings, "Settings")
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = ComiquetaTheme.colorScheme.surface)
-            )
-        },
+        modifier = modifier,
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = paddingValues.calculateBottomPadding())
-                    .background(ComiquetaTheme.colorScheme.surfaceContainer)
-            ) {
-                if (uiState.isLoading) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                } else if (isEmpty) {
-                    EmptyStateContent()
-                } else {
-                    ComicsContent(
-                        uiState = uiState,
-                        onIntent = onIntent,
-                    )
+            if (uiState.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
+            } else if (isEmpty) {
+                EmptyStateContent(
+                    onAddClicked = { onIntent?.invoke(HomeIntent.AddFolderClicked) }
+                )
+            } else {
+                ComicsContent(
+                    uiState = uiState,
+                    onIntent = onIntent,
+                )
             }
 
             BottomAppBar(
@@ -233,45 +198,72 @@ fun HomeScreenContent(
                 shape = CircleShape,
                 containerColor = ComiquetaTheme.colorScheme.primaryContainer,
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add")
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.add_fab_description)
+                )
             }
         }
     }
 }
 
 @Composable
-fun EmptyStateContent(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp.scaled()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+fun CategoriesSection(
+    categories: List<CategoryEntity>,
+    selectedCategory: CategoryEntity?,
+    onCategoryClicked: (CategoryEntity) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp.scaled(), vertical = 8.dp.scaled()),
+        horizontalArrangement = Arrangement.SpaceAround
     ) {
-        Text(
-            "No comics found yet.",
-            fontSize = 18.sp.scaled(),
-            textAlign = TextAlign.Center,
-            color = Color.DarkGray,
-            modifier = Modifier.padding(bottom = 8.dp.scaled())
-        )
-        Text(
-            "Click the '+' button to select a folder with your comics.",
-            fontSize = 16.sp.scaled(),
-            textAlign = TextAlign.Center,
-            color = Color.Gray,
-            modifier = Modifier.padding(bottom = 32.dp.scaled())
-        )
-        Icon(
-            Icons.Filled.Add,
-            "Add book icon",
-            modifier = Modifier
-                .size(128.dp.scaled())
-                .padding(bottom = 16.dp.scaled()),
-            tint = Color.Gray
-        )
+        categories.forEach { category ->
+            Text(
+                text = category.name
+                    ?: stringResource(R.string.unknown_category),
+                color = if (category.name == selectedCategory?.name) MaterialTheme.colorScheme.primary else Color.Gray,
+                fontWeight = if (category.name == selectedCategory?.name) FontWeight.Bold else FontWeight.Normal,
+                fontSize = 16.sp.scaled(),
+                modifier = Modifier
+                    .padding(horizontal = 8.dp.scaled())
+                    .clickable { onCategoryClicked(category) }
+            )
+        }
     }
 }
+
+@Composable
+fun SectionHeader(title: String, modifier: Modifier = Modifier) {
+    Text(
+        text = title,
+        color = Color.White, // Change to  MaterialTheme.colorScheme.onSurface or similar
+        fontSize = 18.sp.scaled(),
+        fontWeight = FontWeight.Bold,
+        modifier = modifier.padding(
+            start = 16.dp.scaled(),
+            end = 16.dp.scaled(),
+            bottom = 8.dp.scaled()
+        )
+    )
+}
+
+@Composable
+fun HorizontalComicsRow(
+    comics: List<ComicEntity>,
+    onIntent: ((HomeIntent) -> Unit)?
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp.scaled()),
+        horizontalArrangement = Arrangement.spacedBy(16.dp.scaled())
+    ) {
+        items(comics) { comic ->
+            ComicCoverItem(onIntent = onIntent, comic = comic)
+        }
+    }
+}
+
 
 @Composable
 fun ComicsContent(
@@ -280,157 +272,279 @@ fun ComicsContent(
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF222222)),
+            .background(Color(0xFF222222)), // Change to MaterialTheme.colorScheme.surfaceVariant or background
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
-            // Search Bar
             OutlinedTextField(
-                value = "",
-                onValueChange = { /* TODO: Handle search input */ },
-                placeholder = { Text("Search", color = Color.Gray) },
+                value = uiState.searchQuery,
+                onValueChange = { onIntent?.invoke(HomeIntent.SearchComics(it)) },
+                placeholder = {
+                    Text(
+                        stringResource(R.string.search_placeholder),
+                        color = Color.Gray
+                    )
+                },
                 leadingIcon = {
                     Icon(
                         Icons.Default.Search,
-                        contentDescription = "Search Icon",
+                        contentDescription = stringResource(R.string.search_icon_description),
                         tint = Color.Gray
                     )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF444444)),
+                    .padding(horizontal = 16.dp.scaled(), vertical = 8.dp.scaled())
+                    .clip(RoundedCornerShape(8.dp.scaled()))
+                    .background(Color(0xFF444444)), // Change to MaterialTheme.colorScheme.surfaceVariant
                 colors = OutlinedTextFieldDefaults.colors().copy(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
-                    cursorColor = Color.White,
-                    focusedTextColor = Color.White
+                    cursorColor = Color.White, // MaterialTheme.colorScheme.primary
+                    focusedTextColor = Color.White, // MaterialTheme.colorScheme.onSurface
+                    unfocusedTextColor = Color.White // MaterialTheme.colorScheme.onSurface
                 )
             )
         }
-        val categories = uiState.categories
+
+        if (uiState.categories.isNotEmpty()) {
+            item {
+                CategoriesSection(
+                    categories = uiState.categories,
+                    selectedCategory = uiState.selectedCategory,
+                    onCategoryClicked = { category ->
+                        onIntent?.invoke(HomeIntent.CategorySelected(category))
+                    }
+                )
+            }
+        }
+
+        if (uiState.latestComics.isNotEmpty()) {
+            item {
+                SectionHeader(title = stringResource(R.string.latest_comics_section_title))
+                HorizontalComicsRow(comics = uiState.latestComics, onIntent = onIntent)
+                Spacer(modifier = Modifier.height(24.dp.scaled()))
+            }
+        }
+
+        if (uiState.favoriteComics.isNotEmpty()) {
+            item {
+                SectionHeader(title = stringResource(R.string.favorite_comics_section_title))
+                HorizontalComicsRow(comics = uiState.favoriteComics, onIntent = onIntent)
+                Spacer(modifier = Modifier.height(24.dp.scaled()))
+            }
+        }
+
+        // Section for "All Comics" / "Continue Reading" with view mode toggles
         item {
-            // Categories
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                categories.forEach { category ->
-                    Text(
-                        text = category.name ?: "",
-                        color = if (category.name == "All") MaterialTheme.colorScheme.primary else Color.Gray,
-                        fontWeight = if (category.name == "All") FontWeight.Bold else FontWeight.Normal,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                    .padding(
+                        start = 16.dp.scaled(),
+                        end = 16.dp.scaled(),
+                        top = 8.dp.scaled()
                     )
-                }
-            }
-        }
-        val latestComics = uiState.latestComics
-        item {
-            // Latest Section
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-            ) {
-                Text(
-                    text = "Latest",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
-                )
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(latestComics) { comic ->
-                        ComicCoverItem(comic = comic)
-                    }
-                }
-            }
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-        val favoriteComics = uiState.favoriteComics
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = "Favorites",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
-                )
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(favoriteComics) { comic ->
-                        ComicCoverItem(comic = comic)
-                    }
-                }
-            }
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Favorites",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
+                    SectionHeader(
+                        title = stringResource(R.string.all_comics_section_title),
+                        modifier = Modifier.padding(bottom = 0.dp)
                     )
                     Row {
-                        IconButton(onClick = { /* TODO: Handle list view */ }) {
+                        IconButton(onClick = { onIntent?.invoke(HomeIntent.ViewModeChanged(ViewMode.LIST)) }) {
                             Icon(
                                 Icons.Default.Menu,
-                                contentDescription = "List View",
-                                tint = Color.Gray
+                                contentDescription = stringResource(R.string.list_view_description),
+                                tint = if (uiState.viewMode == ViewMode.LIST) MaterialTheme.colorScheme.primary else Color.Gray
                             )
                         }
-                        IconButton(onClick = { /* TODO: Handle grid view */ }) {
+                        IconButton(onClick = { onIntent?.invoke(HomeIntent.ViewModeChanged(ViewMode.GRID)) }) {
                             Icon(
                                 Icons.Default.GridView,
-                                contentDescription = "Grid View",
-                                tint = Color.Gray
+                                contentDescription = stringResource(R.string.grid_view_description),
+                                tint = if (uiState.viewMode == ViewMode.GRID) MaterialTheme.colorScheme.primary else Color.Gray
                             )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp.scaled()))
             }
         }
-        val continueReadingComics = uiState.continueReadingComics
-        items(continueReadingComics) { comic ->
-            ContinueReadingItem(comic = comic)
+
+        val displayComics = uiState.allComics
+
+        when (uiState.viewMode) {
+            ViewMode.LIST -> {
+                items(displayComics) { comic ->
+                    ContinueReadingItem(
+                        onIntent = onIntent,
+                        comic = comic,
+                        modifier = Modifier.padding(
+                            horizontal = 16.dp.scaled(),
+                            vertical = 4.dp.scaled()
+                        )
+                    )
+                }
+            }
+
+            ViewMode.GRID -> {
+                val itemsPerRow = 3
+                items(displayComics.chunked(itemsPerRow)) { rowItems ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp.scaled()),
+                        modifier = Modifier.padding(horizontal = 16.dp.scaled())
+                    ) {
+                        rowItems.forEach { comic ->
+                            ComicCoverItem(
+                                comic = comic,
+                                onIntent = onIntent,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        repeat(itemsPerRow - rowItems.size) {
+                            Spacer(Modifier.weight(1f))
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp.scaled()))
+                }
+            }
+        }
+        item { Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.bottomBarHeight + ComiquetaTheme.dimen.fabDiameter / 2)) }
+    }
+}
+
+
+@Composable
+fun EmptyStateContent(
+    modifier: Modifier = Modifier,
+    onAddClicked: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp.scaled()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            stringResource(R.string.no_comics_found_yet),
+            fontSize = 18.sp.scaled(),
+            textAlign = TextAlign.Center,
+            color = Color.DarkGray, // Change to MaterialTheme.colorScheme.onSurfaceVariant
+            modifier = Modifier.padding(bottom = 8.dp.scaled())
+        )
+        Text(
+            stringResource(R.string.click_plus_to_select_folder),
+            fontSize = 16.sp.scaled(),
+            textAlign = TextAlign.Center,
+            color = Color.Gray, // Change to MaterialTheme.colorScheme.onSurfaceVariant
+            modifier = Modifier.padding(bottom = 32.dp.scaled())
+        )
+        Icon(
+            Icons.Filled.Add,
+            stringResource(R.string.add_book_icon_description),
+            modifier = Modifier
+                .size(128.dp.scaled())
+                .padding(bottom = 16.dp.scaled())
+                .clickable(onClick = onAddClicked),
+            tint = Color.Gray // Change to MaterialTheme.colorScheme.secondary
+        )
+    }
+}
+
+@Composable
+fun ComicCoverItem(
+    comic: ComicEntity,
+    modifier: Modifier = Modifier,
+    onIntent: ((HomeIntent) -> Unit)? = null
+) {
+    Column(
+        modifier = modifier
+            .width(120.dp.scaled())
+            .padding(vertical = 4.dp.scaled())
+            .clickable { onIntent?.invoke(HomeIntent.ComicSelected(comic)) },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Card(
+            shape = RoundedCornerShape(8.dp.scaled()),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp.scaled())
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(model = comic.coverPath),
+                contentDescription = comic.title
+                    ?: stringResource(R.string.comic_cover_description),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(COMIC_COVER_ASPECT_RATIO)
+                    .clip(RoundedCornerShape(topStart = 8.dp.scaled(), topEnd = 8.dp.scaled()))
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp.scaled()))
+        Text(
+            text = comic.title ?: stringResource(R.string.no_title),
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp.scaled(),
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            color = Color.White // Change to MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+
+@Composable
+fun ContinueReadingItem(
+    comic: ComicEntity,
+    modifier: Modifier = Modifier,
+    onIntent: ((HomeIntent) -> Unit)? = null
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp.scaled())
+            .clickable { onIntent?.invoke(HomeIntent.ComicSelected(comic)) },
+        shape = RoundedCornerShape(8.dp.scaled()),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp.scaled()),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(8.dp.scaled())
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(model = comic.coverPath),
+                contentDescription = comic.title
+                    ?: stringResource(R.string.comic_cover_description),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .height(90.dp.scaled())
+                    .aspectRatio(COMIC_COVER_ASPECT_RATIO)
+                    .clip(RoundedCornerShape(4.dp.scaled()))
+            )
+            Spacer(modifier = Modifier.width(16.dp.scaled()))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = comic.title ?: stringResource(R.string.no_title),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp.scaled(),
+                    maxLines = 2
+                )
+                comic.author?.let {
+                    Text(text = it, fontSize = 12.sp.scaled(), color = Color.Gray)
+                }
+            }
         }
     }
 }
+
 
 @Composable
 fun BottomNavItem(
@@ -444,6 +558,7 @@ fun BottomNavItem(
     Column(
         modifier = modifier
             .clickable(onClick = onClick)
+            .padding(vertical = 4.dp.scaled())
             .wrapContentHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -452,33 +567,33 @@ fun BottomNavItem(
             modifier = Modifier.size(bottomAppBarIconSize),
             imageVector = icon,
             contentDescription = label,
-            tint = if (isSelected) ComiquetaTheme.colorScheme.primary else Color.Gray,
+            tint = if (isSelected) ComiquetaTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp.scaled()))
         Text(
             text = label,
             style = ComiquetaTheme.typography.bottomAppBar.scaled(),
-            color = if (isSelected) ComiquetaTheme.colorScheme.primary else Color.Gray,
-            maxLines = 2
+            color = if (isSelected) ComiquetaTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            textAlign = TextAlign.Center
         )
     }
 }
 
+// --- Previews ---
 @Preview(
     name = "${tag}Empty:360x640",
     locale = "pt-rBR",
     showBackground = true,
     widthDp = 360,
-    heightDp = 640,
-    showSystemUi = true
+    heightDp = 640
 )
 @Preview(
     name = "${tag}Empty:540x1260",
     locale = "pt-rBR",
     showBackground = true,
     widthDp = 540,
-    heightDp = 1260,
-    showSystemUi = true
+    heightDp = 1260
 )
 @Preview(
     name = "${tag}Empty:540x1260 Dark",
@@ -488,295 +603,114 @@ fun BottomNavItem(
     heightDp = 1260,
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
-@Preview(
-    name = "${tag}Empty:540x1260",
-    locale = "en-rUS",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260
-)
-@Preview(
-    name = "${tag}Empty:540x1260",
-    locale = "de",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260
-)
 @Composable
 fun HomeScreenPreviewEmptyMVI() {
     ComiquetaThemeContent {
-        val homeUIState = HomeUIState()
+        val homeUIState = HomeUIState(isLoading = false, allComics = emptyList())
         HomeScreenContent(uiState = homeUIState)
     }
 }
 
 @Preview(
-    name = "$tag:360x640",
+    name = "${tag}WithData:360x640",
     locale = "pt-rBR",
     showBackground = true,
     widthDp = 360,
     heightDp = 640
 )
 @Preview(
-    name = "$tag:540x1260",
+    name = "${tag}WithData:360x640 Dark",
     locale = "pt-rBR",
     showBackground = true,
-    widthDp = 540,
-    heightDp = 1260
-)
-@Preview(
-    name = "$tag:540x1260 Dark",
-    locale = "pt-rBR",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260,
+    widthDp = 360,
+    heightDp = 640,
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
-@Preview(
-    name = "$tag:540x1260",
-    locale = "en-rUS",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260
-)
-@Preview(
-    name = "$tag:540x1260",
-    locale = "de",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260
-)
 @Composable
-fun HomeScreenPreviewContentMVI() {
+fun HomeScreenPreviewWithData() {
     ComiquetaThemeContent {
         val sampleComics = listOf(
             ComicEntity(
-                filePath = "file:///preview/1".toUri(),
-                title = "The Hero's Journey",
-                coverPath = "https://placehold.co/150x220/E0E0E0/333333?text=Comic+1".toUri(),
-                isFavorite = true,
-                genre = "Action",
-                isNew = true,
-                hasBeenRead = false
-            ), ComicEntity(
-                filePath = "file:///preview/2".toUri(),
-                title = "Cosmic Saga",
-                coverPath = "https://placehold.co/150x220/D0D0D0/333333?text=Comic+2".toUri(),
-                isFavorite = false,
-                genre = "Sci-Fi",
-                isNew = true,
-                hasBeenRead = false
+                title = "Comic Alpha",
+                coverPath = "...".toUri(),
+                author = "Author A"
+            ),
+            ComicEntity(
+                title = "The Adventures of Beta Long Title That Wraps",
+                coverPath = "...".toUri(),
+                author = "Author B"
+            ),
+            ComicEntity(
+                title = "Gamma Stories",
+                coverPath = "...".toUri(),
+                author = "Author C"
             )
         )
+        val sampleCategories = listOf(
+            CategoryEntity(id = 1, name = "All"),
+            CategoryEntity(id = 2, name = "Action"),
+            CategoryEntity(id = 3, name = "Comedy")
+        )
         val homeUIState = HomeUIState(
+            isLoading = false,
             allComics = sampleComics,
-            categories = categoriesMock,
-            latestComics = latestComicsMock,
-            favoriteComics = favoriteComicsMock,
-            //unreadComics = unreadComicsMock,
-            continueReadingComics = continueReadingComicsMock
+            categories = sampleCategories,
+            selectedCategory = sampleCategories.first(),
+            latestComics = sampleComics.take(2),
+            favoriteComics = sampleComics.takeLast(2),
+            continueReadingComics = sampleComics,
+            viewMode = ViewMode.LIST
         )
         HomeScreenContent(uiState = homeUIState)
     }
 }
 
-// Sample Data updated to use ComicEntity
-val latestComicsMock = listOf(
-    ComicEntity(
-        filePath = "file:///comic1.cbr".toUri(),
-        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+1".toUri(),
-        title = "Titulo",
-        genre = "Action",
-        isNew = true
-    ),
-    ComicEntity(
-        filePath = "file:///comic2.cbr".toUri(),
-        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+2".toUri(),
-        title = "Titulo",
-        genre = "Action",
-        isNew = true
-    ),
-    ComicEntity(
-        filePath = "file:///comic3.cbr".toUri(),
-        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+3".toUri(),
-        title = "Titulo",
-        genre = "Horror",
-        isNew = true
-    ),
-    ComicEntity(
-        filePath = "file:///comic4.cbr".toUri(),
-        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+4".toUri(),
-        title = "Titulo",
-        genre = "Fantasy",
-        isNew = true
-    ),
-    ComicEntity(
-        filePath = "file:///comic5.cbr".toUri(),
-        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+5".toUri(),
-        title = "Titulo",
-        genre = "Action",
-        isNew = true
-    )
+@Preview(
+    name = "${tag}WithDataGrid:360x640",
+    locale = "pt-rBR",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 640
 )
-
-val favoriteComicsMock = listOf(
-    ComicEntity(
-        filePath = "file:///comic6.cbr".toUri(),
-        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+6".toUri(),
-        title = "Titulo",
-        genre = "Action",
-        isFavorite = true
-    ),
-    ComicEntity(
-        filePath = "file:///comic7.cbr".toUri(),
-        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+7".toUri(),
-        title = "Titulo",
-        genre = "Action",
-        isFavorite = true
-    ),
-    ComicEntity(
-        filePath = "file:///comic8.cbr".toUri(),
-        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+8".toUri(),
-        title = "Titulo",
-        genre = "Horror",
-        isFavorite = true
-    ),
-    ComicEntity(
-        filePath = "file:///comic9.cbr".toUri(),
-        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+9".toUri(),
-        title = "Titulo",
-        genre = "Fantasy",
-        isFavorite = true
-    ),
-    ComicEntity(
-        filePath = "file:///comic10.cbr".toUri(),
-        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+10".toUri(),
-        title = "Titulo",
-        genre = "Action",
-        isFavorite = true
-    )
-)
-
-val categoriesMock = listOf(
-    CategoryEntity(1, "All"),
-    CategoryEntity(2, "Action"),
-    CategoryEntity(3, "Horror"),
-    CategoryEntity(4, "Fantasy")
-)
-
-val continueReadingComicsMock = listOf(
-    ComicEntity(
-        filePath = "file:///comic11.cbr".toUri(),
-        coverPath = "https://placehold.co/60x90/cccccc/333333?text=Comic+11".toUri(),
-        title = "Titulo",
-        lastPage = 23,
-        hasBeenRead = true
-    ),
-    ComicEntity(
-        filePath = "file:///comic12.cbr".toUri(),
-        coverPath = "https://placehold.co/60x90/cccccc/333333?text=Comic+12".toUri(),
-        title = "Titulo",
-        lastPage = 23,
-        hasBeenRead = true
-    )
-)
-
 @Composable
-fun ComicCoverItem(comic: ComicEntity) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        val imageModifier = Modifier
-            .size(150.dp)
-            .aspectRatio(COMIC_COVERT_ASPECT_RATIO)
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color.DarkGray)
-
-        if (comic.coverPath != null && comic.coverPath != Uri.EMPTY) {
-            AsyncImage(
-                model = comic.coverPath,
-                contentDescription = comic.title,
-                modifier = imageModifier,
-                contentScale = ContentScale.Crop,
-                placeholder = rememberVectorPainter(Icons.AutoMirrored.Filled.ViewList),
-                error = rememberVectorPainter(Icons.AutoMirrored.Filled.ViewList)
+fun HomeScreenPreviewWithDataGrid() {
+    ComiquetaThemeContent {
+        val sampleComics = listOf(
+            ComicEntity(
+                title = "Comic Alpha",
+                coverPath = "...".toUri(),
+                author = "Author A"
+            ),
+            ComicEntity(
+                title = "The Adventures of Beta",
+                coverPath = "...".toUri(),
+                author = "Author B"
+            ),
+            ComicEntity(
+                title = "Gamma Stories",
+                coverPath = "...".toUri(),
+                author = "Author C"
+            ),
+            ComicEntity(
+                title = "Delta Force",
+                coverPath = "...".toUri(),
+                author = "Author D"
             )
-        } else {
-            Box(
-                modifier = imageModifier,
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ViewList,
-                    contentDescription = "No Cover Available",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(50.dp)
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(text = comic.title ?: "No Title", color = Color.White, fontSize = 14.sp)
-        Text(text = "Chapter 1", color = Color.Gray, fontSize = 12.sp)
-    }
-}
-
-@Composable
-fun ContinueReadingItem(comic: ComicEntity) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .background(Color(0xFF333333), RoundedCornerShape(8.dp))
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            val imageModifier = Modifier
-                .size(60.dp, 90.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(Color.DarkGray)
-
-            if (comic.coverPath != null && comic.coverPath != Uri.EMPTY) {
-                AsyncImage(
-                    model = comic.coverPath,
-                    contentDescription = comic.title,
-                    modifier = imageModifier,
-                    contentScale = ContentScale.Crop,
-                    placeholder = rememberVectorPainter(Icons.AutoMirrored.Filled.ViewList),
-                    error = rememberVectorPainter(Icons.AutoMirrored.Filled.ViewList)
-                )
-            } else {
-                Box(
-                    modifier = imageModifier,
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ViewList,
-                        contentDescription = "No Cover Available",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(30.dp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = comic.title ?: "No Title",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = "Chapter X - Page ${comic.lastPage}",
-                    color = Color.Gray,
-                    fontSize = 14.sp
-                )
-            }
-        }
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-            contentDescription = "Go to comic",
-            tint = Color.Gray,
-            modifier = Modifier.size(20.dp)
         )
+        val sampleCategories = listOf(
+            CategoryEntity(id = 1, name = "All"),
+            CategoryEntity(id = 2, name = "Action")
+        )
+        val homeUIState = HomeUIState(
+            isLoading = false,
+            allComics = sampleComics,
+            categories = sampleCategories,
+            selectedCategory = sampleCategories.first(),
+            latestComics = sampleComics.take(2),
+            favoriteComics = sampleComics.takeLast(2),
+            continueReadingComics = sampleComics,
+            viewMode = ViewMode.GRID
+        )
+        HomeScreenContent(uiState = homeUIState)
     }
 }

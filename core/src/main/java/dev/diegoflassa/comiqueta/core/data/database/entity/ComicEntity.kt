@@ -20,6 +20,9 @@ data class ComicEntity(
     @ColumnInfo(name = "genre")
     val genre: String? = null,
 
+    @ColumnInfo(name = "author")
+    val author: String? = null,
+
     @ColumnInfo(name = "is_favorite")
     val isFavorite: Boolean = false,
 

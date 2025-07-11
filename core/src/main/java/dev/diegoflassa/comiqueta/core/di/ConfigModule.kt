@@ -11,7 +11,7 @@ import dev.diegoflassa.comiqueta.core.data.config.Config
 import javax.inject.Singleton
 
 @Module
-@InstallIn(SingletonComponent::class) // Or another appropriate component
+@InstallIn(SingletonComponent::class)
 object ConfigModule {
 
     @Provides

@@ -40,7 +40,7 @@ object Configuracoes {
     }
 
     fun buildAppName(name: String, versionName: String, buildCount: Int): String {
-        var builtName = "${APP_PREFIX}-app-${name}-${versionName}-build_$buildCount"
+        val builtName = "${APP_PREFIX}-app-${name}-${versionName}-build_$buildCount"
         return builtName
     }
 }

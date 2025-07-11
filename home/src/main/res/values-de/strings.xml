@@ -3,4 +3,18 @@
     <string name="catalog">Katalog</string>
     <string name="bookmarks">Lesezeichen</string>
     <string name="favorites">Favoriten</string>
+    <string name="add_fab_description">Comic-Ordner hinzufügen.</string>
+    <string name="unknown_category">Unbekannte Kategorie.</string>
+    <string name="search_icon_description">Comics suchen.</string>
+    <string name="search_placeholder">Suchen</string>
+    <string name="latest_comics_section_title">Neueste</string>
+    <string name="favorite_comics_section_title">Favoriten</string>
+    <string name="all_comics_section_title">Alle</string>
+    <string name="list_view_description">Listenansicht.</string>
+    <string name="grid_view_description">Rasteransicht.</string>
+    <string name="no_comics_found_yet">Keine Comics gefunden.</string>
+    <string name="click_plus_to_select_folder">Klicke auf das Plus, um einen Ordner auszuwählen.</string>
+    <string name="add_book_icon_description">Comic-Ordner hinzufügen.</string>
+    <string name="no_title">Kein Titel</string>
+    <string name="comic_cover_description">Comic-Cover.</string>
 </resources>

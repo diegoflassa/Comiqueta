@@ -22,10 +22,8 @@ private class BottomBarShape() : Shape {
     ): Outline {
         val path = Path()
 
-        // Define the original dimensions from which the SVG path data was designed.
-        // This is crucial for correctly scaling the path to the current 'size'.
         val originalDesignWidth = 360f
-        val originalDesignHeight = 55.7f // Based on the maximum Y coordinate in the path data
+        val originalDesignHeight = 55.7f
 
         // Calculate scaling factors for X and Y directions.
         // This ensures the path scales proportionally to fit the provided 'size'.

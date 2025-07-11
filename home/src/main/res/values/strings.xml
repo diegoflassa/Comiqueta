@@ -4,4 +4,18 @@
     <string name="catalog">Catalog</string>
     <string name="bookmarks">Bookmarks</string>
     <string name="favorites">Favorites</string>
+    <string name="add_fab_description">Add comics folder.</string>
+    <string name="unknown_category">Unknown category.</string>
+    <string name="search_placeholder">Search</string>
+    <string name="search_icon_description">Search comics.</string>
+    <string name="latest_comics_section_title">Latest</string>
+    <string name="favorite_comics_section_title">Favorites</string>
+    <string name="all_comics_section_title">All</string>
+    <string name="list_view_description">List mode.</string>
+    <string name="grid_view_description">Grid mode.</string>
+    <string name="no_comics_found_yet">No comics found.</string>
+    <string name="click_plus_to_select_folder">Click the plus to select folder.</string>
+    <string name="add_book_icon_description">Add comics folder.</string>
+    <string name="no_title">No title</string>
+    <string name="comic_cover_description">Comic cover.</string>
 </resources>

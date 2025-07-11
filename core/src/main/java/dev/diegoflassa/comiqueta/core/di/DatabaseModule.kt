@@ -11,7 +11,7 @@ import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import javax.inject.Singleton
 
 @Module
-@InstallIn(SingletonComponent::class) // Or another appropriate component
+@InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
     @Provides

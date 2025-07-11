@@ -115,7 +115,7 @@ class SafFolderScanWorker @AssistedInject constructor(
             tag,
             "Finished processing all folders. Any folder scan failed: $anyFolderScanFailed"
         )
-        return if (anyFolderScanFailed) Result.retry() else Result.success() // Consider retry if specific failures occurred
+        return if (anyFolderScanFailed) Result.retry() else Result.success()
     }
 
     private suspend fun scanDocumentFileForComics(dir: DocumentFile) {
@@ -159,7 +159,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                             title = comicTitle,
                             coverPath = coverImageUri ?: existingComic.coverPath,
                             isNew = if (coverImageUri != null && existingComic.coverPath != coverImageUri) true else existingComic.isNew,
-                            lastModified = file.lastModified() // Update last modified
+                            lastModified = file.lastModified()
                         )
                         TimberLogger.logD(
                             tag,

@@ -3,4 +3,18 @@
     <string name="catalog">Catálogo</string>
     <string name="bookmarks">Favoritos</string>
     <string name="favorites">Coleções</string>
+    <string name="add_fab_description">Adicionar pasta de quadrinhos.</string>
+    <string name="unknown_category">Categoria desconhecida.</string>
+    <string name="search_placeholder">Buscar</string>
+    <string name="search_icon_description">Buscar quadrinhos.</string>
+    <string name="latest_comics_section_title">Últimos</string>
+    <string name="favorite_comics_section_title">Favoritos</string>
+    <string name="all_comics_section_title">Todos</string>
+    <string name="list_view_description">Modo lista.</string>
+    <string name="grid_view_description">Modio grid.</string>
+    <string name="no_comics_found_yet">Nenhum quadrinho encontrado.</string>
+    <string name="click_plus_to_select_folder">Clique no \"mais\" para selecionar a pasta.</string>
+    <string name="add_book_icon_description">Adicionar pasta de quadrinhos.</string>
+    <string name="no_title">Sem título</string>
+    <string name="comic_cover_description">Capa do quadrinho.</string>
 </resources>
