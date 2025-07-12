@@ -9,6 +9,6 @@ class GetCategoriesUseCase @Inject constructor(
     private val categoryRepository: CategoryRepository
 ) {
     operator fun invoke(): Flow<List<CategoryEntity>> {
-        return categoryRepository.getAllCategories()
+        return categoryRepository.getEditableCategories()
     }
 }

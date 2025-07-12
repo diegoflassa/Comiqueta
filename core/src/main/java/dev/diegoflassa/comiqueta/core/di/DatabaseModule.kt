@@ -1,15 +1,23 @@
 package dev.diegoflassa.comiqueta.core.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.diegoflassa.comiqueta.core.data.database.ComicDatabase
+import dev.diegoflassa.comiqueta.core.data.database.DatabaseCallback
 import dev.diegoflassa.comiqueta.core.data.database.dao.CategoryDao
 import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
+import javax.inject.Provider
 import javax.inject.Singleton
+
+private const val USER_PREFERENCES_NAME = "user_preferences"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -17,8 +25,25 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideComicDatabase(@ApplicationContext context: Context): ComicDatabase {
-        return ComicDatabase.getDatabase(context)
+    fun provideComicDatabase(
+        @ApplicationContext context: Context,
+        databaseCallback: DatabaseCallback
+    ): ComicDatabase {
+        return ComicDatabase.getDatabase(context, databaseCallback)
+    }
+
+    @Singleton
+    @Provides
+    fun providePreferencesDataStore(@ApplicationContext appContext: Context): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            produceFile = { appContext.preferencesDataStoreFile(USER_PREFERENCES_NAME) }
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideDatabaseCallback(categoryDaoProvider: Provider<CategoryDao>): DatabaseCallback {
+        return DatabaseCallback(categoryDaoProvider)
     }
 
     @Provides
