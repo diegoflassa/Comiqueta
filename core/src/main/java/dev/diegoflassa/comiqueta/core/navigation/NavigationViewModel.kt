@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package dev.diegoflassa.comiqueta.core.navigation
 
 import android.net.Uri

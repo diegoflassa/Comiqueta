@@ -31,16 +31,11 @@ if (keystorePropertiesFile.exists()) {
     println("WARNING: keystore.properties not found. Release builds may fail to sign.")
 }
 
-// REMOVE THE OLD LINE: Configuracoes.incrementBuildCount(rootProject.rootDir)
-// The logic is now handled by Configuracoes.initializeBuildData above.
-
 android {
     namespace = Configuracoes.APPLICATION_ID
     compileSdk = Configuracoes.COMPILE_SDK
     buildToolsVersion = Configuracoes.BUILD_TOOLS_VERSION
 
-    // Configuracoes.VERSION_CODE and Configuracoes.VERSION_NAME are now already set correctly
-    // by the initializeBuildData call earlier in this script.
     println("Setted versionCode to: ${Configuracoes.VERSION_CODE}")
     println("Setted versionName to: ${Configuracoes.VERSION_NAME}")
 
@@ -48,8 +43,8 @@ android {
         applicationId = Configuracoes.APPLICATION_ID
         minSdk = Configuracoes.MINIMUM_SDK
         targetSdk = Configuracoes.TARGET_SDK
-        versionCode = Configuracoes.VERSION_CODE // Use the directly set properties
-        versionName = Configuracoes.VERSION_NAME // Use the directly set properties
+        versionCode = Configuracoes.VERSION_CODE
+        versionName = Configuracoes.VERSION_NAME
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -81,10 +76,10 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
-        debug {} // Removed empty body as per original, but ensure it's intended.
-    } // build Types braces were mismatched, corrected.
+        debug {}
+    }
 
-    compileOptions { // Moved compileOptions outside buildTypes
+    compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
@@ -115,7 +110,7 @@ android {
             val output = this
             val apkName = Configuracoes.buildAppName(
                 variant.name,
-                variant.versionName // This will now use the correctly set Configuracoes.VERSION_NAME
+                variant.versionName
             ) + ".apk"
             println("Set APK file name to: $apkName")
             val outputImpl = output as BaseVariantOutputImpl
@@ -136,7 +131,7 @@ android {
                 if (generatedAab != null && generatedAab.exists()) {
                     val newAabName = Configuracoes.buildAppName(
                         variant.name,
-                        variant.versionName // This will now use the correctly set Configuracoes.VERSION_NAME
+                        variant.versionName
                     ) + ".aab"
 
                     val renamedFile = File(generatedAab.parentFile, newAabName)
@@ -154,5 +149,4 @@ android {
             }
         }
     }
-    // Removed one extra closing brace for android block based on original structure
 }
