@@ -1,3 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="no_app_to_open_folder">No app found to open this folder.</string>
+    <string name="settings_title">Settings</string>
+    <string name="action_back">Go back</string>
+    <string name="settings_section_permissions_title">App Permissions</string>
+    <string name="settings_permissions_none_required">No special permissions from this list are required for this version of Android.</string>
+    <string name="settings_permission_read_external_storage_rationale_extended">The \'Read External Storage\' permission is required on older Android versions for the app to select your comic library folder and scan its contents. If you deny the permission, you won\'t be able to select a folder. You can always manage permissions from the App Settings.</string>
+    <string name="settings_section_monitored_folders_title">Monitored Comic Folders</string>
+    <string name="settings_monitored_folders_empty">No comic folders are currently being monitored. Add folders from the main screen.</string>
+    <string name="settings_permission_status_granted">Granted</string>
+    <string name="settings_button_app_settings">Settings</string>
+    <string name="settings_button_grant_permission">Grant</string>
+    <string name="settings_permission_denied_permanently_message">Permission denied. To enable this feature, please grant the permission in App Settings.</string>
+    <string name="settings_remove_folder_action_desc">Remove folder</string>
+    <string name="settings_manage_categories_title">Manage Categories</string>
+    <string name="settings_manage_categories_description">View, create, edit, or delete comic categories</string>
+    <string name="settings_manage_categories_icon_desc">Manage categories icon</string>
 </resources>

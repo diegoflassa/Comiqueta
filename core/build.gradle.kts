@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.com.google.devtools.ksp)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt.android.gradle.plugin)
+    alias(libs.plugins.androidx.room)
 }
 
 android {
@@ -15,6 +16,10 @@ android {
 
 kotlin {
     jvmToolchain(JavaVersion.VERSION_21.toString().toInt())
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {

@@ -16,6 +16,8 @@ import dev.diegoflassa.comiqueta.home.ui.home.HomeScreen
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.navigation.Screen
 import dev.diegoflassa.comiqueta.settings.ui.settings.SettingsScreen
+import dev.diegoflassa.comiqueta.categories.ui.categories.CategoriesScreen
+import dev.diegoflassa.comiqueta.viewer.ui.viewer.ViewerScreen
 
 @Composable
 fun NavDisplay(modifier: Modifier, navigationViewModel: NavigationViewModel) {
@@ -36,6 +38,12 @@ fun NavDisplay(modifier: Modifier, navigationViewModel: NavigationViewModel) {
             }
             entry<Screen.Settings> {
                 SettingsScreen(navigationViewModel = navigationViewModel)
+            }
+            entry<Screen.Categories> {
+                CategoriesScreen(navigationViewModel = navigationViewModel)
+            }
+            entry<Screen.Viewer> {
+                ViewerScreen(navigationViewModel = navigationViewModel)
             }
         }
     )

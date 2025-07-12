@@ -2,18 +2,15 @@ package dev.diegoflassa.comiqueta.settings.ui.settings
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.util.Log
-import androidx.compose.animation.core.copy
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dev.diegoflassa.comiqueta.settings.ui.settings.PermissionDisplayStatus
+import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.AddMonitoredFolderUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.GetMonitoredFoldersUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.RemoveMonitoredFolderUseCase
@@ -23,7 +20,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -71,7 +67,7 @@ open class SettingsViewModel @Inject constructor(
                     currentState.copy(comicsFolders = persistedUris, isLoading = false)
                 }
             } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Error loading persisted folders via UseCase", e)
+                TimberLogger.logE("SettingsViewModel", "Error loading persisted folders via UseCase", e)
                 _uiState.update { it.copy(isLoading = false) }
                 viewModelScope.launch { _effect.send(SettingsEffect.ShowToast("Error loading folders: ${e.message}")) }
             }
@@ -109,7 +105,6 @@ open class SettingsViewModel @Inject constructor(
                     _effect.send(SettingsEffect.NavigateToAppSettingsScreen)
                 }
 
-                // --- ADDED CASES ---
                 is SettingsIntent.RequestAddFolder -> {
                     _effect.send(SettingsEffect.LaunchFolderPicker)
                 }
@@ -117,7 +112,14 @@ open class SettingsViewModel @Inject constructor(
                 is SettingsIntent.FolderSelected -> {
                     addFolder(intent.uri)
                 }
-                // --- END OF ADDED CASES ---
+
+                is SettingsIntent.OpenFolder -> {
+                    _effect.send(SettingsEffect.LaunchViewFolderIntent(intent.uri))
+                }
+
+                is SettingsIntent.NavigateToCategoriesClicked -> {
+                    _effect.send(SettingsEffect.NavigateToCategoriesScreen)
+                }
             }
         }
     }
@@ -129,7 +131,7 @@ open class SettingsViewModel @Inject constructor(
     private fun refreshOsPermissionDisplayStatuses(activity: Activity) {
         val relevantPermissions = getRelevantOsPermissions()
         if (relevantPermissions.isEmpty()) {
-            _uiState.update { it.copy(permissionDisplayStatuses = emptyMap()) }
+            _uiState.update { it.copy(permissionDisplayStatuses = emptyMap()) } // Corrected line
             return
         }
         val newStatuses = relevantPermissions.associateWith { permission ->
@@ -167,14 +169,22 @@ open class SettingsViewModel @Inject constructor(
         try {
             val success = removeMonitoredFolderUseCase(folderUri)
             if (success) {
-                Log.d("SettingsViewModel", "Successfully removed folder via UseCase: $folderUri")
+                TimberLogger.logD("SettingsViewModel", "Successfully removed folder via UseCase: $folderUri")
                 _effect.send(SettingsEffect.ShowToast("Folder '${Uri.decode(folderUri.toString())}' access removed."))
             } else {
-                Log.w("SettingsViewModel", "Failed to remove folder via UseCase: $folderUri.")
-                _effect.send(SettingsEffect.ShowToast("Could not remove access for folder '${Uri.decode(folderUri.toString())}'."))
+                TimberLogger.logW("SettingsViewModel", "Failed to remove folder via UseCase: $folderUri.")
+                _effect.send(
+                    SettingsEffect.ShowToast(
+                        "Could not remove access for folder '${ // Corrected line
+                            Uri.decode(
+                                folderUri.toString()
+                            )
+                        }'."
+                    )
+                )
             }
         } catch (e: Exception) {
-            Log.e("SettingsViewModel", "Error removing folder $folderUri via UseCase", e)
+            TimberLogger.logE("SettingsViewModel", "Error removing folder $folderUri via UseCase", e)
             _effect.send(SettingsEffect.ShowToast("Error removing folder: ${e.message}"))
         } finally {
             loadPersistedFolders()
@@ -187,14 +197,22 @@ open class SettingsViewModel @Inject constructor(
         try {
             val success = addMonitoredFolderUseCase(uri)
             if (success) {
-                Log.d("SettingsViewModel", "Successfully added folder via UseCase: $uri")
+                TimberLogger.logD("SettingsViewModel", "Successfully added folder via UseCase: $uri")
                 _effect.send(SettingsEffect.ShowToast("Folder '${Uri.decode(uri.toString())}' added."))
             } else {
-                Log.w("SettingsViewModel", "Failed to add folder via UseCase: $uri.")
-                _effect.send(SettingsEffect.ShowToast("Could not save access for folder '${Uri.decode(uri.toString())}'."))
+                TimberLogger.logW("SettingsViewModel", "Failed to add folder via UseCase: $uri.")
+                _effect.send(
+                    SettingsEffect.ShowToast(
+                        "Could not save access for folder '${
+                            Uri.decode(
+                                uri.toString()
+                            )
+                        }'."
+                    )
+                )
             }
         } catch (e: Exception) {
-            Log.e("SettingsViewModel", "Error adding folder $uri via UseCase", e)
+            TimberLogger.logE("SettingsViewModel", "Error adding folder $uri via UseCase", e)
             _effect.send(SettingsEffect.ShowToast("Error adding folder: ${e.message}"))
         } finally {
             loadPersistedFolders() // Refresh the list from the source of truth

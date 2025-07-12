@@ -15,4 +15,6 @@ sealed interface SettingsIntent {
     data object OpenAppSettingsClicked : SettingsIntent
     data object RequestAddFolder : SettingsIntent
     data class FolderSelected(val uri: Uri) : SettingsIntent
+    data class OpenFolder(val uri: Uri) : SettingsIntent
+    data object NavigateToCategoriesClicked : SettingsIntent // Added this line
 }

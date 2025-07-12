@@ -1,4 +1,4 @@
-package dev.diegoflassa.comiqueta.featuresettings
+package dev.diegoflassa.comiqueta.home
 
 import org.junit.Assert.*
 import org.junit.Test

@@ -3,6 +3,7 @@ package dev.diegoflassa.comiqueta.core.data.repository
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +18,7 @@ import javax.inject.Singleton
  * Database operations for comic folders should be handled separately.
  */
 @Singleton
-open class ComicsFolderRepository @Inject constructor(context: Context) {
+open class ComicsFolderRepository @Inject constructor(@ApplicationContext context: Context) {
 
     private val contentResolver = context.contentResolver
 

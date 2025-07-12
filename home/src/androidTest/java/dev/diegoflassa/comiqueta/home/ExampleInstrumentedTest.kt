@@ -1,4 +1,4 @@
-package dev.diegoflassa.comiqueta.featuresettings
+package dev.diegoflassa.comiqueta.home
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -11,7 +11,6 @@ import org.junit.Assert.*
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-@Suppress("unused")
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
 

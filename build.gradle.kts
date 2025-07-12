@@ -8,6 +8,7 @@ buildscript {
         classpath(libs.google.services.library)
         classpath(libs.firebase.crashlytics.gradle.library)
         classpath(libs.perf.plugin.library)
+        classpath(libs.firebase.appdistribution.gradle.library)
     }
 }
 
@@ -25,6 +26,8 @@ plugins {
     alias(libs.plugins.firebase.perf) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.hilt.android.gradle.plugin) apply false
+    alias(libs.plugins.firebase.appdistribution.gradle) apply false
+    alias(libs.plugins.androidx.room) apply false
 }
 
 verifyKeystore()

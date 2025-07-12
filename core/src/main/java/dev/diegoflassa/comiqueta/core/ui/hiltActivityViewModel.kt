@@ -7,7 +7,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 
 @Composable
-@Suppress("unused")
 inline fun <reified T : ViewModel> hiltActivityViewModel(): T {
     val context = LocalContext.current
     return hiltViewModel(context as ComponentActivity)

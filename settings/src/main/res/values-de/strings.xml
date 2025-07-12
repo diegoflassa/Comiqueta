@@ -1,2 +1,18 @@
 <resources>
+    <string name="no_app_to_open_folder">Keine App zum Öffnen dieses Ordners gefunden.</string>
+    <string name="settings_title">Einstellungen</string>
+    <string name="action_back">Zurück</string>
+    <string name="settings_section_permissions_title">App-Berechtigungen</string>
+    <string name="settings_permissions_none_required">Für diese Android-Version sind keine speziellen Berechtigungen aus dieser Liste erforderlich.</string>
+    <string name="settings_permission_read_external_storage_rationale_extended">Die Berechtigung \'Externen Speicher lesen\' wird auf älteren Android-Versionen benötigt, damit die App Ihren Comic-Bibliotheksordner auswählen und dessen Inhalt scannen kann. Wenn Sie die Berechtigung verweigern, können Sie keinen Ordner auswählen. Sie können Berechtigungen jederzeit in den App-Einstellungen verwalten.</string>
+    <string name="settings_section_monitored_folders_title">Überwachte Comic-Ordner</string>
+    <string name="settings_monitored_folders_empty">Derzeit werden keine Comic-Ordner überwacht. Fügen Sie Ordner über den Hauptbildschirm hinzu.</string>
+    <string name="settings_permission_status_granted">Erteilt</string>
+    <string name="settings_button_app_settings">Einstellungen</string>
+    <string name="settings_button_grant_permission">Erteilen</string>
+    <string name="settings_permission_denied_permanently_message">Berechtigung verweigert. Um diese Funktion zu aktivieren, erteilen Sie die Berechtigung bitte in den App-Einstellungen.</string>
+    <string name="settings_remove_folder_action_desc">Ordner entfernen</string>
+    <string name="settings_manage_categories_title">Kategorien verwalten</string>
+    <string name="settings_manage_categories_description">Comic-Kategorien anzeigen, erstellen, bearbeiten oder löschen</string>
+    <string name="settings_manage_categories_icon_desc">Symbol für Kategorien verwalten</string>
 </resources>

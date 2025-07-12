@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -70,7 +69,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             comicsRepository.getAllComics()
                 .catch { e ->
-                    Log.e("HomeViewModel", "Error loading all comics", e)
+                    TimberLogger.logE("HomeViewModel", "Error loading all comics", e)
                     _effect.send(HomeEffect.ShowToast("Error loading comics: ${e.message}"))
                     _uiState.update {
                         it.copy(
@@ -108,10 +107,10 @@ class HomeViewModel @Inject constructor(
             // Assuming HomeUIState has isFolderPermissionGranted or similar
             // _uiState.update { it.copy(isFolderPermissionGranted = isGranted) }
             // For now, let's assume this state is managed or not critical for this update
-            Log.d("HomeViewModel", "Folder permission granted: $isGranted (Legacy)")
+            TimberLogger.logD("HomeViewModel", "Folder permission granted: $isGranted (Legacy)")
         } else {
             // _uiState.update { it.copy(isFolderPermissionGranted = true) }
-            Log.d("HomeViewModel", "Folder permission granted: true (Android T+)")
+            TimberLogger.logD("HomeViewModel", "Folder permission granted: true (Android T+)")
         }
         // If HomeUIState from HomeScreen.kt doesn't have isFolderPermissionGranted,
         // this update might fail or need adjustment.
@@ -148,7 +147,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private suspend fun handleFolderSelected(uri: Uri) {
-        Log.d("HomeViewModel", "Folder selected and permission should be taken by UI: $uri")
+        TimberLogger.logD("HomeViewModel", "Folder selected and permission should be taken by UI: $uri")
         _effect.send(HomeEffect.ShowToast("Folder selected: ${uri.path}. Scanning should start."))
         // triggerFolderScan() // Original code called it here
         val success = comicsFolderRepository.takePersistablePermission(

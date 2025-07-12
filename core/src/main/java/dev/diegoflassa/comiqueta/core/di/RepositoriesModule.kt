@@ -1,29 +1,20 @@
 package dev.diegoflassa.comiqueta.core.di
 
-import android.content.Context
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
-import dev.diegoflassa.comiqueta.core.data.repository.ComicsFolderRepository
-import dev.diegoflassa.comiqueta.core.data.repository.ComicsRepository
+import dev.diegoflassa.comiqueta.core.data.repository.CategoryRepositoryImpl
+import dev.diegoflassa.comiqueta.core.domain.repository.CategoryRepository
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object RepositoriesModule {
+abstract class RepositoriesModule {
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideComicsRepository(comicsDao: ComicsDao): ComicsRepository {
-        return ComicsRepository(comicsDao)
-    }
-
-    @Provides
-    @Singleton
-    fun provideComicsFolderRepository(@ApplicationContext context: Context): ComicsFolderRepository {
-        return ComicsFolderRepository(context)
-    }
+    abstract fun bindCategoryRepository(
+        categoryRepositoryImpl: CategoryRepositoryImpl
+    ): CategoryRepository
 }

@@ -1,7 +1,7 @@
 [versions]
 
 #Common
-gradle = "8.11.0"
+gradle = "8.11.1"
 kotlin = "2.2.0"
 
 #Project build.gradle
@@ -9,6 +9,8 @@ hilt-android-gradle-plugin = "2.56.2"
 
 #App
 firebase-perf-gradle = "1.4.2"
+firebase-appdistribution-gradle = "5.1.1"
+androidx-room = "2.7.2"
 
 #Project build.gradle
 google-services = "4.4.3"
@@ -72,7 +74,7 @@ hilt-work = "1.2.0"
 hilt-android-testing = "2.56.2"
 
 #OkHttp
-okhttp-bom = "5.0.0"
+okhttp-bom = "5.1.0"
 
 #Moshi
 moshi-kotlin = "1.15.2"
@@ -138,7 +140,7 @@ play-services-auth-api-phone = "18.2.0"
 com-google-android-play-app-update = "2.1.0"
 
 #Other
-clarity-compose = "3.4.1"
+clarity-compose = "3.4.2"
 com-google-auto-value = "1.11.0"
 play-services-ads = "24.4.0"
 io-coil-kt-coil-compose = "2.7.0"
@@ -162,6 +164,7 @@ ksp-gradle-plugin-library = { group = "com.google.devtools.ksp", name = "com.goo
 google-services-library = { module = "com.google.gms:google-services", version.ref = "google-services" }
 firebase-crashlytics-gradle-library = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "firebase-crashlytics-gradle" }
 perf-plugin-library = { module = "com.google.firebase:perf-plugin", version.ref = "perf-plugin" }
+firebase-appdistribution-gradle-library = { module = "com.google.firebase:firebase-appdistribution-gradle", version.ref = "firebase-appdistribution-gradle" } # Added
 
 #Common
 ax-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
@@ -182,6 +185,7 @@ com-google-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-c
 com-google-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx" }
 com-google-firebase-perf-ktx = { module = "com.google.firebase:firebase-perf-ktx" }
 com-google-firebase-config-ktx = { module = "com.google.firebase:firebase-config-ktx" }
+com-google-firebase-appdistribution-ktx = { module = "com.google.firebase:firebase-appdistribution-ktx" }
 
 #Timber
 com-jakewharton-timber = { module = "com.jakewharton.timber:timber", version.ref = "com-jakewharton-timber" }
@@ -323,6 +327,7 @@ io-coil-kt-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "i
 #Root build.gradle
 com-osacky-doctor = { id = "com.osacky.doctor", version.ref = "com-osacky-doctor" }
 org-jetbrains-kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "org-jetbrains-kotlinx-kover" }
+firebase-appdistribution-gradle = { id = "com.google.firebase.appdistribution", version.ref = "firebase-appdistribution-gradle" } # Added
 
 #Common
 com-android-application = { id = "com.android.application", version.ref = "gradle" }
@@ -335,7 +340,9 @@ google-services = { id = "com.google.gms.google-services", version.ref = "google
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
 firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebase-perf-gradle" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+androidx-room = { id = "androidx.room", version.ref = "androidx-room" }
 #ax-baselineprofile = { id = "androidx.baselineprofile", version.ref = "ax-baselineprofile" }
 
 #Project build.gradle
 hilt-android-gradle-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android-gradle-plugin" }
+

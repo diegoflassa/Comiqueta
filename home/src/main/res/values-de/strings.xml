@@ -17,4 +17,14 @@
     <string name="add_book_icon_description">Comic-Ordner hinzufügen.</string>
     <string name="no_title">Kein Titel</string>
     <string name="comic_cover_description">Comic-Cover.</string>
+    <string name="results_section_title">Ergebnisse</string>
+
+    <!-- New/Updated Strings -->
+    <string name="empty_state_title">Keine Comics gefunden</string>
+    <string name="empty_state_message">Füge einen Ordner hinzu, um zu beginnen und deine Comics hier zu sehen.</string>
+    <string name="add_folder_button">Ordner hinzufügen</string>
+    <string name="no_comics_found_for_search">Keine Comics entsprechen deiner Suche oder deinem Filter.</string>
+    <string name="comic_cover_image_description">Titelbild des Comics</string>
+    <string name="unknown_title">Unbekannter Titel</string>
+    <string name="favorite_icon_description">Lieblingscomic</string>
 </resources>

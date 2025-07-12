@@ -2,6 +2,7 @@ package dev.diegoflassa.comiqueta.home.ui.home
 
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
+import dev.diegoflassa.comiqueta.home.ui.enums.ViewMode
 
 data class HomeUIState(
     val allComics: List<ComicEntity> = emptyList(),
@@ -11,7 +12,7 @@ data class HomeUIState(
     val continueReadingComics: List<ComicEntity> = emptyList(),
     val isLoading: Boolean = true,
     val searchQuery: String = "",
-    val selectedCategory: CategoryEntity = CategoryEntity(1, "All"),
+    val selectedCategory: CategoryEntity? = null,
     val categories: List<CategoryEntity> = listOf(
         CategoryEntity(1, "All"),
         CategoryEntity(2, "Action"),

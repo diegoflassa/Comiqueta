@@ -1,6 +1,16 @@
-@file:Suppress("UnstableApiUsage")
-
+import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
 import org.gradle.kotlin.dsl.project
+import java.util.Properties
+
+val firebaseAppDistributionProps = Properties()
+val firebasePropsFile = project.file("./../firebase_app_distribution.properties")
+if (firebasePropsFile.exists() && firebasePropsFile.isFile) {
+    firebasePropsFile.inputStream().use {
+        firebaseAppDistributionProps.load(it)
+    }
+} else {
+    println("Warning: firebase_app_distribution.properties not found. App Distribution appId might be missing.")
+}
 
 plugins {
     id("android-application-convention")
@@ -11,6 +21,18 @@ plugins {
     alias(libs.plugins.firebase.perf)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt.android.gradle.plugin)
+    alias(libs.plugins.firebase.appdistribution.gradle)
+}
+
+if (firebasePropsFile.exists()) {
+    val configuredTesters =
+        firebaseAppDistributionProps.getProperty("firebase.appdistribution.testers") ?: ""
+    println("Setted testers to: $configuredTesters")
+    firebaseAppDistribution {
+        appId = firebaseAppDistributionProps.getProperty("firebase.appdistribution.appId") ?: ""
+        testers = configuredTesters
+        releaseNotes = "Debug test version"
+    }
 }
 
 kotlin {
@@ -20,8 +42,10 @@ kotlin {
 dependencies {
     //Modules
     implementation(project(":core"))
-    implementation(project(":settings"))
     implementation(project(":home"))
+    implementation(project(":settings"))
+    implementation(project(":categories"))
+    implementation(project(":viewer"))
 
     // Common
     implementation(libs.ax.core.ktx)
@@ -71,6 +95,7 @@ dependencies {
     implementation(libs.com.google.firebase.analytics.ktx)
     implementation(libs.com.google.firebase.perf.ktx)
     implementation(libs.com.google.firebase.config.ktx)
+    //implementation(libs.com.google.firebase.appdistribution.ktx)
 
     //Timber
     implementation(libs.com.jakewharton.timber)

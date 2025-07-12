@@ -3,6 +3,7 @@ package dev.diegoflassa.comiqueta.home.ui.home
 import android.net.Uri
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
+import dev.diegoflassa.comiqueta.home.ui.enums.ViewMode
 
 sealed interface HomeIntent {
     data object LoadInitialData : HomeIntent

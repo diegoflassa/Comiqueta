@@ -44,7 +44,7 @@ gradle.rootProject {
             if (keystoreFile.exists().not()) {
                 val standardError = ByteArrayOutputStream()
                 standardOutput = standardError
-                val errorMessage = "Error generating keystore: ${standardError}"
+                val errorMessage = "Error generating keystore: $standardError"
                 throw GradleException(errorMessage)
             } else {
                 logger.lifecycle("keystore.jks gerado com sucesso!")

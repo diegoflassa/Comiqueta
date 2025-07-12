@@ -1,4 +1,4 @@
-@file:Suppress("unused", "UnusedReceiverParameter", "DEPRECATION")
+@file:Suppress("unused", "DEPRECATION")
 
 package dev.diegoflassa.comiqueta.core.data.extensions
 

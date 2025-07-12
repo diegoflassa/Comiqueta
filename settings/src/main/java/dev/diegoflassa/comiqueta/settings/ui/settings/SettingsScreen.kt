@@ -2,32 +2,40 @@ package dev.diegoflassa.comiqueta.settings.ui.settings
 
 import android.Manifest
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,9 +57,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
+import dev.diegoflassa.comiqueta.settings.R
 
 private const val tag = "SettingsScreen"
 
@@ -105,11 +116,22 @@ fun SettingsScreen(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri: Uri? ->
         if (uri != null) {
-            settingsViewModel.processIntent(SettingsIntent.FolderSelected(uri))
+            // Persist permission for the selected folder URI
+            val contentResolver = context.contentResolver
+            val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION // Optional: if you ever need to write
+            try {
+                contentResolver.takePersistableUriPermission(uri, takeFlags)
+                TimberLogger.logD(tag, "Persistable URI permission granted for $uri")
+                settingsViewModel.processIntent(SettingsIntent.FolderSelected(uri))
+            } catch (e: SecurityException) {
+                TimberLogger.logE(tag, "Failed to take persistable URI permission for $uri", e)
+                Toast.makeText(context, "Failed to get persistent access to the folder.", Toast.LENGTH_LONG).show()
+            }
         }
     }
-
-    LaunchedEffect(key1 = Unit) { // Or key1 = settingsViewModel
+    val noAppToOpenFolder = stringResource(R.string.no_app_to_open_folder)
+    LaunchedEffect(key1 = settingsViewModel) { // Use a key that won't change, or the ViewModel itself
         settingsViewModel.effect.collect { effect ->
             when (effect) {
                 is SettingsEffect.LaunchPermissionRequest -> {
@@ -125,7 +147,27 @@ fun SettingsScreen(
                 }
 
                 is SettingsEffect.LaunchFolderPicker -> {
-                    folderPickerLauncher.launch(null)
+                    folderPickerLauncher.launch(null) // Initially, no specific URI is needed for picking
+                }
+
+                is SettingsEffect.LaunchViewFolderIntent -> {
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(effect.folderUri, DocumentsContract.Document.MIME_TYPE_DIR)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    try {
+                        context.startActivity(intent)
+                    } catch (e: ActivityNotFoundException) {
+                        Toast.makeText(
+                            context,
+                            noAppToOpenFolder,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        TimberLogger.logE(tag, "No activity found to handle folder URI: ${effect.folderUri}", e)
+                    }
+                }
+                is SettingsEffect.NavigateToCategoriesScreen -> {
+                    navigationViewModel?.navigateToCategories()
                 }
             }
         }
@@ -161,10 +203,10 @@ fun SettingsScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navigationViewModel?.goBack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Go back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back))
                     }
                 }
             )
@@ -184,13 +226,13 @@ fun SettingsScreenContent(
             } else {
                 // Permissions Section
                 Text(
-                    text = "App Permissions",
+                    text = stringResource(R.string.settings_section_permissions_title),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
                 )
                 if (uiState.permissionDisplayStatuses.isEmpty()) {
                     Text(
-                        "No special permissions from this list are required for this version of Android.",
+                        stringResource(R.string.settings_permissions_none_required),
                         modifier = Modifier.padding(vertical = 8.dp.scaled()),
                         textAlign = TextAlign.Center
                     )
@@ -206,17 +248,13 @@ fun SettingsScreenContent(
                                     )
                                 )
                             },
-                            onOpenSettingsClick = {
-                                onIntent?.invoke(SettingsIntent.OpenAppSettingsClicked)
-                            }
+                            onOpenSettingsClick = { onIntent?.invoke(SettingsIntent.OpenAppSettingsClicked) }
                         )
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp.scaled()))
                     }
                     if (uiState.permissionDisplayStatuses.keys.any { it == Manifest.permission.READ_EXTERNAL_STORAGE }) {
                         Text(
-                            "The 'Read External Storage' permission is required on older Android versions for the app to select your comic library folder " +
-                                    "and scan its contents. If you deny the permission, you won't be able to select a folder. " +
-                                    "You can always manage permissions from the App Settings.",
+                            stringResource(R.string.settings_permission_read_external_storage_rationale_extended),
                             style = MaterialTheme.typography.bodySmall,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -230,28 +268,36 @@ fun SettingsScreenContent(
 
                 // Monitored Folders Section
                 Text(
-                    text = "Monitored Comic Folders",
+                    text = stringResource(R.string.settings_section_monitored_folders_title),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
                 )
                 if (uiState.comicsFolders.isEmpty()) {
                     Text(
-                        "No comic folders are currently being monitored. Add folders from the main screen.",
+                        stringResource(R.string.settings_monitored_folders_empty),
                         modifier = Modifier.padding(vertical = 8.dp.scaled()),
                         textAlign = TextAlign.Center
                     )
                 } else {
-                    LazyColumn(modifier = Modifier.weight(1f)) {
+                    LazyColumn(modifier = Modifier.weight(1f)) { // Make LazyColumn take available space
                         items(
                             uiState.comicsFolders.size,
-                            key = { it.toString() }) { index ->
+                            key = { index -> uiState.comicsFolders[index].toString() } // Use URI as key
+                        ) { index ->
                             val folderUri = uiState.comicsFolders[index]
                             ComicsFolderUriItem(
                                 folderUri = folderUri,
-                                onRemoveClick = {
+                                onFolderClick = { uri ->
+                                    onIntent?.invoke(
+                                        SettingsIntent.OpenFolder(
+                                            uri
+                                        )
+                                    )
+                                },
+                                onRemoveClick = { uri ->
                                     onIntent?.invoke(
                                         SettingsIntent.RemoveFolderClicked(
-                                            folderUri
+                                            uri
                                         )
                                     )
                                 }
@@ -260,6 +306,26 @@ fun SettingsScreenContent(
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp.scaled())) // Add some space before the new button
+
+                // Manage Categories Section
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onIntent?.invoke(SettingsIntent.NavigateToCategoriesClicked) },
+                ) {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.settings_manage_categories_title)) },
+                        supportingContent = { Text(stringResource(R.string.settings_manage_categories_description)) },
+                        leadingContent = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ListAlt,
+                                contentDescription = stringResource(R.string.settings_manage_categories_icon_desc)
+                            )
+                        }
+                    )
+                }
+                 Spacer(modifier = Modifier.height(16.dp.scaled()))
             }
         }
     }
@@ -299,15 +365,15 @@ fun PermissionItem(
 
             if (status.isGranted) {
                 Text(
-                    "Granted",
+                    stringResource(R.string.settings_permission_status_granted),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(end = 8.dp.scaled())
                 )
-                Button(onClick = onOpenSettingsClick) { Text("Settings") }
+                Button(onClick = onOpenSettingsClick) { Text(stringResource(R.string.settings_button_app_settings)) }
             } else {
                 Button(onClick = onRequestPermissionClick) {
-                    Text("Grant")
+                    Text(stringResource(R.string.settings_button_grant_permission))
                 }
             }
         }
@@ -316,7 +382,7 @@ fun PermissionItem(
             Text(
                 text = getPermissionRationaleSettings(permission),
                 fontSize = 12.sp.scaled(),
-                color = MaterialTheme.colorScheme.tertiary,
+                color = MaterialTheme.colorScheme.tertiary, // Using tertiary for rationale
                 modifier = Modifier.padding(
                     top = 4.dp.scaled(),
                     start = 8.dp.scaled(),
@@ -325,7 +391,7 @@ fun PermissionItem(
             )
         } else if (isEffectivelyPermanentlyDenied) {
             Text(
-                text = "Permission denied. To enable this feature, please grant the permission in App Settings.",
+                text = stringResource(R.string.settings_permission_denied_permanently_message),
                 fontSize = 12.sp.scaled(),
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(
@@ -341,210 +407,110 @@ fun PermissionItem(
 @Composable
 fun ComicsFolderUriItem(
     folderUri: Uri,
-    onRemoveClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onFolderClick: (Uri) -> Unit,
+    onRemoveClick: (Uri) -> Unit
 ) {
+    val path = remember(folderUri) { folderUri.path ?: "Unknown path" }
+    val decodedPath = remember(path) { Uri.decode(path) }
+
     Row(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
+            .clickable { onFolderClick(folderUri) }
             .padding(vertical = 12.dp.scaled()),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        val decodedPath = remember(folderUri) {
-            try {
-                Uri.decode(folderUri.toString())
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                folderUri.toString() // Fallback to raw string
-            }
-        }
         Text(
             text = decodedPath,
             modifier = Modifier
                 .weight(1f)
                 .padding(end = 8.dp.scaled()),
-            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
+            maxLines = 2, // Allow up to 2 lines for longer paths
             style = MaterialTheme.typography.bodyMedium
         )
-        IconButton(onClick = onRemoveClick) {
+        IconButton(onClick = { onRemoveClick(folderUri) }) {
             Icon(
-                imageVector = Icons.Filled.Delete,
-                contentDescription = "Remove folder",
+                Icons.Filled.Delete,
+                contentDescription = stringResource(R.string.settings_remove_folder_action_desc),
                 tint = MaterialTheme.colorScheme.error
             )
         }
     }
 }
 
-fun openAppSettings(context: Context) {
-    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-        data = Uri.fromParts("package", context.packageName, null)
-        context.startActivity(this)
-    }
+private fun openAppSettings(context: Context) {
+    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+    intent.data = Uri.fromParts("package", context.packageName, null)
+    context.startActivity(intent)
 }
 
-@Preview(
-    name = "${tag}Empty:360x640",
-    locale = "pt-rBR",
-    showBackground = true,
-    widthDp = 360,
-    heightDp = 640
-)
-@Preview(
-    name = "${tag}Empty:540x1260",
-    locale = "pt-rBR",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260
-)
-@Preview(
-    name = "${tag}Empty:540x1260 Dark",
-    locale = "pt-rBR",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Preview(
-    name = "${tag}Empty:540x1260",
-    locale = "en-rUS",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260
-)
-@Preview(
-    name = "${tag}Empty:540x1260",
-    locale = "de",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260
-)
+@Preview(showBackground = true)
 @Composable
-fun SettingsScreenContentWithMockStateApi29EmptyPreview() { // Renamed
+fun SettingsScreenPreview() {
     ComiquetaThemeContent {
-        val mockUiState = SettingsUIState(
-            comicsFolders = emptyList(),
-            permissionDisplayStatuses = emptyMap(),
-            isLoading = true,
+        SettingsScreenContent(
+            uiState = SettingsUIState(
+                isLoading = false,
+                permissionDisplayStatuses = mapOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE to PermissionDisplayStatus(
+                        isGranted = true,
+                        shouldShowRationale = false
+                    )
+                ),
+                comicsFolders = listOf("content://com.android.externalstorage.documents/tree/primary%3ADCIM".toUri())
+            )
         )
-
-        SettingsScreenContent(uiState = mockUiState)
     }
 }
 
-@Preview(
-    name = "$tag:360x640",
-    locale = "pt-rBR",
-    showBackground = true,
-    widthDp = 360,
-    heightDp = 640
-)
-@Preview(
-    name = "$tag:540x1260",
-    locale = "pt-rBR",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260
-)
-@Preview(
-    name = "$tag:540x1260 Dark",
-    locale = "pt-rBR",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Preview(
-    name = "$tag:540x1260",
-    locale = "en-rUS",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260
-)
-@Preview(
-    name = "$tag:540x1260",
-    locale = "de",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260
-)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun SettingsScreenContentWithMockStateApi29Preview() { // Renamed
+fun SettingsScreenPreviewDark() {
     ComiquetaThemeContent {
-        val mockUiState = SettingsUIState(
-            comicsFolders = listOf(
-                "content://com.android.externalstorage.documents/tree/primary%3ADCIM".toUri(),
-                "content://com.android.externalstorage.documents/tree/primary%3ADownload%2FComics".toUri()
-            ),
-            permissionDisplayStatuses = mapOf(
-                Manifest.permission.READ_EXTERNAL_STORAGE to PermissionDisplayStatus(
-                    isGranted = true,
-                    shouldShowRationale = false
+        SettingsScreenContent(
+            uiState = SettingsUIState(
+                isLoading = false,
+                permissionDisplayStatuses = mapOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE to PermissionDisplayStatus(
+                        isGranted = false,
+                        shouldShowRationale = true
+                    )
+                ),
+                comicsFolders = listOf(
+                    "content://com.android.externalstorage.documents/tree/primary%3ADCIM".toUri(),
+                    "content://com.android.externalstorage.documents/tree/primary%3APictures".toUri()
                 )
-            ),
-            isLoading = false,
+            )
         )
-
-        SettingsScreenContent(uiState = mockUiState)
     }
 }
 
-@Preview(
-    name = "$tag:360x640",
-    locale = "pt-rBR",
-    showBackground = true,
-    widthDp = 360,
-    heightDp = 640,
-    apiLevel = 33
-)
-@Preview(
-    name = "$tag:540x1260",
-    locale = "pt-rBR",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260,
-    apiLevel = 33
-)
-@Preview(
-    name = "$tag:540x1260 Dark",
-    locale = "pt-rBR",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Preview(
-    name = "$tag:540x1260",
-    locale = "en-rUS",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260,
-    apiLevel = 33
-)
-@Preview(
-    name = "$tag:540x1260",
-    locale = "de",
-    showBackground = true,
-    widthDp = 540,
-    heightDp = 1260,
-    apiLevel = 33
-)
+@Preview(showBackground = true)
 @Composable
-fun SettingsScreenContentWithMockStateApi33Preview() { // Added API 33+ version
+fun SettingsScreenPreviewEmpty() {
     ComiquetaThemeContent {
-        val mockUiState = SettingsUIState(
-            comicsFolders = listOf(
-                "content://com.android.externalstorage.documents/tree/primary%3AMovies".toUri(),
-                "content://com.android.externalstorage.documents/tree/primary%3APictures%2FVacation".toUri()
-            ),
-            permissionDisplayStatuses = mapOf(
-                // Manifest.permission.POST_NOTIFICATIONS to PermissionDisplayStatus(isGranted = false, shouldShowRationale = true)
-            ),
-            isLoading = false
+        SettingsScreenContent(
+            uiState = SettingsUIState(
+                isLoading = false,
+                permissionDisplayStatuses = emptyMap(),
+                comicsFolders = emptyList()
+            )
         )
+    }
+}
 
-        SettingsScreenContent(uiState = mockUiState)
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenPreviewLoading() {
+    ComiquetaThemeContent {
+        SettingsScreenContent(
+            uiState = SettingsUIState(
+                isLoading = true,
+                permissionDisplayStatuses = emptyMap(),
+                comicsFolders = emptyList()
+            )
+        )
     }
 }

@@ -1,5 +1,6 @@
 package dev.diegoflassa.comiqueta.core.navigation
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,6 +42,7 @@ class NavigationViewModel @Inject constructor() : ViewModel() {
                         currentState // No change
                     }
                 }
+
                 is NavigationIntent.GoToHome -> {
                     // Navigate to Home.
                     // Current logic adds Home to the stack if not already at the top.
@@ -52,6 +54,7 @@ class NavigationViewModel @Inject constructor() : ViewModel() {
                         currentState // No change
                     }
                 }
+
                 is NavigationIntent.GoBack -> {
                     // Go back if there's more than one screen in the stack
                     if (currentState.backStack.size > 1) {
@@ -64,6 +67,7 @@ class NavigationViewModel @Inject constructor() : ViewModel() {
                         currentState // Cannot go back from the initial screen, no state change
                     }
                 }
+
                 is NavigationIntent.ReplaceAll -> {
                     // Replace the entire back stack with the new screen
                     currentState.copy(backStack = listOf(intent.screen))
@@ -84,6 +88,27 @@ class NavigationViewModel @Inject constructor() : ViewModel() {
      */
     fun navigateTo(screen: Screen) {
         processIntent(NavigationIntent.NavigateTo(screen))
+    }
+
+    /**
+     * Navigates to the Categories screen.
+     */
+    fun navigateToViewer(comicPath: Uri) {
+        processIntent(NavigationIntent.NavigateTo(Screen.Viewer(comicPath)))
+    }
+
+    /**
+     * Navigates to the Categories screen.
+     */
+    fun navigateToCategories() {
+        processIntent(NavigationIntent.NavigateTo(Screen.Categories))
+    }
+
+    /**
+     * Navigates to the Settings screen.
+     */
+    fun navigateToSettings() {
+        processIntent(NavigationIntent.NavigateTo(Screen.Settings))
     }
 
     /**
