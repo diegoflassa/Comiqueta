@@ -43,15 +43,15 @@ object Configuracoes {
         if (isAssembleTask) {
             println("Configuracoes: Assembly task. Incrementing build count from $currentCodeFromFile to ${currentCodeFromFile + 1}.")
             buildCountValue = currentCodeFromFile + 1
+            versionProps["VERSION_CODE"] = buildCountValue.toString()
+
+            FileOutputStream(versionPropsFile).use { fos ->
+                versionProps.store(fos, "Build version counter")
+            }
+            println("Configuracoes: New VERSION_CODE written to ${versionPropsFile.name}: $buildCountValue")
         } else {
             println("Configuracoes: Not an assembly task. Skipping.")
         }
-        versionProps["VERSION_CODE"] = buildCountValue.toString()
-
-        FileOutputStream(versionPropsFile).use { fos ->
-            versionProps.store(fos, "Build version counter")
-        }
-        println("Configuracoes: New VERSION_CODE written to ${versionPropsFile.name}: $buildCountValue")
         initialized = true
     }
 
