@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "4fc76f679f229524ba08e82fa031d961",
+    "identityHash": "d040395d95383a65a54fd15fc80457de",
     "entities": [
       {
         "tableName": "comics",
@@ -105,7 +105,7 @@
       },
       {
         "tableName": "categories",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `created_at` INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `created_at` INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP, `context` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -125,6 +125,12 @@
             "affinity": "INTEGER",
             "notNull": true,
             "defaultValue": "CURRENT_TIMESTAMP"
+          },
+          {
+            "fieldPath": "context",
+            "columnName": "context",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -137,7 +143,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4fc76f679f229524ba08e82fa031d961')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd040395d95383a65a54fd15fc80457de')"
     ]
   }
 }
