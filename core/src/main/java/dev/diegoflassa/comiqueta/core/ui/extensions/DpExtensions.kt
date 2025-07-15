@@ -14,8 +14,10 @@ import dev.diegoflassa.comiqueta.core.ui.getCurrentResolution
  */
 @Composable
 fun Dp.scaled(): Dp {
-    val escala = calculateScale(getCurrentResolution())
-    return (value * escala).dp
+    val currentResolution = getCurrentResolution()
+    val escala = calculateScale(currentResolution)
+    val ret = (value * escala).dp
+    return ret
 }
 
 @Composable

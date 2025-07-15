@@ -18,8 +18,6 @@
     <string name="no_title">Sem título</string>
     <string name="comic_cover_description">Capa do quadrinho</string>
     <string name="results_section_title">Resultados</string>
-
-    <!-- New/Updated Strings -->
     <string name="empty_state_title">Nenhum Quadrinho Encontrado</string>
     <string name="empty_state_message">Adicione uma pasta para começar e ver seus quadrinhos aqui.</string>
     <string name="add_folder_button">Adicionar Pasta</string>
@@ -27,4 +25,7 @@
     <string name="comic_cover_image_description">Imagem da capa do quadrinho</string>
     <string name="unknown_title">Título Desconhecido</string>
     <string name="favorite_icon_description">Quadrinho favorito</string>
+    <string name="back_button_description">Voltar</string>
+    <string name="settings_button_description">Configurações</string>
+    <string name="favorite_button_description">Favoritar</string>
 </resources>

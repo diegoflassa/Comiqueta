@@ -446,7 +446,11 @@ private fun openAppSettings(context: Context) {
     context.startActivity(intent)
 }
 
-@Preview(showBackground = true)
+@Preview(
+    showBackground = true,
+    name = "Settings Screen - Light Mode - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
 @Composable
 fun SettingsScreenPreview() {
     ComiquetaThemeContent {
@@ -465,7 +469,12 @@ fun SettingsScreenPreview() {
     }
 }
 
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    name = "Settings Screen - Dark Mode - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
 @Composable
 fun SettingsScreenPreviewDark() {
     ComiquetaThemeContent {
@@ -487,7 +496,11 @@ fun SettingsScreenPreviewDark() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(
+    showBackground = true,
+    name = "Settings Screen - Empty - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
 @Composable
 fun SettingsScreenPreviewEmpty() {
     ComiquetaThemeContent {
@@ -501,7 +514,11 @@ fun SettingsScreenPreviewEmpty() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(
+    showBackground = true,
+    name = "Settings Screen - Loading - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
 @Composable
 fun SettingsScreenPreviewLoading() {
     ComiquetaThemeContent {

@@ -19,8 +19,6 @@
     <string name="no_title">No title</string>
     <string name="comic_cover_description">Comic cover</string>
     <string name="results_section_title">Results</string>
-
-    <!-- New/Updated Strings -->
     <string name="empty_state_title">No Comics Found</string>
     <string name="empty_state_message">Add a folder to get started and see your comics here.</string>
     <string name="add_folder_button">Add Folder</string>
@@ -28,4 +26,7 @@
     <string name="comic_cover_image_description">Cover image of the comic</string>
     <string name="unknown_title">Unknown Title</string>
     <string name="favorite_icon_description">Favorite comic</string>
+    <string name="back_button_description">Back</string>
+    <string name="settings_button_description">Settings</string>
+    <string name="favorite_button_description">Favorite</string>
 </resources>

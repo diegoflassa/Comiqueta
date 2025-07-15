@@ -1,18 +1,30 @@
 package dev.diegoflassa.comiqueta.viewer.ui.viewer
 
-import android.app.Activity
 import android.net.Uri
 
 /**
- * Represents user actions or events that can modify the state or trigger effects.
+ * Represents user actions or events for the Comic Viewer screen.
  */
 sealed interface ViewerIntent {
-    data object LoadInitialData : ViewerIntent
-    data class RefreshPermissionStatuses(val activity: Activity) : ViewerIntent
-    data class RequestPermission(val permission: String) : ViewerIntent
-    data class PermissionResults(val results: Map<String, Boolean>) : ViewerIntent
-    data class RemoveFolderClicked(val folderUri: Uri) : ViewerIntent
-    data object OpenAppViewerClicked : ViewerIntent
-    data object RequestAddFolder : ViewerIntent
-    data class FolderSelected(val uri: Uri) : ViewerIntent
+    /**
+     * Intent to load a comic from the given URI.
+     * @param uri The URI of the comic file to load.
+     */
+    data class LoadComic(val uri: Uri) : ViewerIntent
+
+    /**
+     * Intent to navigate to a specific page index (0-indexed).
+     * @param pageIndex The 0-based index of the page to navigate to.
+     */
+    data class NavigateToPage(val pageIndex: Int) : ViewerIntent
+
+    /**
+     * Intent to toggle the visibility of the viewer's UI controls (e.g., app bars).
+     */
+    data object ToggleViewerControls : ViewerIntent
+
+    /**
+     * Intent to clear any currently displayed error message.
+     */
+    data object ClearError : ViewerIntent
 }

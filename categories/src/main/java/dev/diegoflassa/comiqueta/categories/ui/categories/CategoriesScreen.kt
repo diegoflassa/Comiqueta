@@ -222,11 +222,11 @@ val sampleCategoriesList = listOf(
     CategoryEntity(id = 5, name = "Horror Thriller Z")
 )
 
-@Preview(name = "${tag}ContentEmpty", showBackground = true)
+@Preview(name = "ContentEmpty Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
 @Preview(
-    name = "${tag}ContentEmpty Dark",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    name = "ContentEmpty Dark - 1080x2560px",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
 fun CategoriesContentPreviewEmpty() {
@@ -241,11 +241,11 @@ fun CategoriesContentPreviewEmpty() {
     }
 }
 
-@Preview(name = "${tag}ContentLoading", showBackground = true)
+@Preview(name = "ContentLoading Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
 @Preview(
-    name = "${tag}ContentLoading Dark",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    name = "ContentLoading Dark - 1080x2560px",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
 fun CategoriesContentPreviewLoading() {
@@ -260,11 +260,11 @@ fun CategoriesContentPreviewLoading() {
     }
 }
 
-@Preview(name = "${tag}ContentError", showBackground = true)
+@Preview(name = "ContentError Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
 @Preview(
-    name = "${tag}ContentError Dark",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    name = "ContentError Dark - 1080x2560px",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
 fun CategoriesContentPreviewError() {
@@ -279,13 +279,11 @@ fun CategoriesContentPreviewError() {
     }
 }
 
-@Preview(name = "${tag}ContentWithData", showBackground = true, widthDp = 360, heightDp = 640)
+@Preview(name = "ContentWithData Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
 @Preview(
-    name = "${tag}ContentWithData Dark",
-    showBackground = true,
-    widthDp = 360,
-    heightDp = 640,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    name = "ContentWithData Dark - 1080x2560px",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
 fun CategoriesContentPreviewWithData() {
@@ -300,11 +298,11 @@ fun CategoriesContentPreviewWithData() {
     }
 }
 
-@Preview(name = "${tag}DialogAdd", showBackground = true)
+@Preview(name = "DialogAdd Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
 @Preview(
-    name = "${tag}DialogAdd Dark",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    name = "DialogAdd Dark - 1080x2560px",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
 fun CategoryEditDialogPreviewAdd() {
@@ -319,11 +317,11 @@ fun CategoryEditDialogPreviewAdd() {
     }
 }
 
-@Preview(name = "${tag}DialogEdit", showBackground = true)
+@Preview(name = "DialogEdit Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
 @Preview(
-    name = "${tag}DialogEdit Dark",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    name = "DialogEdit Dark - 1080x2560px",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
 fun CategoryEditDialogPreviewEdit() {
@@ -339,13 +337,11 @@ fun CategoryEditDialogPreviewEdit() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(name = "${tag}ScreenWithDialog", showBackground = true, widthDp = 360, heightDp = 640)
+@Preview(name = "ScreenWithDialog Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
 @Preview(
-    name = "${tag}ScreenWithDialog Dark",
-    showBackground = true,
-    widthDp = 360,
-    heightDp = 640,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    name = "ScreenWithDialog Dark - 1080x2560px",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
 fun CategoriesScreenPreviewWithDialog() {
@@ -363,13 +359,11 @@ fun CategoriesScreenPreviewWithDialog() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(name = "${tag}ScreenMainState", showBackground = true, widthDp = 360, heightDp = 640)
+@Preview(name = "ScreenMainState Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
 @Preview(
-    name = "${tag}ScreenMainState Dark",
-    showBackground = true,
-    widthDp = 360,
-    heightDp = 640,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    name = "ScreenMainState Dark - 1080x2560px",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
 fun CategoriesScreenPreviewMainState() {
@@ -382,13 +376,11 @@ fun CategoriesScreenPreviewMainState() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(name = "${tag}ScreenEmptyState", showBackground = true, widthDp = 360, heightDp = 640)
+@Preview(name = "ScreenEmptyState Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
 @Preview(
-    name = "${tag}ScreenEmptyState Dark",
-    showBackground = true,
-    widthDp = 360,
-    heightDp = 640,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    name = "ScreenEmptyState Dark - 1080x2560px",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
 fun CategoriesScreenPreviewEmptyState() {

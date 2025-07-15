@@ -12,6 +12,9 @@ import dev.diegoflassa.comiqueta.core.ui.getCurrentResolution
  */
 @Composable
 fun TextUnit.scaled(): TextUnit {
+    if (value == 0f) {
+        return 0.sp
+    }
     val escala = calculateScale(getCurrentResolution())
     return (value * escala).sp
 }
@@ -21,6 +24,9 @@ fun TextUnit.scaled(): TextUnit {
  */
 @Composable
 fun TextUnit.scaled(referencia: Resolution): TextUnit {
+    if (value == 0f) {
+        return 0.sp
+    }
     val escala = calculateScale(referencia, getCurrentResolution())
     return (value * escala).sp
 }

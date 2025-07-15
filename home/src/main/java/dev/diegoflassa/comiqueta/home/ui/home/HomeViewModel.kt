@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
+open class HomeViewModel @Inject constructor(
     private val comicsRepository: ComicsRepository,
     private val comicsFolderRepository: ComicsFolderRepository,
     @param:ApplicationContext private val applicationContext: Context
@@ -34,7 +34,6 @@ class HomeViewModel @Inject constructor(
     val effect: Flow<HomeEffect> = _effect.receiveAsFlow()
 
     init {
-        // Assuming HomeIntent.LoadComics is the correct intent name
         processIntent(HomeIntent.LoadInitialData)
         processIntent(HomeIntent.CheckInitialFolderPermission)
     }
@@ -76,21 +75,19 @@ class HomeViewModel @Inject constructor(
                             isLoading = false,
                             error = e.message
                         )
-                    } // Assuming HomeUIState has 'error'
+                    }
                 }
                 .collect { allComicsList ->
                     _uiState.update { currentState ->
-                        // Assuming HomeUIState uses 'comics' for the main list,
-                        // and has other specific lists like latestComics, etc.
                         currentState.copy(
-                            allComics = allComicsList, // Changed from allComics to comics if UIState uses 'comics'
+                            allComics = allComicsList,
                             latestComics = allComicsList.filter { it.isNew }.take(10),
                             favoriteComics = allComicsList.filter { it.isFavorite }.take(10),
-                            // unreadComics = allComicsList.filter { it.hasBeenRead.not() }.take(10), // If UIState has this
+                            unreadComics = allComicsList.filter { it.hasBeenRead.not() }.take(10),
                             continueReadingComics = allComicsList.filter { it.hasBeenRead }
-                                .take(10), // Ensure it.hasBeenRead exists
+                                .take(10),
                             isLoading = false,
-                            error = null // Clear error on successful load
+                            error = null
                         )
                     }
                 }
@@ -147,7 +144,10 @@ class HomeViewModel @Inject constructor(
     }
 
     private suspend fun handleFolderSelected(uri: Uri) {
-        TimberLogger.logD("HomeViewModel", "Folder selected and permission should be taken by UI: $uri")
+        TimberLogger.logD(
+            "HomeViewModel",
+            "Folder selected and permission should be taken by UI: $uri"
+        )
         _effect.send(HomeEffect.ShowToast("Folder selected: ${uri.path}. Scanning should start."))
         // triggerFolderScan() // Original code called it here
         val success = comicsFolderRepository.takePersistablePermission(

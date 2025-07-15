@@ -27,7 +27,12 @@ class DatabaseCallback @Inject constructor(
 
     suspend fun populateInitialData() {
         val categoryDao = categoryDaoProvider.get()
-        categoryDao.insert(CategoryEntity(name = UserPreferencesKeys.DEFAULT_CATEGORY_ALL))
+        categoryDao.insert(
+            CategoryEntity(
+                id = UserPreferencesKeys.DEFAULT_CATEGORY_ID_ALL,
+                name = UserPreferencesKeys.DEFAULT_CATEGORY_ALL
+            )
+        )
         // You could add other default categories here if needed
         // For example:
         // categoryDao.insertCategory(CategoryEntity(name = "Favorites"))

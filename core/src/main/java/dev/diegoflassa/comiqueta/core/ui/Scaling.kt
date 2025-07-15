@@ -2,6 +2,7 @@
 
 package dev.diegoflassa.comiqueta.core.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalWindowInfo
 import dev.diegoflassa.comiqueta.core.data.extensions.toDp
@@ -28,6 +29,7 @@ fun getReferenceResolution(): Resolution = ReferenceResolution.valor
  * Provide the current resolution for the platform.
  * You should implement this on each target platform (e.g., Android, iOS, Web, Desktop).
  */
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun getCurrentResolution(): Resolution {
     val containerSize = LocalWindowInfo.current.containerSize

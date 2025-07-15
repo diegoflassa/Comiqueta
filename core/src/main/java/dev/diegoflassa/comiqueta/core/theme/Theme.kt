@@ -16,7 +16,7 @@ import androidx.core.view.WindowCompat
 @Suppress("unused")
 object ComiquetaTheme {
     val colorScheme: ColorScheme
-        @Composable @ReadOnlyComposable get() = getComiquetaColorScheme(false)
+        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme
 
     val baselineTypography: Typography
         @Composable @ReadOnlyComposable get() = LocalBaselineTypography.current
