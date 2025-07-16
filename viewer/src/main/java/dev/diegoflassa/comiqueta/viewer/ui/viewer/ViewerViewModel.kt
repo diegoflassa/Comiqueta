@@ -20,12 +20,14 @@ import dev.diegoflassa.comiqueta.core.model.ComicFileType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.commons.compress.archivers.ArchiveEntry
@@ -43,6 +45,7 @@ import java.io.IOException
 import java.util.Collections
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 @HiltViewModel
 open class ViewerViewModel @Inject constructor(
@@ -645,12 +648,15 @@ open class ViewerViewModel @Inject constructor(
             return
         }
 
-        if (pageIndex < 0 || pageIndex >= currentTotalPages) {
+        // It's possible totalPageCount is briefly 0 if comic info is still loading.
+        // If not initial load, we might proceed if pageIndex is 0, assuming pages will appear.
+        // However, if totalPageCount from uiState is definitive and > 0, we must respect its bounds.
+        if (currentTotalPages > 0 && (pageIndex < 0 || pageIndex >= currentTotalPages)) {
             TimberLogger.logW(
                 "ViewerViewModel",
                 "navigateToPage: Attempted to navigate to invalid page index: $pageIndex (Total: $currentTotalPages)"
             )
-            if (isInitialLoad) {
+            if (isInitialLoad) { // Only update error if it's an invalid initial load
                 _uiState.update {
                     it.copy(
                         isLoadingComic = false,
@@ -658,7 +664,7 @@ open class ViewerViewModel @Inject constructor(
                     )
                 }
             }
-            return
+            return // Do not proceed
         }
         TimberLogger.logD(
             "ViewerViewModel",
@@ -670,7 +676,7 @@ open class ViewerViewModel @Inject constructor(
                 "ViewerViewModel",
                 "navigateToPage: Cancelling active currentLoadingJob for pageIndex: $pageIndex"
             )
-            currentLoadingJob?.cancel()
+            currentLoadingJob?.cancel() // Cancel previous loading job
         }
 
         currentLoadingJob = viewModelScope.launch {
@@ -678,15 +684,17 @@ open class ViewerViewModel @Inject constructor(
                 "ViewerViewModel",
                 "navigateToPage: Launched coroutine for pageIndex: $pageIndex"
             )
+            // Update UI to reflect loading of the new page
+            // This happens before try-catch to ensure UI shows loading for the target page.
             _uiState.update {
                 TimberLogger.logD(
                     "ViewerViewModel",
                     "navigateToPage: Updating UI state - currentPageNumber: ${pageIndex + 1}, clearing comicPages for pageIndex: $pageIndex"
                 )
                 it.copy(
-                    currentPageNumber = pageIndex + 1,
-                    comicPages = emptyList(), // Clear current page, new one is loading
-                    viewerError = null       // Clear previous page-specific error
+                    currentPageNumber = pageIndex + 1, // Page number is 1-indexed
+                    comicPages = emptyList(),      // Clear current page, new one is loading
+                    viewerError = null             // Clear previous page-specific error
                 )
             }
 
@@ -717,6 +725,7 @@ open class ViewerViewModel @Inject constructor(
                     "ViewerViewModel",
                     "navigateToPage: Accessing comicPageIdentifiers (size: ${comicPageIdentifiers.size}) at pageIndex: $pageIndex"
                 )
+                // Ensure pageIndex is within bounds of comicPageIdentifiers
                 if (pageIndex < 0 || pageIndex >= comicPageIdentifiers.size) {
                     TimberLogger.logE(
                         "ViewerViewModel",
@@ -747,6 +756,11 @@ open class ViewerViewModel @Inject constructor(
                         "ViewerViewModel",
                         "navigateToPage: Page ${pageIndex + 1} ('$pageIdentifier') not in cache, attempting to decode for pageIndex: $pageIndex"
                     )
+                    // Ensure the coroutine is still active before decoding
+                    if (!isActive) {
+                        TimberLogger.logW("ViewerViewModel", "navigateToPage: Coroutine cancelled before decoding page $pageIndex. Aborting.")
+                        return@launch // Exit coroutine
+                    }
                     val decodedBitmap = decodePage(
                         pageIndex,
                         pageIdentifier,
@@ -787,11 +801,16 @@ open class ViewerViewModel @Inject constructor(
                         "navigateToPage: Successfully obtained bitmap for pageIndex: $pageIndex. Updating UI. Bitmap: $pageBitmap"
                     )
                     _uiState.update {
-                        it.copy(
-                            isLoadingComic = false,
-                            comicPages = listOf(pageBitmap),
-                            viewerError = null
-                        )
+                        // Only update if we are still meant to show this page
+                        if (it.currentPageNumber == pageIndex + 1) {
+                            it.copy(
+                                isLoadingComic = false, // Loading for this specific page is done
+                                comicPages = listOf(pageBitmap),
+                                viewerError = null
+                            )
+                        } else {
+                            it // Another navigation request might have come in
+                        }
                     }
                     TimberLogger.logD(
                         "ViewerViewModel",
@@ -805,30 +824,49 @@ open class ViewerViewModel @Inject constructor(
                     )
                     val errorMessage =
                         "Failed to load page ${pageIndex + 1}: Could not decode or retrieve."
-                    _uiState.update {
-                        it.copy(
-                            isLoadingComic = false,
-                            comicPages = emptyList(),
-                            viewerError = errorMessage
-                        )
-                    }
                     _effect.send(ViewerEffect.ShowToast("Error loading page ${pageIndex + 1}"))
+
+                    delay(2000L) // Delay before showing persistent error
+
+                    _uiState.update { currentState ->
+                        // Only show error if we are still on the page that failed
+                        if (currentState.currentPageNumber == pageIndex + 1 && isActive) {
+                            currentState.copy(
+                                isLoadingComic = false, // Ensure loading is marked false
+                                comicPages = emptyList(), // Keep pages empty as it failed
+                                viewerError = errorMessage
+                            )
+                        } else {
+                            currentState // User navigated away or job cancelled during the delay
+                        }
+                    }
                 }
+            } catch (e: CancellationException) {
+                TimberLogger.logW("ViewerViewModel", "navigateToPage: Coroutine for page $pageIndex was cancelled. Exception: ${e.message}")
+                throw e // Re-throw CancellationException
             } catch (e: Exception) {
                 TimberLogger.logE(
                     "ViewerViewModel",
                     "navigateToPage: Error navigating to page $pageIndex. Exception: ${e.message}",
                     e
                 )
-                val errorMessage = "Failed to load page ${pageIndex + 1}: ${e.message}"
-                _uiState.update {
-                    it.copy(
-                        isLoadingComic = false,
-                        comicPages = emptyList(),
-                        viewerError = errorMessage
-                    )
-                }
+                val errorMessage = "Failed to load page ${pageIndex + 1}: ${e.localizedMessage ?: "Unknown error"}"
                 _effect.send(ViewerEffect.ShowToast("Error loading page ${pageIndex + 1}"))
+
+                delay(2000L) // Delay before showing persistent error
+
+                _uiState.update { currentState ->
+                    // Only show error if we are still on the page that failed and coroutine active
+                    if (currentState.currentPageNumber == pageIndex + 1 && isActive) {
+                        currentState.copy(
+                            isLoadingComic = false,
+                            comicPages = emptyList(),
+                            viewerError = errorMessage
+                        )
+                    } else {
+                        currentState // User navigated away or job cancelled
+                    }
+                }
             }
         }
     }

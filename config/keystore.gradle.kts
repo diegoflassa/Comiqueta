@@ -1,60 +1,88 @@
+import java.util.Properties
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
-import java.util.Properties
-
-private var keystoreGenerationResult: Int? = null
+import org.gradle.api.provider.ProviderFactory
 
 val props = Properties()
 val propsFile = File("${rootDir}/config/config.properties")
+
 if (propsFile.exists()) {
-    val fileInputStream = FileInputStream(propsFile)
-    fileInputStream.use { fis ->
+    FileInputStream(propsFile).use { fis ->
         props.load(fis)
     }
 } else {
-    props["keystore.name"] == "keystore.jks"
-    props["keystore.alias"] == "alias"
-    props["keystore.password"] == "password"
-    props["keystore.dname"] =
-        "CN=Common Name, OU=Organizational Unit, O=Organization, L=Locality, ST=State, C=Country"
+    // Fallback values
+    props["keystore.name"] = "keystore.jks"
+    props["keystore.alias"] = "alias"
+    props["keystore.password"] = "password"
+    props["keystore.dname"] = "CN=Common Name, OU=Unit, O=Org, L=Locality, ST=State, C=Country"
     props["keystore.validity"] = "7300"
     props["keystore.keyalg"] = "RSA"
     props["keystore.keysize"] = "2048"
 }
 
-// Creates a keystore with a random private key suitable for building dev
-// and release builds during active development.
-gradle.rootProject {
-    tasks.register("generateKeystore", Exec::class) {
-        executable = "keytool.exe"
-        val keystoreFile = file("${rootDir}/${props["keystore.name"]}")
-        args(
-            "-genkey",
-            "-keystore", keystoreFile.name,
-            "-alias", props["keystore.alias"],
-            "-keyalg", props["keystore.keyalg"],
-            "-keysize", props["keystore.keysize"],
-            "-keypass", props["keystore.password"],
-            "-storepass", props["keystore.password"],
-            "-validity", props["keystore.validity"],
-            "-dname", props["keystore.dname"]
-        )
-        doLast {
-            if (keystoreFile.exists().not()) {
-                val standardError = ByteArrayOutputStream()
-                standardOutput = standardError
-                val errorMessage = "Error generating keystore: $standardError"
-                throw GradleException(errorMessage)
-            } else {
-                logger.lifecycle("keystore.jks gerado com sucesso!")
-            }
+val keystoreFile = File("${rootDir}/${props["keystore.name"]}")
+
+// Register task
+tasks.register("generateKeystore") {
+    group = "build setup"
+    description = "Generates a debug keystore if not found"
+
+    doLast {
+        if (keystoreFile.exists()) {
+            logger.lifecycle("✔ Keystore already exists at: ${keystoreFile.absolutePath}")
+            return@doLast
+        }
+
+        val keytool = "keytool.exe"
+
+        val checkKeytool = try {
+            val result = project.providers.exec {
+                commandLine("where", keytool)
+                isIgnoreExitValue = true
+            }.result.get()
+            result.exitValue == 0
+        } catch (e: Exception) {
+            false
+        }
+
+        if (!checkKeytool) {
+            logger.warn("⚠ keytool.exe not found in PATH. Skipping keystore generation.")
+            return@doLast
+        }
+
+        try {
+            project.providers.exec {
+                commandLine(
+                    keytool,
+                    "-genkey",
+                    "-keystore", keystoreFile.absolutePath,
+                    "-alias", props["keystore.alias"],
+                    "-keyalg", props["keystore.keyalg"],
+                    "-keysize", props["keystore.keysize"],
+                    "-keypass", props["keystore.password"],
+                    "-storepass", props["keystore.password"],
+                    "-validity", props["keystore.validity"],
+                    "-dname", props["keystore.dname"]
+                )
+            }.result.get()
+            logger.lifecycle("✅ Keystore successfully generated at: ${keystoreFile.absolutePath}")
+        } catch (e: Exception) {
+            logger.error("❌ Failed to generate keystore: ${e.message}")
+            logger.warn("⚠ Build will continue, but signing may fail without a keystore.")
         }
     }
 }
 
-// checks that a keystore exists in the expected location, and generates one
-// if it does not.
+gradle.taskGraph.whenReady {
+    if (!keystoreFile.exists()) {
+        tasks.named("generateKeystore").get().actions.forEach {
+            it.execute(tasks.named("generateKeystore").get())
+        }
+    }
+}
+
 extra["verifyKeystore"] = {
     val keystoreFile = file("${rootDir}/${props["keystore.name"]}")
     if (!keystoreFile.exists()) {
