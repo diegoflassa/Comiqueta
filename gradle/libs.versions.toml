@@ -5,7 +5,7 @@ gradle = "8.11.1"
 kotlin = "2.2.0"
 
 #Project build.gradle
-hilt-android-gradle-plugin = "2.56.2"
+hilt-android-gradle-plugin = "2.57"
 
 #App
 firebase-perf-gradle = "1.4.2"
@@ -40,11 +40,11 @@ firebase-bom = "33.16.0"
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2025.06.01"
+compose-bom = "2025.07.00"
 ax-constraintlayout-compose = "1.1.1"
 ax-activity-compose = "1.10.1"
-lifecycle-viewmodel-compose = "2.9.1"
-ax-navigation-compose = "2.9.1"
+lifecycle-viewmodel-compose = "2.9.2"
+ax-navigation-compose = "2.9.2"
 kotlinx-serialization-json = "1.9.0"
 
 #Compose Testing
@@ -64,14 +64,14 @@ room-ktx = "2.7.2"
 room-testing = "2.7.2"
 
 #Dagger & Hilt
-hilt-android = "2.56.2"
+hilt-android = "2.57"
 hilt-junit-jupiter = "5.13.3"
-hilt-android-compiler = "2.56.2"
+hilt-android-compiler = "2.57"
 hilt-common = "1.2.0"
 hilt-compiler = "1.2.0"
 ax-hilt-navigation-compose = "1.2.0"
 hilt-work = "1.2.0"
-hilt-android-testing = "2.56.2"
+hilt-android-testing = "2.57"
 
 #OkHttp
 okhttp-bom = "5.1.0"
@@ -87,12 +87,12 @@ retrofit2-converter-moshi = "3.0.0"
 retrofit2-converter-gson = "3.0.0"
 
 #Lifecycle
-ax-lifecycle-runtime-ktx = "2.9.1"
-ax-lifecycle-common = "2.9.1"
-ax-lifecycle-common-java8 = "2.9.1"
-ax-lifecycle-viewmodel-savedstate = "2.9.1"
-ax-lifecycle-livedata-ktx = "2.9.1"
-ax-lifecycle-viewmodel-ktx = "2.9.1"
+ax-lifecycle-runtime-ktx = "2.9.2"
+ax-lifecycle-common = "2.9.2"
+ax-lifecycle-common-java8 = "2.9.2"
+ax-lifecycle-viewmodel-savedstate = "2.9.2"
+ax-lifecycle-livedata-ktx = "2.9.2"
+ax-lifecycle-viewmodel-ktx = "2.9.2"
 
 #Lifecycle Extensions
 ax-lifecycle-extensions = "2.2.0"
