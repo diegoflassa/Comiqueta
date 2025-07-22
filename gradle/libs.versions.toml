@@ -102,9 +102,6 @@ ax-lifecycle-extensions = "2.2.0"
 #Work
 ax-work-runtime-ktx = "2.10.2"
 
-#Paging
-androidx-paging = "3.3.0"
-
 #Documenfile
 ax-documentfile = "1.1.0"
 
@@ -279,10 +276,6 @@ ax-lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", 
 
 #Work
 ax-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "ax-work-runtime-ktx" }
-
-#Paging
-androidx-paging-runtime-ktx = { module = "androidx.paging:paging-runtime-ktx", version.ref = "androidx-paging" }
-androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "androidx-paging" }
 
 #Documenfile
 ax-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "ax-documentfile" }
