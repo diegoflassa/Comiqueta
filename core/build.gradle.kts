@@ -69,7 +69,7 @@ dependencies {
 
     //Firebase
     implementation(platform(libs.com.google.firebase.bom))
-    implementation(libs.com.google.firebase.crashlytics.ktx)
+    implementation(libs.com.google.firebase.crashlytics)
 
     //Timber
     implementation(libs.com.jakewharton.timber)

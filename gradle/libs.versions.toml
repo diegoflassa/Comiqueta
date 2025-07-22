@@ -46,6 +46,8 @@ ax-activity-compose = "1.10.1"
 lifecycle-viewmodel-compose = "2.9.2"
 ax-navigation-compose = "2.9.2"
 kotlinx-serialization-json = "1.9.0"
+ax-paging-runtime-ktx = "3.3.6"
+ax-paging-compose = "3.3.6"
 
 #Compose Testing
 org-mockito-android = "5.18.0"
@@ -100,6 +102,9 @@ ax-lifecycle-extensions = "2.2.0"
 #Work
 ax-work-runtime-ktx = "2.10.2"
 
+#Paging
+androidx-paging = "3.3.0"
+
 #Documenfile
 ax-documentfile = "1.1.0"
 
@@ -142,7 +147,6 @@ com-google-android-play-app-update = "2.1.0"
 #Other
 clarity-compose = "3.4.3"
 com-google-auto-value = "1.11.0"
-play-services-ads = "24.4.0"
 io-coil-kt-coil-compose = "2.7.0"
 
 #Plugins
@@ -156,9 +160,9 @@ com-google-devtools-ksp = "2.2.0-2.0.2"
 [libraries]
 
 #build-logic
-android-gradle-plugin-library = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
-kotlin-gradle-plugin-library = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
-ksp-gradle-plugin-library = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "com-google-devtools-ksp" }
+android-gradle-plugin-library = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+kotlin-gradle-plugin-library = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradle-plugin-library = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "com-google-devtools-ksp" }
 
 #Project build.gradle
 google-services-library = { module = "com.google.gms:google-services", version.ref = "google-services" }
@@ -169,44 +173,48 @@ firebase-appdistribution-gradle-library = { module = "com.google.firebase:fireba
 #Common
 ax-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 com-google-android-material = { module = "com.google.android.material:material", version.ref = "material" }
-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "ui-text-google-fonts" }
+ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "ui-text-google-fonts" }
 
 #Common Testing
 junit = { module = "junit:junit", version.ref = "junit" }
 ax-test-ext-junit-ktx = { module = "androidx.test.ext:junit-ktx", version.ref = "junit-ktx" }
 ax-test-rules = { module = "androidx.test:rules", version.ref = "ax-test-rules" }
 ax-test-runner = { module = "androidx.test:runner", version.ref = "ax-test-runner" }
-ax-test-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
-ax-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark-macro-junit4" }
+ax-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiautomator" }
+ax-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark-macro-junit4" }
 
 #Firebase
 com-google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
-com-google-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx" }
-com-google-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx" }
-com-google-firebase-perf-ktx = { module = "com.google.firebase:firebase-perf-ktx" }
-com-google-firebase-config-ktx = { module = "com.google.firebase:firebase-config-ktx" }
-com-google-firebase-appdistribution-ktx = { module = "com.google.firebase:firebase-appdistribution-ktx" }
+com-google-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
+com-google-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+com-google-firebase-perf = { module = "com.google.firebase:firebase-perf" }
+com-google-firebase-config = { module = "com.google.firebase:firebase-config" }
+com-google-firebase-appcheck = { module = "com.google.firebase:firebase-appcheck" }
+com-google-firebase-appcheck-playintegrity = { module = "com.google.firebase:firebase-appcheck-playintegrity" }
+play-services-ads = { module = "com.google.firebase:firebase-auth" }
 
 #Timber
 com-jakewharton-timber = { module = "com.jakewharton.timber:timber", version.ref = "com-jakewharton-timber" }
 
 #Compose
-ax-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
-ax-compose-ui = { group = "androidx.compose.ui", name = "ui" }
-ax-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-ax-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-ax-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-ax-compose-ui-viewbinding = { group = "androidx.compose.ui", name = "ui-viewbinding" }
-ax-compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
-ax-compose-runtime-rxjava3 = { group = "androidx.compose.runtime", name = "runtime-rxjava3" }
-ax-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
-ax-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
-ax-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
-ax-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "ax-constraintlayout-compose" }
-ax-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "ax-activity-compose" }
-ax-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle-viewmodel-compose" }
-ax-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "ax-navigation-compose" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+ax-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+ax-compose-ui = { module = "androidx.compose.ui:ui" }
+ax-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
+ax-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+ax-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+ax-compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding" }
+ax-compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata" }
+ax-compose-runtime-rxjava3 = { module = "androidx.compose.runtime:runtime-rxjava3" }
+ax-compose-material3 = { module = "androidx.compose.material3:material3" }
+ax-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
+ax-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
+ax-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "ax-constraintlayout-compose" }
+ax-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "ax-activity-compose" }
+ax-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle-viewmodel-compose" }
+ax-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "ax-navigation-compose" }
+ax-paging-runtime-ktx = { module = "androidx.paging:paging-runtime-ktx", version.ref = "ax-paging-runtime-ktx" }
+ax-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "ax-paging-compose" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 
 #Compose Testing
 ax-compose-ui-test = { module = "androidx.compose.ui:ui-test" }
@@ -222,7 +230,7 @@ ax-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.re
 
 ##Optional add-on libraries for ViewModel integration and adaptive layouts
 ax-navigation3-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "ax-navigation3-viewmodel" }
-#ax-navigation3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation3", version.ref = "ax-navigation3-adaptive" }
+#ax-navigation3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive-navigation3", version.ref = "ax-navigation3-adaptive" }
 
 #Room
 ax-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room-runtime" }
@@ -272,7 +280,11 @@ ax-lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", 
 #Work
 ax-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "ax-work-runtime-ktx" }
 
-#Documentfile
+#Paging
+androidx-paging-runtime-ktx = { module = "androidx.paging:paging-runtime-ktx", version.ref = "androidx-paging" }
+androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "androidx-paging" }
+
+#Documenfile
 ax-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "ax-documentfile" }
 
 #RecyclerView
@@ -294,7 +306,7 @@ ax-appsearch-local-storage = { module = "androidx.appsearch:appsearch-local-stor
 ax-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "ax-splashscreen" }
 
 #Profile Installer
-#ax-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "ax-profileinstaller" }
+#ax-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "ax-profileinstaller" }
 
 #Play Services Auth
 com-google-android-gms-play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-auth" }
@@ -317,8 +329,6 @@ org-github-junrar = { module = "com.github.junrar:junrar", version.ref = "org-gi
 com-microsoft-clarity-compose = { module = "com.microsoft.clarity:clarity-compose", version.ref = "clarity-compose" }
 
 com-google-auto-value = { module = "com.google.auto.value:auto-value", version.ref = "com-google-auto-value" }
-
-play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services-ads" }
 
 io-coil-kt-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "io-coil-kt-coil-compose" }
 

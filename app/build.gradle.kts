@@ -91,11 +91,12 @@ dependencies {
 
     //Firebase
     implementation(platform(libs.com.google.firebase.bom))
-    implementation(libs.com.google.firebase.crashlytics.ktx)
-    implementation(libs.com.google.firebase.analytics.ktx)
-    implementation(libs.com.google.firebase.perf.ktx)
-    implementation(libs.com.google.firebase.config.ktx)
-    //implementation(libs.com.google.firebase.appdistribution.ktx)
+    implementation(libs.com.google.firebase.crashlytics)
+    implementation(libs.com.google.firebase.analytics)
+    implementation(libs.com.google.firebase.perf)
+    implementation(libs.com.google.firebase.config)
+    implementation(libs.com.google.firebase.appcheck)
+    implementation(libs.com.google.firebase.appcheck.playintegrity)
 
     //Timber
     implementation(libs.com.jakewharton.timber)

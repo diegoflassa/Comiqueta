@@ -42,6 +42,8 @@ dependencies {
     implementation(libs.ax.activity.compose)
     implementation(libs.ax.lifecycle.viewmodel.compose)
     implementation(libs.ax.navigation.compose)
+    implementation(libs.ax.paging.runtime.ktx)
+    implementation(libs.ax.paging.compose)
     implementation(libs.kotlinx.serialization.json)
 
     //Compose Testing
@@ -61,7 +63,7 @@ dependencies {
 
     //Firebase
     implementation(platform(libs.com.google.firebase.bom))
-    implementation(libs.com.google.firebase.crashlytics.ktx)
+    implementation(libs.com.google.firebase.crashlytics)
 
     //Room
     implementation(libs.ax.room.runtime)

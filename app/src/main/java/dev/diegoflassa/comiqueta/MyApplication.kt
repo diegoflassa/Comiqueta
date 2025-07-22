@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import com.google.firebase.FirebaseApp
 import dagger.hilt.android.HiltAndroidApp
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.data.timber.TimberManager
@@ -21,7 +22,7 @@ class MyApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        // Initialize TimberManager using the application context
+        FirebaseApp.initializeApp(this)
         TimberManager.inicializar(this)
         TimberLogger.logI(TAG, "onCreate")
 
