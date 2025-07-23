@@ -67,7 +67,6 @@ room-testing = "2.7.2"
 
 #Dagger & Hilt
 hilt-android = "2.57"
-hilt-junit-jupiter = "5.13.4"
 hilt-android-compiler = "2.57"
 hilt-common = "1.2.0"
 hilt-compiler = "1.2.0"
@@ -135,11 +134,11 @@ org-apache-commons-compress = "1.27.1"
 #Rar files
 org-github-junrar = "7.5.5"
 
-#Play Services Auth
-play-services-auth = "21.3.0"
-play-services-auth-api-phone = "18.2.0"
-
+#App Update
 com-google-android-play-app-update = "2.1.0"
+
+#Ads
+play-services-ads-api = "24.4.0"
 
 #Other
 clarity-compose = "3.4.3"
@@ -188,7 +187,6 @@ com-google-firebase-perf = { module = "com.google.firebase:firebase-perf" }
 com-google-firebase-config = { module = "com.google.firebase:firebase-config" }
 com-google-firebase-appcheck = { module = "com.google.firebase:firebase-appcheck" }
 com-google-firebase-appcheck-playintegrity = { module = "com.google.firebase:firebase-appcheck-playintegrity" }
-play-services-ads = { module = "com.google.firebase:firebase-auth" }
 
 #Timber
 com-jakewharton-timber = { module = "com.jakewharton.timber:timber", version.ref = "com-jakewharton-timber" }
@@ -238,7 +236,6 @@ ax-room-testing = { module = "androidx.room:room-testing", version.ref = "room-t
 
 #Dagger & Hilt
 com-google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
-org-junit-jupiter-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "hilt-junit-jupiter" }
 com-google-dagger-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt-android-compiler" }
 ax-hilt-common = { module = "androidx.hilt:hilt-common", version.ref = "hilt-common" }
 ax-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt-compiler" }
@@ -301,13 +298,11 @@ ax-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref
 #Profile Installer
 #ax-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "ax-profileinstaller" }
 
-#Play Services Auth
-com-google-android-gms-play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-auth" }
-
-#Play Services Auth APi Phone
-com-google-android-gms-play-services-auth-api-phone = { module = "com.google.android.gms:play-services-auth-api-phone", version.ref = "play-services-auth-api-phone" }
-
+#App Update
 com-google-android-play-app-update = { module = "com.google.android.play:app-update", version.ref = "com-google-android-play-app-update" }
+
+#Ads
+play-services-ads-api = { group = "com.google.android.gms", name = "play-services-ads-api", version.ref = "play-services-ads-api" }
 
 #Startup
 ax-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "ax-startup-runtime" }

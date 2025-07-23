@@ -3,9 +3,13 @@ import org.gradle.api.JavaVersion
 
 // Apply common plugins for an Android library
 plugins {
+    //alias(libs.plugins.android.library)
     id("com.android.library")
+    //alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.android")
+    //alias(libs.plugins.kotlin.parcelize)
     // id("org.jetbrains.kotlin.parcelize")
+    //alias(libs.plugins.com.google.devtools.ksp)
     // id("com.google.devtools.ksp")
 }
 

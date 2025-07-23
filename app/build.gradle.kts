@@ -159,8 +159,11 @@ dependencies {
     //Splashscreen
     implementation(libs.ax.core.splashscreen)
 
-    //Play Core
+    //App Update
     implementation(libs.com.google.android.play.app.update)
+
+    //Ads
+    implementation(libs.play.services.ads.api)
 
     //Startup
     implementation(libs.ax.startup.runtime)
@@ -169,8 +172,6 @@ dependencies {
     implementation(libs.com.microsoft.clarity.compose)
 
     implementation(libs.com.google.auto.value)
-
-    implementation(libs.play.services.ads)
 
     implementation(libs.io.coil.kt.coil.compose)
 }

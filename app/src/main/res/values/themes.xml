@@ -6,7 +6,7 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="windowSplashScreenBackground">@color/launcher_color</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher
         </item>
         <item name="windowSplashScreenIconBackgroundColor">@color/launcher_color</item>
         <item name="postSplashScreenTheme">@style/Theme.Comiqueta</item>

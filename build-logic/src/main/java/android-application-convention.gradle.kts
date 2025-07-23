@@ -18,8 +18,11 @@ val isAssembleTask = requestedTaskNames.any { taskName ->
 Configuracoes.incrementBuildCount(rootProject.rootDir, isAssembleTask)
 
 plugins {
+    //alias(libs.plugins.com.android.application)
     id("com.android.application")
+    //alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.android")
+    //alias(libs.plugins.com.google.devtools.ksp)
     id("com.google.devtools.ksp")
 }
 
