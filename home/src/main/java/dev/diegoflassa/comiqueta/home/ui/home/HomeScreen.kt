@@ -106,13 +106,6 @@ import dev.diegoflassa.comiqueta.core.theme.settingIconTint
 import dev.diegoflassa.comiqueta.core.theme.tabSelectedText
 import dev.diegoflassa.comiqueta.core.theme.tabUnselectedText
 
-// Assuming these are defined in your project:
-// - HomeViewModel, HomeIntent, HomeEffect, HomeUIState
-// - ComiquetaTheme, ComiquetaThemeContent, ComiquetaTheme.dimen, ComiquetaTheme.shapes
-// - dev.diegoflassa.comiqueta.core.ui.extensions.scaled
-// - R.string.home, R.string.catalog, R.string.bookmarks, R.string.favorites, etc.
-// - R.drawable.ic_placeholder_comic (or similar placeholder drawable)
-
 private const val tag = "HomeScreen"
 
 private const val COMIC_COVER_ASPECT_RATIO = 2f / 3f
@@ -122,6 +115,7 @@ fun HomeScreen(
     navigationViewModel: NavigationViewModel = hiltViewModel(),
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
+    TimberLogger.logI(tag, "HomeScreen")
     val uiState by homeViewModel.uiState.collectAsState()
     val context = LocalContext.current
 

@@ -32,7 +32,7 @@ object ComiquetaLightColors {
     val onBackgroundLight = Color(0xFFFFFFFF)//OK
     val surfaceLight = Color(0xFFFCF8F8)//OK
     val onSurfaceLight = Color(0xFF1C1B1B)//OK
-    val surfaceVariantLight = Color(0xFF00FF00)
+    val surfaceVariantLight = Color(0xFFFFFFFF)//OK
     val onSurfaceVariantLight = Color(0xFF444748)//OK
     val outlineLight = Color(0xFFFF0000)
     val outlineVariantLight = Color(0xFFC4C7C7)//OK
@@ -79,7 +79,7 @@ object ComiquetaDarkColors {
     val onBackgroundDark = Color(0xFF333333)//OK
     val surfaceDark = Color(0xFF231F20)//Ok
     val onSurfaceDark = Color(0xFFF8F8F8)//Ok
-    val surfaceVariantDark = Color(0xFF00FF00)
+    val surfaceVariantDark = Color(0xFFFFFFFF)//Ok
     val onSurfaceVariantDark = Color(0xFF333333)//Ok
     val outlineDark = Color(0xFF00FF00)
     val outlineVariantDark = Color(0xFF444748)//OK

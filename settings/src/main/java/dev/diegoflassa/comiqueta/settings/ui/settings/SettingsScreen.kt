@@ -99,6 +99,7 @@ fun SettingsScreen(
     navigationViewModel: NavigationViewModel? = null,
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
+    TimberLogger.logI(tag, "SettingsScreen")
     val context = LocalContext.current
     val activity = context as? Activity
     val settingsUIState: SettingsUIState by settingsViewModel.uiState.collectAsState()

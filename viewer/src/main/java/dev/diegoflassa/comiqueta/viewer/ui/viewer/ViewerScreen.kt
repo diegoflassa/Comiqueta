@@ -2,9 +2,7 @@ package dev.diegoflassa.comiqueta.viewer.ui.viewer
 
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import android.os.ParcelFileDescriptor
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -51,9 +49,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.changedToUp
-import androidx.compose.ui.input.pointer.consumePositionChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.ContentScale
@@ -65,12 +60,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.apache.commons.compress.archivers.ArchiveEntry
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
-import java.io.ByteArrayInputStream
-import android.graphics.BitmapFactory
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.createBitmap
@@ -88,6 +77,7 @@ fun ViewerScreen(
     navigationViewModel: NavigationViewModel? = null,
     viewerViewModel: ViewerViewModel = hiltViewModel()
 ) {
+    TimberLogger.logI(tag, "ViewerScreen")
     val context = LocalContext.current
     LaunchedEffect(comicPath) {
         if (comicPath != null) {
@@ -256,12 +246,6 @@ fun ViewerScreenContent(
                                                 val hasTwoPointers = changes.size >= 2
                                                 val firstChange = changes.firstOrNull()
 
-                                                val allPointersUp = changes.all { it.changedToUp() }
-                                                if (allPointersUp) {
-                                                    // Gesture ended, now safe to check final state if needed
-                                                }
-
-                                                // --- CRITICAL FIX START ---
                                                 // Calculate raw values
                                                 val rawZoom = event.calculateZoom()
                                                 val rawPan = event.calculatePan()
@@ -273,12 +257,10 @@ fun ViewerScreenContent(
                                                 val pan = if (rawPan == Offset.Unspecified) Offset(0f, 0f) else rawPan
                                                 val centroid = if (rawCentroid == Offset.Unspecified) Offset(0f, 0f) else rawCentroid
 
-                                                // --- CRITICAL FIX END ---
-
                                                 // If multi-touch (for initial zoom) OR already zoomed in (for pan/zoom)
                                                 if (hasTwoPointers || scale > 1f) {
                                                     val oldScale = scale
-                                                    val newScale = (scale * zoom).coerceIn(1f, 5f) // Use guarded 'zoom'
+                                                    val newScale = (scale * zoom).coerceIn(1f, 5f)
 
                                                     isImageZoomed = newScale > 1f
 
@@ -312,14 +294,14 @@ fun ViewerScreenContent(
 
                                                         // Use guarded 'centroid' and 'pan' here
                                                         offsetX = (offsetX + centroid.x * (1 - newScale / oldScale) + pan.x).let {
-                                                            if (newScale > 1f && safeMaxTranslateX > 0f) {
+                                                            if (safeMaxTranslateX > 0f) {
                                                                 it.coerceIn(-safeMaxTranslateX, safeMaxTranslateX)
                                                             } else {
                                                                 0f
                                                             }
                                                         }
                                                         offsetY = (offsetY + centroid.y * (1 - newScale / oldScale) + pan.y).let {
-                                                            if (newScale > 1f && safeMaxTranslateY > 0f) {
+                                                            if (safeMaxTranslateY > 0f) {
                                                                 it.coerceIn(-safeMaxTranslateY, safeMaxTranslateY)
                                                             } else {
                                                                 0f
@@ -344,7 +326,7 @@ fun ViewerScreenContent(
                                                         } else {
                                                             // Dominantly vertical movement at 1x scale:
                                                             // Can consume if you want to prevent vertical scrolling at 1x
-                                                            // firstChange.consumePositionChange()
+                                                            firstChange.consume()
                                                         }
                                                     }
                                                 }
