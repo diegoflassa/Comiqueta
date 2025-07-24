@@ -445,7 +445,8 @@ private fun openAppSettings(context: Context) {
 @Preview(
     showBackground = true,
     name = "Settings Screen - Light Mode - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440"
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    group = "Screen - With Data"
 )
 @Composable
 fun SettingsScreenPreview() {
@@ -469,7 +470,8 @@ fun SettingsScreenPreview() {
     showBackground = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     name = "Settings Screen - Dark Mode - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440"
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    group = "Screen - With Data"
 )
 @Composable
 fun SettingsScreenPreviewDark() {
@@ -495,7 +497,8 @@ fun SettingsScreenPreviewDark() {
 @Preview(
     showBackground = true,
     name = "Settings Screen - Empty - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440"
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    group = "Screen - Other States"
 )
 @Composable
 fun SettingsScreenPreviewEmpty() {
@@ -513,7 +516,8 @@ fun SettingsScreenPreviewEmpty() {
 @Preview(
     showBackground = true,
     name = "Settings Screen - Loading - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440"
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    group = "Screen - Other States"
 )
 @Composable
 fun SettingsScreenPreviewLoading() {

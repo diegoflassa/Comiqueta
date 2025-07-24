@@ -80,6 +80,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -275,14 +276,14 @@ fun HomeScreenContent(
                         label = stringResource(R.string.home),
                         type = BottomNavItems.HOME,
                         isSelected = true
-                    ) {onIntent?.invoke(HomeIntent.NavigateTo(Screen.Home)) }
+                    ) { onIntent?.invoke(HomeIntent.NavigateTo(Screen.Home)) }
                     BottomNavItem(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Star,
                         label = stringResource(R.string.catalog),
                         type = BottomNavItems.CATALOG,
                         isSelected = false
-                    ) {onIntent?.invoke(HomeIntent.NavigateTo(Screen.Catalog)) }
+                    ) { onIntent?.invoke(HomeIntent.NavigateTo(Screen.Catalog)) }
                     Spacer(modifier = Modifier.width(fabDiameter + 16.dp.scaled()))
                     BottomNavItem(
                         modifier = Modifier.weight(1f),
@@ -290,14 +291,14 @@ fun HomeScreenContent(
                         label = stringResource(R.string.bookmarks),
                         type = BottomNavItems.BOOKMARKS,
                         isSelected = false
-                    ) {onIntent?.invoke(HomeIntent.NavigateTo(Screen.Bookmark)) }
+                    ) { onIntent?.invoke(HomeIntent.NavigateTo(Screen.Bookmark)) }
                     BottomNavItem(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Favorite,
                         label = stringResource(R.string.favorites),
                         type = BottomNavItems.FAVORITES,
                         isSelected = false
-                    ) {onIntent?.invoke(HomeIntent.NavigateTo(Screen.Favorites)) }
+                    ) { onIntent?.invoke(HomeIntent.NavigateTo(Screen.Favorites)) }
                 }
             }
 
@@ -709,17 +710,97 @@ fun BottomNavItem(
     }
 }
 
-@Preview(
-    showBackground = true,
-    name = "Light Mode - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440"
+// --- Previews Start ---
+
+private val sampleComics = listOf(
+    ComicEntity(
+        filePath = "file:///comic1".toUri(),
+        title = "Comic Adventure 1",
+        // author = "Author A", // ComicEntity doesn't have author, removed for consistency
+        isFavorite = true,
+        isNew = true,
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+1".toUri() // Using a placeholder URL
+    ), ComicEntity(
+        filePath = "file:///comic2".toUri(),
+        title = "Mystery of the Void",
+        // author = "Author B",
+        isNew = true,
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+2".toUri()
+    ), ComicEntity(
+        filePath = "file:///comic3".toUri(),
+        title = "Chronicles of Code",
+        // author = "Author C",
+        isFavorite = false,
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+3".toUri()
+    ), ComicEntity(
+        filePath = "file:///comic4".toUri(),
+        title = "Epic Tales",
+        // author = "Author D",
+        isFavorite = true,
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+4".toUri()
+    )
 )
-@Preview(
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    name = "Dark Mode - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440"
+private val sampleCategories = listOf(
+    CategoryEntity(id = 1, name = "All"),
+    CategoryEntity(id = 2, name = "Sci-Fi"),
+    CategoryEntity(id = 3, name = "Fantasy")
 )
+
+// Previews With Data
+@Preview(name = "Phone - Light - With Data", group = "Screen - With Data", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440")
+@Preview(name = "Phone - Dark - With Data", group = "Screen - With Data", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun HomeScreenContentWithComicsPreviewPhone() {
+    ComiquetaThemeContent {
+        HomeScreenContent(
+            uiState = HomeUIState(
+                isLoading = false,
+                allComics = sampleComics,
+                latestComics = sampleComics.filter { it.isNew },
+                favoriteComics = sampleComics.filter { it.isFavorite },
+                categories = sampleCategories,
+                selectedCategory = sampleCategories.first()
+            ), onIntent = {})
+    }
+}
+
+@Preview(name = "Foldable - Light - With Data", group = "Screen - With Data", showBackground = true, device = Devices.FOLDABLE)
+@Preview(name = "Foldable - Dark - With Data", group = "Screen - With Data", showBackground = true, device = Devices.FOLDABLE, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun HomeScreenContentWithComicsPreviewFoldable() {
+    ComiquetaThemeContent {
+        HomeScreenContent(
+            uiState = HomeUIState(
+                isLoading = false,
+                allComics = sampleComics,
+                latestComics = sampleComics.filter { it.isNew },
+                favoriteComics = sampleComics.filter { it.isFavorite },
+                categories = sampleCategories,
+                selectedCategory = sampleCategories.first()
+            ), onIntent = {})
+    }
+}
+
+@Preview(name = "Tablet - Light - With Data", group = "Screen - With Data", showBackground = true, device = Devices.TABLET)
+@Preview(name = "Tablet - Dark - With Data", group = "Screen - With Data", showBackground = true, device = Devices.TABLET, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun HomeScreenContentWithComicsPreviewTablet() {
+    ComiquetaThemeContent {
+        HomeScreenContent(
+            uiState = HomeUIState(
+                isLoading = false,
+                allComics = sampleComics,
+                latestComics = sampleComics.filter { it.isNew },
+                favoriteComics = sampleComics.filter { it.isFavorite },
+                categories = sampleCategories,
+                selectedCategory = sampleCategories.first()
+            ), onIntent = {})
+    }
+}
+
+// Previews for Other States (Loading, Empty)
+@Preview(name = "Phone - Light - Loading", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440")
+@Preview(name = "Phone - Dark - Loading", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun HomeScreenContentLoadingPreview() {
     ComiquetaThemeContent {
@@ -728,17 +809,8 @@ fun HomeScreenContentLoadingPreview() {
     }
 }
 
-@Preview(
-    showBackground = true,
-    name = "Light Mode - Empty - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440"
-)
-@Preview(
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    name = "Dark Mode - Empty - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440"
-)
+@Preview(name = "Phone - Light - Empty", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440")
+@Preview(name = "Phone - Dark - Empty", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun HomeScreenContentEmptyPreview() {
     ComiquetaThemeContent {
@@ -752,61 +824,4 @@ fun HomeScreenContentEmptyPreview() {
             ), onIntent = {})
     }
 }
-
-@Preview(
-    showBackground = true,
-    name = "Light Mode - With Comics - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440"
-)
-@Preview(
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    name = "Dark Mode - With Comics - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440"
-)
-@Composable
-fun HomeScreenContentWithComicsPreview() {
-    val sampleComics = listOf(
-        ComicEntity(
-            filePath = "file:///comic1".toUri(),
-            title = "Comic Adventure 1",
-            // author = "Author A", // ComicEntity doesn't have author, removed for consistency
-            isFavorite = true,
-            isNew = true,
-            coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+1".toUri() // Using a placeholder URL
-        ), ComicEntity(
-            filePath = "file:///comic2".toUri(),
-            title = "Mystery of the Void",
-            // author = "Author B",
-            isNew = true,
-            coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+2".toUri()
-        ), ComicEntity(
-            filePath = "file:///comic3".toUri(),
-            title = "Chronicles of Code",
-            // author = "Author C",
-            isFavorite = false,
-            coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+3".toUri()
-        ), ComicEntity(
-            filePath = "file:///comic4".toUri(),
-            title = "Epic Tales",
-            // author = "Author D",
-            isFavorite = true,
-            coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+4".toUri()
-        )
-    )
-    val sampleCategories = listOf(
-        CategoryEntity(id = 1, name = "All"), // Assuming CategoryEntity structure
-        CategoryEntity(id = 2, name = "Sci-Fi"), CategoryEntity(id = 3, name = "Fantasy")
-    )
-    ComiquetaThemeContent {
-        HomeScreenContent(
-            uiState = HomeUIState(
-                isLoading = false,
-                allComics = sampleComics,
-                latestComics = sampleComics.filter { it.isNew },
-                favoriteComics = sampleComics.filter { it.isFavorite },
-                categories = sampleCategories,
-                selectedCategory = sampleCategories.first()
-            ), onIntent = {})
-    }
-}
+// --- Previews End ---

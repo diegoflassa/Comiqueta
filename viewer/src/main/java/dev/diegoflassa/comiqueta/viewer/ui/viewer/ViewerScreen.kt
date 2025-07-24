@@ -1,5 +1,6 @@
 package dev.diegoflassa.comiqueta.viewer.ui.viewer
 
+import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.net.Uri
@@ -12,9 +13,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.calculateCentroid
-import androidx.compose.foundation.gestures.calculatePan
-import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -41,44 +40,36 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.asImageBitmap
+import android.graphics.Color as AndroidColor
 import androidx.core.graphics.createBitmap
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
-import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
-import android.graphics.Color as AndroidColor
-import kotlin.math.abs
-
-private const val tag = "ViewerScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViewerScreen(
     modifier: Modifier = Modifier,
     comicPath: Uri? = null,
-    navigationViewModel: NavigationViewModel? = hiltActivityViewModel(),
+    navigationViewModel: NavigationViewModel? = null,
     viewerViewModel: ViewerViewModel = hiltViewModel()
 ) {
-    TimberLogger.logI(tag, "ViewerScreen")
     val context = LocalContext.current
     LaunchedEffect(comicPath) {
         if (comicPath != null) {
@@ -114,58 +105,69 @@ fun ViewerScreenContent(
     uiState: ViewerUIState = ViewerUIState(),
     onIntent: ((ViewerIntent) -> Unit)? = null
 ) {
-    BackHandler { navigationViewModel?.goBack() }
-
-    val initialPagerPage = (uiState.currentPageNumber - 1).coerceAtLeast(0)
-    val totalPagerPageCount = uiState.totalPageCount.coerceAtLeast(0)
+    BackHandler {
+        navigationViewModel?.goBack()
+    }
 
     val pagerState = rememberPagerState(
-        initialPage = initialPagerPage,
-        pageCount = { totalPagerPageCount }
-    )
+        initialPage = 0,
+        initialPageOffsetFraction = 0f
+    ) {
+        uiState.totalPageCount.coerceAtLeast(0)
+    }
 
     LaunchedEffect(uiState.currentPageNumber, uiState.totalPageCount) {
-        val maxPageIndex = (uiState.totalPageCount - 1).coerceAtLeast(0)
-        val targetPage = (uiState.currentPageNumber - 1).coerceIn(0, maxPageIndex)
+        if (uiState.totalPageCount > 0) {
+            val targetPage = (uiState.currentPageNumber - 1).coerceIn(0, uiState.totalPageCount - 1)
+            if (pagerState.currentPage != targetPage) {
+                pagerState.scrollToPage(targetPage)
+            }
+        }
+    }
+    var scale by remember { mutableFloatStateOf(1f) } // Hoisted scale
 
-        if (uiState.totalPageCount > 0 && pagerState.currentPage != targetPage) {
-            pagerState.scrollToPage(targetPage)
+    LaunchedEffect(pagerState, uiState.currentPageNumber, uiState.totalPageCount) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            TimberLogger.logD("ViewerScreen", "SnapshotFlow: Pager's currentPage is now: $page. uiState.currentPageNumber (1-indexed) is: ${uiState.currentPageNumber}, totalPageCount: ${uiState.totalPageCount}.")
+            if (uiState.totalPageCount > 0 && (page + 1) != uiState.currentPageNumber) {
+                TimberLogger.logD("ViewerScreen", "SnapshotFlow: Condition MET. Pager current page (0-indexed): $page, uiState.currentPageNumber (1-indexed): ${uiState.currentPageNumber}. Sending NavigateToPage($page).")
+                onIntent?.invoke(ViewerIntent.NavigateToPage(page))
+            } else {
+                TimberLogger.logD("ViewerScreen", "SnapshotFlow: Condition NOT MET. Pager current page (0-indexed): $page, uiState.currentPageNumber (1-indexed): ${uiState.currentPageNumber}, totalPageCount: ${uiState.totalPageCount}.")
+            }
         }
     }
 
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }
-            .collect { page ->
-                if (uiState.totalPageCount > 0 && (page + 1) != uiState.currentPageNumber) {
-                    onIntent?.invoke(ViewerIntent.NavigateToPage(page))
-                }
-            }
-    }
 
     Scaffold(
+        modifier = modifier.fillMaxSize(),
         topBar = {
-            AnimatedVisibility(uiState.showViewerControls, enter = fadeIn(), exit = fadeOut()) {
+            AnimatedVisibility(
+                visible = uiState.showViewerControls,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 TopAppBar(
                     title = { Text(uiState.comicTitle) },
                     navigationIcon = {
                         IconButton(onClick = { navigationViewModel?.goBack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Go back")
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
                     )
                 )
             }
         },
         bottomBar = {
             AnimatedVisibility(
-                uiState.showViewerControls && uiState.totalPageCount > 0,
+                visible = uiState.showViewerControls && uiState.totalPageCount > 0,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
                 BottomAppBar(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
                 ) {
                     Text(
                         text = "${uiState.currentPageNumber} / ${uiState.totalPageCount}",
@@ -175,164 +177,107 @@ fun ViewerScreenContent(
                     )
                 }
             }
-        },
-        modifier = modifier.fillMaxSize()
-    ) { padding ->
+        }
+    ) { paddingValues ->
         Box(
             modifier = Modifier
-                .padding(padding)
+                .padding(paddingValues)
                 .fillMaxSize()
                 .clickable(
-                    enabled = !uiState.isLoadingComic && uiState.viewerError == null,
+                    enabled = !uiState.isLoadingComic && uiState.viewerError == null, // Disable click if loading or error
                     onClick = { onIntent?.invoke(ViewerIntent.ToggleViewerControls) }
                 ),
             contentAlignment = Alignment.Center
         ) {
-            var scale by remember { mutableFloatStateOf(1f) }
-            var offsetX by remember { mutableFloatStateOf(0f) }
-            var offsetY by remember { mutableFloatStateOf(0f) }
-
-            var isImageZoomed by remember { mutableStateOf(false) }
-
-            // Reset zoom and pan when the pager page changes or if current values are invalid
-            LaunchedEffect(pagerState.currentPage) {
-                if (scale.isNaN() || scale.isInfinite() || scale != 1f ||
-                    offsetX.isNaN() || offsetX.isInfinite() || offsetX != 0f ||
-                    offsetY.isNaN() || offsetY.isInfinite() || offsetY != 0f
-                ) {
-                    scale = 1f
-                    offsetX = 0f
-                    offsetY = 0f
-                    isImageZoomed = false
-                }
-            }
-
             when {
-                uiState.isLoadingComic -> {
+                uiState.isLoadingComic && uiState.comicPages.isEmpty() && uiState.viewerError == null -> {
                     CircularProgressIndicator()
                 }
 
                 uiState.viewerError != null -> {
                     Text(
-                        text = uiState.viewerError,
-                        color = MaterialTheme.colorScheme.error,
+                        text = "Error: ${uiState.viewerError}\nTap to dismiss.",
                         modifier = Modifier
                             .padding(16.dp)
-                            .clickable { onIntent?.invoke(ViewerIntent.ClearError) },
-                        textAlign = TextAlign.Center
+                            .clickable { // This clickable is only for dismissing the error
+                                onIntent?.invoke(ViewerIntent.ClearError)
+                            },
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.error
                     )
                 }
 
                 uiState.totalPageCount > 0 -> {
                     HorizontalPager(
                         state = pagerState,
-                        userScrollEnabled = !isImageZoomed,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        userScrollEnabled = !uiState.isLoadingComic && scale == 1f // Updated: only allow scroll if not loading AND scale is 1f
                     ) { pageIndexInPager ->
-                        val pageBitmapToDisplay = uiState.comicPages.getOrNull(pageIndexInPager)
+                        val pageBitmapToDisplay = if (
+                            (uiState.currentPageNumber -1) == pageIndexInPager &&
+                            uiState.comicPages.isNotEmpty()
+                        ) {
+                            uiState.comicPages.firstOrNull()
+                        } else {
+                            null
+                        }
+
+                        //var scale by remember { mutableFloatStateOf(1f) } // Moved scale to be hoisted
+                        var offsetX by remember { mutableFloatStateOf(0f) }
+                        var offsetY by remember { mutableFloatStateOf(0f) }
+
+                        LaunchedEffect(pageBitmapToDisplay, pagerState.currentPage) {
+                            // Reset zoom/pan only for the CURRENT active page in pager if bitmap/page changes
+                            if (pagerState.currentPage == pageIndexInPager) {
+                                scale = 1f
+                                offsetX = 0f
+                                offsetY = 0f
+                            }
+                        }
 
                         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                            val viewConfiguration = LocalViewConfiguration.current
-                            val touchSlop = viewConfiguration.touchSlop
-
                             val imageModifier = Modifier
                                 .fillMaxSize()
                                 .pointerInput(pageBitmapToDisplay) {
                                     if (pageBitmapToDisplay != null) {
-                                        awaitPointerEventScope {
-                                            while (true) {
-                                                val event = awaitPointerEvent()
-                                                val changes = event.changes
+                                        detectTransformGestures(
+                                            panZoomLock = true,
+                                            onGesture = { centroid, pan, zoom, _ ->
+                                                val oldScale = scale
+                                                val newScale = (scale * zoom).coerceIn(1f, 5f)
 
-                                                val hasTwoPointers = changes.size >= 2
-                                                val firstChange = changes.firstOrNull()
+                                                // Calculate image dimensions based on ContentScale.Fit
+                                                val containerWidthPx = constraints.maxWidth
+                                                val containerHeightPx = constraints.maxHeight
+                                                val imageAspectRatio = pageBitmapToDisplay.width.toFloat() / pageBitmapToDisplay.height.toFloat()
+                                                val containerAspectRatio = containerWidthPx.toFloat() / containerHeightPx.toFloat()
 
-                                                // Calculate raw values
-                                                val rawZoom = event.calculateZoom()
-                                                val rawPan = event.calculatePan()
-                                                val rawCentroid = event.calculateCentroid(useCurrent = true)
+                                                val fittedImageWidth: Float
+                                                val fittedImageHeight: Float
 
-                                                // Guard against Unspecified/NaN/Infinity
-                                                // Default zoom to 1f if invalid, pan/centroid to Offset(0f,0f)
-                                                val zoom = if (rawZoom.isNaN() || rawZoom.isInfinite()) 1f else rawZoom
-                                                val pan = if (rawPan == Offset.Unspecified) Offset(0f, 0f) else rawPan
-                                                val centroid = if (rawCentroid == Offset.Unspecified) Offset(0f, 0f) else rawCentroid
-
-                                                // If multi-touch (for initial zoom) OR already zoomed in (for pan/zoom)
-                                                if (hasTwoPointers || scale > 1f) {
-                                                    val oldScale = scale
-                                                    val newScale = (scale * zoom).coerceIn(1f, 5f)
-
-                                                    isImageZoomed = newScale > 1f
-
-                                                    if (newScale > 1f) {
-                                                        val containerWidthPx = constraints.maxWidth.toFloat()
-                                                        val containerHeightPx = constraints.maxHeight.toFloat()
-
-                                                        val imageAspectRatio = pageBitmapToDisplay.width.toFloat() / pageBitmapToDisplay.height.toFloat()
-                                                        val containerAspectRatio = containerWidthPx / containerHeightPx
-
-                                                        val fittedImageWidth: Float
-                                                        val fittedImageHeight: Float
-
-                                                        if (imageAspectRatio > containerAspectRatio) {
-                                                            fittedImageWidth = containerWidthPx
-                                                            fittedImageHeight = fittedImageWidth / imageAspectRatio
-                                                        } else {
-                                                            fittedImageHeight = containerHeightPx
-                                                            fittedImageWidth = fittedImageHeight * imageAspectRatio
-                                                        }
-
-                                                        val scaledImageWidth = fittedImageWidth * newScale
-                                                        val scaledImageHeight = fittedImageHeight * newScale
-
-                                                        // Ensure maxTranslateX/Y are finite before coercing (existing fix)
-                                                        val maxTranslateX = (scaledImageWidth - containerWidthPx) / 2f
-                                                        val maxTranslateY = (scaledImageHeight - containerHeightPx) / 2f
-
-                                                        val safeMaxTranslateX = if (maxTranslateX.isFinite()) maxTranslateX else 0f
-                                                        val safeMaxTranslateY = if (maxTranslateY.isFinite()) maxTranslateY else 0f
-
-                                                        // Use guarded 'centroid' and 'pan' here
-                                                        offsetX = (offsetX + centroid.x * (1 - newScale / oldScale) + pan.x).let {
-                                                            if (safeMaxTranslateX > 0f) {
-                                                                it.coerceIn(-safeMaxTranslateX, safeMaxTranslateX)
-                                                            } else {
-                                                                0f
-                                                            }
-                                                        }
-                                                        offsetY = (offsetY + centroid.y * (1 - newScale / oldScale) + pan.y).let {
-                                                            if (safeMaxTranslateY > 0f) {
-                                                                it.coerceIn(-safeMaxTranslateY, safeMaxTranslateY)
-                                                            } else {
-                                                                0f
-                                                            }
-                                                        }
-                                                    } else {
-                                                        // If newScale becomes 1f, reset offsets to center
-                                                        offsetX = 0f
-                                                        offsetY = 0f
-                                                    }
-                                                    scale = newScale
-
-                                                    // Consume all changes because we handled the gesture (pan/zoom)
-                                                    changes.forEach { it.consume() }
-                                                } else if (firstChange != null && firstChange.positionChanged()) {
-                                                    val delta = firstChange.position - firstChange.previousPosition
-
-                                                    if (abs(delta.x) > touchSlop || abs(delta.y) > touchSlop) {
-                                                        if (abs(delta.x) > abs(delta.y)) {
-                                                            // Dominantly horizontal movement at 1x scale: DO NOT consume.
-                                                            // This allows HorizontalPager to handle the swipe.
-                                                        } else {
-                                                            // Dominantly vertical movement at 1x scale:
-                                                            // Can consume if you want to prevent vertical scrolling at 1x
-                                                            firstChange.consume()
-                                                        }
-                                                    }
+                                                if (imageAspectRatio > containerAspectRatio) {
+                                                    fittedImageWidth = containerWidthPx.toFloat()
+                                                    fittedImageHeight = fittedImageWidth / imageAspectRatio
+                                                } else { // Image is taller
+                                                    fittedImageHeight = containerHeightPx.toFloat()
+                                                    fittedImageWidth = fittedImageHeight * imageAspectRatio
                                                 }
+
+                                                // Calculate maximum allowed offsets
+                                                val maxOffsetX = (fittedImageWidth * newScale - containerWidthPx).coerceAtLeast(0f) / 2f
+                                                val maxOffsetY = (fittedImageHeight * newScale - containerHeightPx).coerceAtLeast(0f) / 2f
+
+
+                                                // Update offset: zoom around the centroid and apply pan
+                                                offsetX = (offsetX + centroid.x * (1 - newScale / oldScale) + pan.x).let {
+                                                    if (maxOffsetX > 0) it.coerceIn(-maxOffsetX, maxOffsetX) else 0f
+                                                }
+                                                offsetY = (offsetY + centroid.y * (1 - newScale / oldScale) + pan.y).let {
+                                                    if (maxOffsetY > 0) it.coerceIn(-maxOffsetY, maxOffsetY) else 0f
+                                                }
+                                                scale = newScale
                                             }
-                                        }
+                                        )
                                     }
                                 }
                                 .graphicsLayer(
@@ -346,33 +291,27 @@ fun ViewerScreenContent(
                                 Image(
                                     bitmap = pageBitmapToDisplay,
                                     contentDescription = "Page ${pageIndexInPager + 1}",
-                                    contentScale = ContentScale.Fit,
-                                    modifier = imageModifier.background(MaterialTheme.colorScheme.surfaceVariant)
+                                    modifier = imageModifier.background(MaterialTheme.colorScheme.surfaceVariant),
+                                    contentScale = ContentScale.Fit
                                 )
+                            } else if ((uiState.currentPageNumber - 1) == pageIndexInPager && uiState.comicPages.isEmpty() && uiState.isLoadingComic) {
+                                // Show loader for the current page if its bitmap is loading
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator()
+                                }
                             } else {
+                                // Empty placeholder for non-active/non-loaded pages
                                 Box(
-                                    Modifier
+                                    modifier = Modifier
                                         .fillMaxSize()
                                         .background(MaterialTheme.colorScheme.surfaceVariant)
-                                        .align(Alignment.Center)
-                                ) {
-                                    if (uiState.isLoadingComic) {
-                                        CircularProgressIndicator(Modifier.align(Alignment.Center))
-                                    } else {
-                                        Text(
-                                            "Page ${pageIndexInPager + 1} not loaded.",
-                                            Modifier.align(Alignment.Center),
-                                            textAlign = TextAlign.Center,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
+                                )
                             }
                         }
                     }
                 }
 
-                else -> {
+                else -> { // No comic loaded, not loading, no error
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -386,9 +325,10 @@ fun ViewerScreenContent(
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            "Please select a comic.",
+                            "Please select a comic to start viewing.",
                             style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 8.dp)
                         )
                     }
                 }
@@ -420,9 +360,38 @@ private fun createDummyBitmapsForPreview(
     return list
 }
 
-@Preview(name = "ViewerScreen Empty", locale = "en", showBackground = true, showSystemUi = true)
+// --- Previews Start ---
+
+// Previews with Data
+@Preview(name = "Phone - Light - With Comic", group = "Screen - With Comic", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440")
+@Preview(name = "Phone - Dark - With Comic", group = "Screen - With Comic", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Foldable - Light - With Comic", group = "Screen - With Comic", showBackground = true, device = Devices.FOLDABLE)
+@Preview(name = "Foldable - Dark - With Comic", group = "Screen - With Comic", showBackground = true, device = Devices.FOLDABLE, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Tablet - Light - With Comic", group = "Screen - With Comic", showBackground = true, device = Devices.TABLET)
+@Preview(name = "Tablet - Dark - With Comic", group = "Screen - With Comic", showBackground = true, device = Devices.TABLET, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun ViewerScreenPreviewEmpty() {
+fun ViewerScreenWithComicPreview() {
+    ComiquetaThemeContent {
+        ViewerScreenContent(
+            uiState = ViewerUIState(
+                isLoadingComic = false,
+                comicPages = createDummyBitmapsForPreview(1),
+                currentPageNumber = 1,
+                totalPageCount = 3,
+                comicTitle = "My Awesome Comic Book",
+                showViewerControls = true,
+                viewerError = null
+            ),
+            onIntent = {}
+        )
+    }
+}
+
+// Previews for Other States (Empty, Loading, Error)
+@Preview(name = "Phone - Light Mode - Empty", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440")
+@Preview(name = "Phone - Dark Mode - Empty", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun ViewerScreenEmptyPreview() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
@@ -436,16 +405,17 @@ fun ViewerScreenPreviewEmpty() {
     }
 }
 
-@Preview(name = "ViewerScreen Loading", locale = "en", showBackground = true, showSystemUi = true)
+@Preview(name = "Phone - Light Mode - Loading", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440")
+@Preview(name = "Phone - Dark Mode - Loading", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun ViewerScreenPreviewLoading() {
+fun ViewerScreenLoadingPreview() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
                 isLoadingComic = true,
                 comicPages = emptyList(),
                 currentPageNumber = 1,
-                totalPageCount = 5,
+                totalPageCount = 1,
                 comicTitle = "Loading Comic...",
                 viewerError = null
             ),
@@ -454,23 +424,17 @@ fun ViewerScreenPreviewLoading() {
     }
 }
 
-@Preview(
-    name = "ViewerScreen With Comic",
-    locale = "en",
-    showBackground = true,
-    showSystemUi = true
-)
+@Preview(name = "Phone - Light Mode - Error", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440")
+@Preview(name = "Phone - Dark Mode - Error", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun ViewerScreenPreviewWithComic() {
+fun ViewerScreenErrorPreview() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
                 isLoadingComic = false,
-                comicPages = createDummyBitmapsForPreview(5),
-                currentPageNumber = 1,
-                totalPageCount = 5,
-                comicTitle = "Sample Comic",
-                viewerError = null
+                comicPages = emptyList(),
+                comicTitle = "Problem Child",
+                viewerError = "Failed to load pages. File might be corrupted or unsupported."
             ),
             onIntent = {}
         )

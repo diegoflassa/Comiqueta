@@ -213,136 +213,28 @@ val sampleCategoriesList = listOf(
     CategoryEntity(id = 5, name = "Horror Thriller Z")
 )
 
+// --- Previews Start ---
+
+// Previews - With Data
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(
-    name = "ContentEmpty Light - 1080x2560px",
+    name = "ScreenMainState Light - 1080x2560px",
+    group = "Previews - With Data",
     device = "spec:width=1080px,height=2560px,dpi=440",
     showSystemUi = true
 )
 @Preview(
-    name = "ContentEmpty Dark - 1080x2560px",
+    name = "ScreenMainState Dark - 1080x2560px",
+    group = "Previews - With Data",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
-fun CategoriesContentPreviewEmpty() {
+fun CategoriesScreenPreviewMainState() {
     ComiquetaThemeContent {
-        CategoriesContent(
-            categories = emptyList(),
-            isLoading = false,
-            error = null,
+        CategoriesScreenContent(
+            uiState = CategoriesUIState(categories = sampleCategoriesList.take(3)),
             onIntent = {},
-        )
-    }
-}
-
-@Preview(
-    name = "ContentLoading Light - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440",
-    showSystemUi = true
-)
-@Preview(
-    name = "ContentLoading Dark - 1080x2560px",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
-)
-@Composable
-fun CategoriesContentPreviewLoading() {
-    ComiquetaThemeContent {
-        CategoriesContent(
-            categories = emptyList(),
-            isLoading = true,
-            error = null,
-            onIntent = {}
-        )
-    }
-}
-
-@Preview(
-    name = "ContentError Light - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440",
-    showSystemUi = true
-)
-@Preview(
-    name = "ContentError Dark - 1080x2560px",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
-)
-@Composable
-fun CategoriesContentPreviewError() {
-    ComiquetaThemeContent {
-        CategoriesContent(
-            categories = emptyList(),
-            isLoading = false,
-            error = "Failed to load categories. Please try again.",
-            onIntent = {}
-        )
-    }
-}
-
-@Preview(
-    name = "ContentWithData Light - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440",
-    showSystemUi = true
-)
-@Preview(
-    name = "ContentWithData Dark - 1080x2560px",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
-)
-@Composable
-fun CategoriesContentPreviewWithData() {
-    ComiquetaThemeContent {
-        CategoriesContent(
-            categories = sampleCategoriesList,
-            isLoading = false,
-            error = null,
-            onIntent = {}
-        )
-    }
-}
-
-@Preview(
-    name = "DialogAdd Light - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440",
-    showSystemUi = true
-)
-@Preview(
-    name = "DialogAdd Dark - 1080x2560px",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
-)
-@Composable
-fun CategoryEditDialogPreviewAdd() {
-    ComiquetaThemeContent {
-        CategoryEditDialog(
-            category = null,
-            currentName = "",
-            onNameChange = {},
-            onDismiss = {},
-            onSave = {}
-        )
-    }
-}
-
-@Preview(
-    name = "DialogEdit Light - 1080x2560px",
-    device = "spec:width=1080px,height=2560px,dpi=440",
-    showSystemUi = true
-)
-@Preview(
-    name = "DialogEdit Dark - 1080x2560px",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
-)
-@Composable
-fun CategoryEditDialogPreviewEdit() {
-    ComiquetaThemeContent {
-        CategoryEditDialog(
-            category = sampleCategoriesList.first(),
-            currentName = sampleCategoriesList.first().name,
-            onNameChange = {},
-            onDismiss = {},
-            onSave = {}
         )
     }
 }
@@ -350,11 +242,13 @@ fun CategoryEditDialogPreviewEdit() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(
     name = "ScreenWithDialog Light - 1080x2560px",
+    group = "Previews - With Data",
     device = "spec:width=1080px,height=2560px,dpi=440",
     showSystemUi = true
 )
 @Preview(
     name = "ScreenWithDialog Dark - 1080x2560px",
+    group = "Previews - With Data",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
@@ -373,35 +267,41 @@ fun CategoriesScreenPreviewWithDialog() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview(
-    name = "ScreenMainState Light - 1080x2560px",
+    name = "ContentWithData Light - 1080x2560px",
+    group = "Previews - With Data",
     device = "spec:width=1080px,height=2560px,dpi=440",
     showSystemUi = true
 )
 @Preview(
-    name = "ScreenMainState Dark - 1080x2560px",
+    name = "ContentWithData Dark - 1080x2560px",
+    group = "Previews - With Data",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
-fun CategoriesScreenPreviewMainState() {
+fun CategoriesContentPreviewWithData() {
     ComiquetaThemeContent {
-        CategoriesScreenContent(
-            uiState = CategoriesUIState(categories = sampleCategoriesList.take(3)),
-            onIntent = {},
+        CategoriesContent(
+            categories = sampleCategoriesList,
+            isLoading = false,
+            error = null,
+            onIntent = {}
         )
     }
 }
 
+// Previews - Other States
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(
     name = "ScreenEmptyState Light - 1080x2560px",
+    group = "Previews - Other States",
     device = "spec:width=1080px,height=2560px,dpi=440",
     showSystemUi = true
 )
 @Preview(
     name = "ScreenEmptyState Dark - 1080x2560px",
+    group = "Previews - Other States",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
@@ -415,3 +315,126 @@ fun CategoriesScreenPreviewEmptyState() {
     }
 }
 
+@Preview(
+    name = "ContentEmpty Light - 1080x2560px",
+    group = "Previews - Other States",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
+@Preview(
+    name = "ContentEmpty Dark - 1080x2560px",
+    group = "Previews - Other States",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
+@Composable
+fun CategoriesContentPreviewEmpty() {
+    ComiquetaThemeContent {
+        CategoriesContent(
+            categories = emptyList(),
+            isLoading = false,
+            error = null,
+            onIntent = {},
+        )
+    }
+}
+
+@Preview(
+    name = "ContentLoading Light - 1080x2560px",
+    group = "Previews - Other States",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
+@Preview(
+    name = "ContentLoading Dark - 1080x2560px",
+    group = "Previews - Other States",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
+@Composable
+fun CategoriesContentPreviewLoading() {
+    ComiquetaThemeContent {
+        CategoriesContent(
+            categories = emptyList(),
+            isLoading = true,
+            error = null,
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(
+    name = "ContentError Light - 1080x2560px",
+    group = "Previews - Other States",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
+@Preview(
+    name = "ContentError Dark - 1080x2560px",
+    group = "Previews - Other States",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
+@Composable
+fun CategoriesContentPreviewError() {
+    ComiquetaThemeContent {
+        CategoriesContent(
+            categories = emptyList(),
+            isLoading = false,
+            error = "Failed to load categories. Please try again.",
+            onIntent = {}
+        )
+    }
+}
+
+// Previews - Dialogs
+@Preview(
+    name = "DialogAdd Light - 1080x2560px",
+    group = "Previews - Dialogs",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
+@Preview(
+    name = "DialogAdd Dark - 1080x2560px",
+    group = "Previews - Dialogs",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
+@Composable
+fun CategoryEditDialogPreviewAdd() {
+    ComiquetaThemeContent {
+        CategoryEditDialog(
+            category = null,
+            currentName = "",
+            onNameChange = {},
+            onDismiss = {},
+            onSave = {}
+        )
+    }
+}
+
+@Preview(
+    name = "DialogEdit Light - 1080x2560px",
+    group = "Previews - Dialogs",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
+@Preview(
+    name = "DialogEdit Dark - 1080x2560px",
+    group = "Previews - Dialogs",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
+@Composable
+fun CategoryEditDialogPreviewEdit() {
+    ComiquetaThemeContent {
+        CategoryEditDialog(
+            category = sampleCategoriesList.first(),
+            currentName = sampleCategoriesList.first().name,
+            onNameChange = {},
+            onDismiss = {},
+            onSave = {}
+        )
+    }
+}
+// --- Previews End ---
