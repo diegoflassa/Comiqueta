@@ -105,6 +105,8 @@ import dev.diegoflassa.comiqueta.core.theme.getOutlinedTextFieldDefaultsColors
 import dev.diegoflassa.comiqueta.core.theme.settingIconTint
 import dev.diegoflassa.comiqueta.core.theme.tabSelectedText
 import dev.diegoflassa.comiqueta.core.theme.tabUnselectedText
+import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
+import dev.diegoflassa.comiqueta.home.ui.enums.BottomNavItems
 
 private const val tag = "HomeScreen"
 
@@ -112,7 +114,7 @@ private const val COMIC_COVER_ASPECT_RATIO = 2f / 3f
 
 @Composable
 fun HomeScreen(
-    navigationViewModel: NavigationViewModel = hiltViewModel(),
+    navigationViewModel: NavigationViewModel = hiltActivityViewModel(),
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     TimberLogger.logI(tag, "HomeScreen")
@@ -120,22 +122,16 @@ fun HomeScreen(
     val context = LocalContext.current
 
     val folderPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocumentTree(),
-        onResult = { uri: Uri? ->
+        contract = ActivityResultContracts.OpenDocumentTree(), onResult = { uri: Uri? ->
             uri?.let {
                 homeViewModel.processIntent(HomeIntent.FolderSelected(it))
             }
-        }
-    )
+        })
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted: Boolean ->
-            // You might need a way to know which permission was requested if you handle multiple
-            // For now, assuming the ViewModel can infer or has stored this.
+        contract = ActivityResultContracts.RequestPermission(), onResult = { isGranted: Boolean ->
             homeViewModel.processIntent(HomeIntent.FolderPermissionResult(isGranted))
-        }
-    )
+        })
 
     LaunchedEffect(Unit) {
         homeViewModel.processIntent(HomeIntent.LoadInitialData)
@@ -145,15 +141,14 @@ fun HomeScreen(
         homeViewModel.effect.collectLatest { effect ->
             when (effect) {
                 is HomeEffect.LaunchFolderPicker -> {
-                    folderPickerLauncher.launch(null) // Uri can be null for initial directory
+                    folderPickerLauncher.launch(null)
+                }
+
+                is HomeEffect.NavigateTo -> {
+                    navigationViewModel.navigateTo(effect.screen)
                 }
 
                 is HomeEffect.NavigateToComicDetail -> {
-                    // Assuming your Screen.Viewer can take the ComicEntity's filePath (Uri)
-                    // You might need to encode the Uri if passing as a string argument
-                    // For example: val encodedPath = Uri.encode(effect.comic.filePath.toString())
-                    // navController.navigate(Screen.Viewer(encodedPath))
-                    // If Screen.Viewer is set up to take Uri directly via Kotlinx Serialization, it's cleaner:
                     navigationViewModel.navigateTo(Screen.Viewer(effect.comicPath))
                 }
 
@@ -169,7 +164,6 @@ fun HomeScreen(
     }
 
     HomeScreenContent(
-        navigationViewModel = navigationViewModel,
         uiState = uiState,
         onIntent = homeViewModel::processIntent
     )
@@ -179,7 +173,6 @@ fun HomeScreen(
 @Composable
 fun HomeScreenContent(
     modifier: Modifier = Modifier,
-    navigationViewModel: NavigationViewModel? = null,
     uiState: HomeUIState,
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
@@ -222,7 +215,7 @@ fun HomeScreenContent(
                             .padding(end = ComiquetaTheme.dimen.appBarHorizontalPadding),
                         contentAlignment = Alignment.Center
                     ) {
-                        IconButton(onClick = { navigationViewModel?.navigateTo(Screen.Settings) }) {
+                        IconButton(onClick = { onIntent?.invoke(HomeIntent.NavigateTo(Screen.Settings)) }) {
                             Icon(
                                 modifier = Modifier.size(ComiquetaTheme.dimen.iconSettings.scaled()),
                                 imageVector = Icons.Outlined.Settings,
@@ -265,8 +258,7 @@ fun HomeScreenContent(
                     .fillMaxWidth()
                     .height(bottomBarHeight)
                     .graphicsLayer(
-                        shape = ComiquetaTheme.shapes.bottomBarShape,
-                        clip = true
+                        shape = ComiquetaTheme.shapes.bottomBarShape, clip = true
                     ),
                 tonalElevation = 4.dp.scaled(),
             ) {
@@ -278,34 +270,34 @@ fun HomeScreenContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     BottomNavItem(
-                        Icons.Default.Home,
-                        stringResource(R.string.home),
-                        true,
-                        { navigationViewModel?.navigateTo(Screen.Home) },
-                        Modifier.weight(1f)
-                    )
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Home,
+                        label = stringResource(R.string.home),
+                        type = BottomNavItems.HOME,
+                        isSelected = true
+                    ) {onIntent?.invoke(HomeIntent.NavigateTo(Screen.Home)) }
                     BottomNavItem(
-                        Icons.Default.Star,
-                        stringResource(R.string.catalog),
-                        false,
-                        { navigationViewModel?.navigateTo(Screen.Catalog) },
-                        Modifier.weight(1f)
-                    )
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Star,
+                        label = stringResource(R.string.catalog),
+                        type = BottomNavItems.CATALOG,
+                        isSelected = false
+                    ) {onIntent?.invoke(HomeIntent.NavigateTo(Screen.Catalog)) }
                     Spacer(modifier = Modifier.width(fabDiameter + 16.dp.scaled()))
                     BottomNavItem(
-                        Icons.AutoMirrored.Filled.List,
-                        stringResource(R.string.bookmarks),
-                        false,
-                        { navigationViewModel?.navigateTo(Screen.Bookmark) },
-                        Modifier.weight(1f)
-                    )
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.AutoMirrored.Filled.List,
+                        label = stringResource(R.string.bookmarks),
+                        type = BottomNavItems.BOOKMARKS,
+                        isSelected = false
+                    ) {onIntent?.invoke(HomeIntent.NavigateTo(Screen.Bookmark)) }
                     BottomNavItem(
-                        Icons.Default.Favorite,
-                        stringResource(R.string.favorites),
-                        false,
-                        { navigationViewModel?.navigateTo(Screen.Favorites) },
-                        Modifier.weight(1f)
-                    )
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Favorite,
+                        label = stringResource(R.string.favorites),
+                        type = BottomNavItems.FAVORITES,
+                        isSelected = false
+                    ) {onIntent?.invoke(HomeIntent.NavigateTo(Screen.Favorites)) }
                 }
             }
 
@@ -332,7 +324,7 @@ fun HomeScreenContent(
 @Composable
 fun EmptyStateContent(
     modifier: Modifier = Modifier,
-    onIntent: ((HomeIntent) -> Unit)?
+    onIntent: ((HomeIntent) -> Unit)? = null
 ) {
     Box(
         modifier = modifier
@@ -360,8 +352,7 @@ fun EmptyStateContent(
                         contentDescription = stringResource(R.string.add_folder_button)
                     )
                 },
-                text = { Text(stringResource(R.string.add_folder_button)) }
-            )
+                text = { Text(stringResource(R.string.add_folder_button)) })
         }
     }
 }
@@ -411,12 +402,10 @@ fun CategoriesSection(
             } else {
                 Box(Modifier)
             }
-        }
-    ) {
+        }) {
         categories.forEachIndexed { index, category ->
             val categoryText = if (category.name.equals(
-                    UserPreferencesKeys.DEFAULT_CATEGORY_ALL,
-                    ignoreCase = true
+                    UserPreferencesKeys.DEFAULT_CATEGORY_ALL, ignoreCase = true
                 )
             ) {
                 stringResource(id = dev.diegoflassa.comiqueta.core.R.string.all)
@@ -435,22 +424,18 @@ fun CategoriesSection(
                                 .wrapContentWidth()
                                 .onSizeChanged { intSize ->
                                     TimberLogger.logI(
-                                        tag,
-                                        "Setted size[$index]: ${intSize.width}"
+                                        tag, "Setted size[$index]: ${intSize.width}"
                                     )
-                                    textWidths[index] =
-                                        with(density) { intSize.width.toDp() }
+                                    textWidths[index] = with(density) { intSize.width.toDp() }
                                 }
                                 .align(Alignment.CenterStart),
                             text = categoryText,
                             style = ComiquetaTheme.typography.tabText,
                             color = if (selectedTabIndex == index) ComiquetaTheme.colorScheme.tabSelectedText else ComiquetaTheme.colorScheme.tabUnselectedText,
                             textAlign = TextAlign.Start,
-                            maxLines = 1
-                        )
+                            maxLines = 1)
                     }
-                }
-            )
+                })
         }
 
     }
@@ -476,15 +461,13 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun HorizontalComicsRow(
-    comics: List<ComicEntity>, // Uses ComicEntity
-    onIntent: ((HomeIntent) -> Unit)?
+    comics: List<ComicEntity>,
+    onIntent: ((HomeIntent) -> Unit)? = null
 ) {
     LazyRow(
         contentPadding = PaddingValues(
-            horizontal = 16.dp.scaled(),
-            vertical = 8.dp.scaled()
-        ),
-        horizontalArrangement = Arrangement.spacedBy(16.dp.scaled())
+            horizontal = 16.dp.scaled(), vertical = 8.dp.scaled()
+        ), horizontalArrangement = Arrangement.spacedBy(16.dp.scaled())
     ) {
         items(comics, key = { it.filePath.toString() }) { comic ->
             ComicCoverItem(comic = comic, onIntent = onIntent)
@@ -500,8 +483,7 @@ fun ComicsContent(
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Search Bar
         item {
@@ -550,39 +532,32 @@ fun ComicsContent(
                     selectedCategory = uiState.selectedCategory,
                     onCategoryClicked = { category ->
                         onIntent?.invoke(HomeIntent.CategorySelected(category))
-                    }
-                )
+                    })
             }
         }
 
         // Latest Comics Section
-        // The ViewModel should ideally provide these filtered lists.
-        // If not, this filtering logic can be kept here.
-        val latestComics = uiState.latestComics // Assuming ViewModel populates this
+        val latestComics = uiState.latestComics
         if (latestComics.isNotEmpty()) {
             item {
                 SectionHeader(title = stringResource(R.string.latest_comics_section_title))
                 HorizontalComicsRow(comics = latestComics, onIntent = onIntent)
-                Spacer(modifier = Modifier.height(16.dp.scaled())) // Reduced spacer
+                Spacer(modifier = Modifier.height(16.dp.scaled()))
             }
         }
 
         // Favorite Comics Section
-        val favoriteComics = uiState.favoriteComics // Assuming ViewModel populates this
+        val favoriteComics = uiState.favoriteComics
         if (favoriteComics.isNotEmpty()) {
             item {
                 SectionHeader(title = stringResource(R.string.favorite_comics_section_title))
                 HorizontalComicsRow(comics = favoriteComics, onIntent = onIntent)
-                Spacer(modifier = Modifier.height(16.dp.scaled())) // Reduced spacer
+                Spacer(modifier = Modifier.height(16.dp.scaled()))
             }
         }
 
-        // All Comics / Results Section
-        // The ViewModel should provide the primary list of comics to display (allComics)
-        // This list should already be filtered by category if a category is selected.
-        // Search filtering is applied on top of that.
         val comicsToDisplay = if (uiState.searchQuery.isBlank()) {
-            uiState.allComics // Already category-filtered by ViewModel
+            uiState.allComics
         } else {
             uiState.allComics.filter { comic ->
                 comic.title?.contains(uiState.searchQuery, ignoreCase = true) == true
@@ -599,14 +574,11 @@ fun ComicsContent(
                     }
                 )
             }
-            // Add Grid or List view based on uiState.viewMode (if implemented)
-            // For now, using ComicListItem for all.
             items(comicsToDisplay, key = { it.filePath.toString() }) { comic ->
                 ComicListItem(comic = comic, onIntent = onIntent)
                 Spacer(modifier = Modifier.height(8.dp.scaled()))
             }
         } else if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
-            // Show "no results" only if a search or category filter is active and yields no results
             item {
                 Text(
                     text = stringResource(R.string.no_comics_found_for_search),
@@ -614,11 +586,9 @@ fun ComicsContent(
                         .padding(16.dp.scaled())
                         .fillMaxWidth(),
                     textAlign = TextAlign.Center,
-                    //color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
-        // Spacer for bottom content not to be hidden by FAB/BottomBar
         item {
             Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.bottomBarHeight.scaled() + ComiquetaTheme.dimen.fabDiameter.scaled() / 2))
         }
@@ -628,9 +598,8 @@ fun ComicsContent(
 
 @Composable
 fun ComicCoverItem(
-    modifier: Modifier = Modifier,
-    comic: ComicEntity, // Uses ComicEntity
-    onIntent: ((HomeIntent) -> Unit)?
+    modifier: Modifier = Modifier, comic: ComicEntity,
+    onIntent: ((HomeIntent) -> Unit)? = null
 ) {
     Card(
         modifier = modifier
@@ -642,8 +611,7 @@ fun ComicCoverItem(
     ) {
         Image(
             painter = rememberAsyncImagePainter(
-                model = comic.coverPath
-                    ?: comic.filePath.takeIf { it != Uri.EMPTY },
+                model = comic.coverPath ?: comic.filePath.takeIf { it != Uri.EMPTY },
                 error = painterResource(id = R.drawable.ic_placeholder_comic),
                 placeholder = painterResource(id = R.drawable.ic_placeholder_comic)
             ),
@@ -658,7 +626,7 @@ fun ComicCoverItem(
 @Composable
 fun ComicListItem(
     comic: ComicEntity,
-    onIntent: ((HomeIntent) -> Unit)?
+    onIntent: ((HomeIntent) -> Unit)? = null
 ) {
     Card(
         modifier = Modifier
@@ -713,16 +681,17 @@ fun ComicListItem(
 
 @Composable
 fun BottomNavItem(
+    modifier: Modifier = Modifier,
     icon: ImageVector,
     label: String,
+    type: BottomNavItems = BottomNavItems.UNKNOWN,
     isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onClick: ((BottomNavItems) -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .clickable(onClick = onClick),
+            .clickable(onClick = { onClick?.invoke(type) }),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -755,9 +724,7 @@ fun BottomNavItem(
 fun HomeScreenContentLoadingPreview() {
     ComiquetaThemeContent {
         HomeScreenContent(
-            uiState = HomeUIState(isLoading = true),
-            onIntent = {}
-        )
+            uiState = HomeUIState(isLoading = true), onIntent = {})
     }
 }
 
@@ -782,9 +749,7 @@ fun HomeScreenContentEmptyPreview() {
                 latestComics = emptyList(),
                 favoriteComics = emptyList(),
                 categories = listOf(CategoryEntity(id = 1L, name = "All")),
-            ),
-            onIntent = {}
-        )
+            ), onIntent = {})
     }
 }
 
@@ -809,22 +774,19 @@ fun HomeScreenContentWithComicsPreview() {
             isFavorite = true,
             isNew = true,
             coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+1".toUri() // Using a placeholder URL
-        ),
-        ComicEntity(
+        ), ComicEntity(
             filePath = "file:///comic2".toUri(),
             title = "Mystery of the Void",
             // author = "Author B",
             isNew = true,
             coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+2".toUri()
-        ),
-        ComicEntity(
+        ), ComicEntity(
             filePath = "file:///comic3".toUri(),
             title = "Chronicles of Code",
             // author = "Author C",
             isFavorite = false,
             coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+3".toUri()
-        ),
-        ComicEntity(
+        ), ComicEntity(
             filePath = "file:///comic4".toUri(),
             title = "Epic Tales",
             // author = "Author D",
@@ -834,8 +796,7 @@ fun HomeScreenContentWithComicsPreview() {
     )
     val sampleCategories = listOf(
         CategoryEntity(id = 1, name = "All"), // Assuming CategoryEntity structure
-        CategoryEntity(id = 2, name = "Sci-Fi"),
-        CategoryEntity(id = 3, name = "Fantasy")
+        CategoryEntity(id = 2, name = "Sci-Fi"), CategoryEntity(id = 3, name = "Fantasy")
     )
     ComiquetaThemeContent {
         HomeScreenContent(
@@ -846,8 +807,6 @@ fun HomeScreenContentWithComicsPreview() {
                 favoriteComics = sampleComics.filter { it.isFavorite },
                 categories = sampleCategories,
                 selectedCategory = sampleCategories.first()
-            ),
-            onIntent = {}
-        )
+            ), onIntent = {})
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -20,14 +21,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
-import dev.diegoflassa.comiqueta.core.navigation.NavigationIntent
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
+import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
+
+private const val tag = "CategoriesScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesScreen(
-    navigationViewModel: NavigationViewModel,
+    navigationViewModel: NavigationViewModel? = hiltActivityViewModel(),
     viewModel: CategoriesViewModel = hiltViewModel()
 ) {
     TimberLogger.logI(tag, "CategoriesScreen")
@@ -42,15 +45,11 @@ fun CategoriesScreen(
                 }
 
                 CategoriesEffect.NavigateBack -> {
-                    navigationViewModel.processIntent(NavigationIntent.GoBack)
+                    navigationViewModel?.goBack()
                 }
             }
         }
     }
-
-    // Scaffold has been moved to CategoriesScreenContentPreview to allow for better previewing
-    // of CategoriesContent and CategoryEditDialog independently.
-    // The main CategoriesScreen will still use the Scaffold.
 
     CategoriesScreenContent(
         modifier = Modifier,
@@ -64,22 +63,21 @@ fun CategoriesScreen(
 private fun CategoriesScreenContent(
     modifier: Modifier = Modifier,
     uiState: CategoriesUIState,
-    onIntent: (CategoriesIntent) -> Unit,
+    onIntent: ((CategoriesIntent) -> Unit)? = null,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Manage Categories") }
-                // Add navigation icon if needed, e.g.,
-                // navigationIcon = {
-                //    IconButton(onClick = { navController.popBackStack() }) {
-                //        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
-                //    }
-                // }
+                title = { Text("Manage Categories") },
+                navigationIcon = {
+                    IconButton(onClick = { onIntent?.invoke(CategoriesIntent.NavigateBack) }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                    }
+                }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { onIntent(CategoriesIntent.ShowAddCategoryDialog) }) {
+            FloatingActionButton(onClick = { onIntent?.invoke(CategoriesIntent.CategoryAdd) }) {
                 Icon(Icons.Filled.Add, contentDescription = "Add Category")
             }
         }
@@ -89,11 +87,8 @@ private fun CategoriesScreenContent(
             categories = uiState.categories,
             isLoading = uiState.isLoading,
             error = uiState.error,
-            onEditClick = { category ->
-                onIntent(CategoriesIntent.ShowEditCategoryDialog(category))
-            },
-            onDeleteClick = { category ->
-                onIntent(CategoriesIntent.DeleteCategory(category))
+            onIntent = { intent ->
+                onIntent?.invoke(intent)
             }
         )
 
@@ -102,10 +97,10 @@ private fun CategoriesScreenContent(
                 category = uiState.categoryToEdit,
                 currentName = uiState.newCategoryName,
                 onNameChange = { name ->
-                    onIntent(CategoriesIntent.SetNewCategoryName(name))
+                    onIntent?.invoke(CategoriesIntent.SetNewCategoryName(name))
                 },
-                onDismiss = { onIntent(CategoriesIntent.DismissDialog) },
-                onSave = { onIntent(CategoriesIntent.SaveCategory) }
+                onDismiss = { onIntent?.invoke(CategoriesIntent.DismissDialog) },
+                onSave = { onIntent?.invoke(CategoriesIntent.SaveCategory) }
             )
         }
     }
@@ -118,11 +113,10 @@ fun CategoriesContent(
     categories: List<CategoryEntity>,
     isLoading: Boolean,
     error: String?,
-    onEditClick: (CategoryEntity) -> Unit,
-    onDeleteClick: (CategoryEntity) -> Unit
+    onIntent: ((CategoriesIntent) -> Unit)? = null,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
-        if (isLoading && categories.isEmpty()) { // Show loading only if list is empty
+        if (isLoading && categories.isEmpty()) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else if (error != null) {
             Text(
@@ -144,8 +138,7 @@ fun CategoriesContent(
                 items(categories, key = { it.id }) { category ->
                     CategoryItem(
                         category = category,
-                        onEditClick = { onEditClick(category) },
-                        onDeleteClick = { onDeleteClick(category) }
+                        onIntent = { intent -> onIntent?.invoke(intent) },
                     )
                     HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 }
@@ -157,8 +150,7 @@ fun CategoriesContent(
 @Composable
 fun CategoryItem(
     category: CategoryEntity,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onIntent: ((CategoriesIntent) -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
@@ -167,10 +159,10 @@ fun CategoryItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(category.name, modifier = Modifier.weight(1f))
-        IconButton(onClick = onEditClick) {
+        IconButton(onClick = { onIntent?.invoke(CategoriesIntent.CategoryEdit(category)) }) {
             Icon(Icons.Filled.Edit, contentDescription = "Edit Category")
         }
-        IconButton(onClick = onDeleteClick) {
+        IconButton(onClick = { onIntent?.invoke(CategoriesIntent.CategoryDelete(category)) }) {
             Icon(Icons.Filled.Delete, contentDescription = "Delete Category")
         }
     }
@@ -179,8 +171,8 @@ fun CategoryItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryEditDialog(
-    category: CategoryEntity?, // null if adding new
-    currentName: String,
+    category: CategoryEntity? = null,
+    currentName: String = "",
     onNameChange: (String) -> Unit,
     onDismiss: () -> Unit,
     onSave: () -> Unit
@@ -200,7 +192,7 @@ fun CategoryEditDialog(
         confirmButton = {
             Button(
                 onClick = onSave,
-                enabled = currentName.isNotBlank() // Disable save if name is blank
+                enabled = currentName.isNotBlank()
             ) {
                 Text("Save")
             }
@@ -213,9 +205,6 @@ fun CategoryEditDialog(
     )
 }
 
-// --- Previews ---
-private const val tag = "CategoriesScreen"
-
 val sampleCategoriesList = listOf(
     CategoryEntity(id = 1, name = "Action"),
     CategoryEntity(id = 2, name = "Comedy"),
@@ -224,7 +213,11 @@ val sampleCategoriesList = listOf(
     CategoryEntity(id = 5, name = "Horror Thriller Z")
 )
 
-@Preview(name = "ContentEmpty Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
+@Preview(
+    name = "ContentEmpty Light - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
 @Preview(
     name = "ContentEmpty Dark - 1080x2560px",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -237,13 +230,16 @@ fun CategoriesContentPreviewEmpty() {
             categories = emptyList(),
             isLoading = false,
             error = null,
-            onEditClick = {},
-            onDeleteClick = {}
+            onIntent = {},
         )
     }
 }
 
-@Preview(name = "ContentLoading Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
+@Preview(
+    name = "ContentLoading Light - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
 @Preview(
     name = "ContentLoading Dark - 1080x2560px",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -256,13 +252,16 @@ fun CategoriesContentPreviewLoading() {
             categories = emptyList(),
             isLoading = true,
             error = null,
-            onEditClick = {},
-            onDeleteClick = {}
+            onIntent = {}
         )
     }
 }
 
-@Preview(name = "ContentError Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
+@Preview(
+    name = "ContentError Light - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
 @Preview(
     name = "ContentError Dark - 1080x2560px",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -275,13 +274,16 @@ fun CategoriesContentPreviewError() {
             categories = emptyList(),
             isLoading = false,
             error = "Failed to load categories. Please try again.",
-            onEditClick = {},
-            onDeleteClick = {}
+            onIntent = {}
         )
     }
 }
 
-@Preview(name = "ContentWithData Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
+@Preview(
+    name = "ContentWithData Light - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
 @Preview(
     name = "ContentWithData Dark - 1080x2560px",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -294,13 +296,16 @@ fun CategoriesContentPreviewWithData() {
             categories = sampleCategoriesList,
             isLoading = false,
             error = null,
-            onEditClick = {},
-            onDeleteClick = {}
+            onIntent = {}
         )
     }
 }
 
-@Preview(name = "DialogAdd Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
+@Preview(
+    name = "DialogAdd Light - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
 @Preview(
     name = "DialogAdd Dark - 1080x2560px",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -319,7 +324,11 @@ fun CategoryEditDialogPreviewAdd() {
     }
 }
 
-@Preview(name = "DialogEdit Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
+@Preview(
+    name = "DialogEdit Light - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
 @Preview(
     name = "DialogEdit Dark - 1080x2560px",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -339,7 +348,11 @@ fun CategoryEditDialogPreviewEdit() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(name = "ScreenWithDialog Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
+@Preview(
+    name = "ScreenWithDialog Light - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
 @Preview(
     name = "ScreenWithDialog Dark - 1080x2560px",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -361,7 +374,11 @@ fun CategoriesScreenPreviewWithDialog() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(name = "ScreenMainState Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
+@Preview(
+    name = "ScreenMainState Light - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
 @Preview(
     name = "ScreenMainState Dark - 1080x2560px",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -378,7 +395,11 @@ fun CategoriesScreenPreviewMainState() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(name = "ScreenEmptyState Light - 1080x2560px", device = "spec:width=1080px,height=2560px,dpi=440", showSystemUi = true)
+@Preview(
+    name = "ScreenEmptyState Light - 1080x2560px",
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    showSystemUi = true
+)
 @Preview(
     name = "ScreenEmptyState Dark - 1080x2560px",
     uiMode = Configuration.UI_MODE_NIGHT_YES,

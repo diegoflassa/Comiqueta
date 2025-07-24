@@ -7,19 +7,17 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.runtime.entry // Ensure this is the correct import for navigation3
+import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import dev.diegoflassa.comiqueta.home.ui.home.HomeScreen
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
-import dev.diegoflassa.comiqueta.core.navigation.Screen // Ensure Screen.Viewer is defined here
+import dev.diegoflassa.comiqueta.core.navigation.Screen
 import dev.diegoflassa.comiqueta.settings.ui.settings.SettingsScreen
 import dev.diegoflassa.comiqueta.categories.ui.categories.CategoriesScreen
 import dev.diegoflassa.comiqueta.viewer.ui.viewer.ViewerScreen
-// If ViewerViewModel is created directly in NavDisplay, it might need changes.
-// However, it's typically created within ViewerScreen via hiltViewModel().
 
 @Composable
 fun NavDisplay(modifier: Modifier, navigationViewModel: NavigationViewModel) {

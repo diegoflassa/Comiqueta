@@ -64,6 +64,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.createBitmap
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
+import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import android.graphics.Color as AndroidColor
 import kotlin.math.abs
 
@@ -74,7 +75,7 @@ private const val tag = "ViewerScreen"
 fun ViewerScreen(
     modifier: Modifier = Modifier,
     comicPath: Uri? = null,
-    navigationViewModel: NavigationViewModel? = null,
+    navigationViewModel: NavigationViewModel? = hiltActivityViewModel(),
     viewerViewModel: ViewerViewModel = hiltViewModel()
 ) {
     TimberLogger.logI(tag, "ViewerScreen")

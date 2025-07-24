@@ -41,7 +41,8 @@ open class HomeViewModel @Inject constructor(
     fun processIntent(intent: HomeIntent) {
         viewModelScope.launch {
             when (intent) {
-                is HomeIntent.LoadInitialData -> loadAllComicData() // Renamed from LoadInitialData
+                is HomeIntent.LoadInitialData -> loadAllComicData()
+                is HomeIntent.NavigateTo -> _effect.send(HomeEffect.NavigateTo(intent.screen))
                 is HomeIntent.SearchComics -> _uiState.update { it.copy(searchQuery = intent.query) }
                 is HomeIntent.AddFolderClicked -> handleAddFolderClicked()
                 is HomeIntent.FolderSelected -> handleFolderSelected(intent.uri)

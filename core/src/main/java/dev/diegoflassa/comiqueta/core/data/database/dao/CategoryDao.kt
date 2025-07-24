@@ -28,6 +28,10 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE id = :categoryId")
     fun getByIdWithComics(categoryId: Long): Flow<CategoryWithComics?>
 
+    @Transaction
+    @Query("SELECT * FROM categories WHERE name = :name")
+    fun getByNameWithComics(name: String): Flow<CategoryWithComics?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(category: CategoryEntity): Long
 

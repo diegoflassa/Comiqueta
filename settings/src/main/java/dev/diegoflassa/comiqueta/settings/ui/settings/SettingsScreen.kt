@@ -61,6 +61,7 @@ import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
+import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.settings.R
 
 private const val tag = "SettingsScreen"
@@ -68,27 +69,24 @@ private const val tag = "SettingsScreen"
 private fun getPermissionFriendlyNameSettings(permission: String): String {
     return when (permission) {
         Manifest.permission.READ_EXTERNAL_STORAGE -> "Storage Access"
-        // Add other permissions your app might request
         else -> permission.substringAfterLast('.').replace('_', ' ').let {
             it.lowercase()
                 .replaceFirstChar { char -> if (char.isLowerCase()) char.titlecase() else char.toString() }
-        } // Basic fallback
+        }
     }
 }
 
 private fun getPermissionDescriptionSettings(permission: String): String {
     return when (permission) {
         Manifest.permission.READ_EXTERNAL_STORAGE -> "Allows the app to read your comic files from shared storage."
-        // Add other permissions
-        else -> "Required for app functionality." // Generic fallback
+        else -> "Required for app functionality."
     }
 }
 
 private fun getPermissionRationaleSettings(permission: String): String {
     return when (permission) {
         Manifest.permission.READ_EXTERNAL_STORAGE -> "This app needs access to your device's storage to find and display your comic book files. Please grant this permission to select your comic library."
-        // Add other permissions
-        else -> "This permission is important for certain features to work correctly." // Generic fallback
+        else -> "This permission is important for certain features to work correctly."
     }
 }
 
@@ -96,7 +94,7 @@ private fun getPermissionRationaleSettings(permission: String): String {
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
-    navigationViewModel: NavigationViewModel? = null,
+    navigationViewModel: NavigationViewModel? = hiltActivityViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     TimberLogger.logI(tag, "SettingsScreen")
@@ -117,22 +115,25 @@ fun SettingsScreen(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri: Uri? ->
         if (uri != null) {
-            // Persist permission for the selected folder URI
             val contentResolver = context.contentResolver
             val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION // Optional: if you ever need to write
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             try {
                 contentResolver.takePersistableUriPermission(uri, takeFlags)
                 TimberLogger.logD(tag, "Persistable URI permission granted for $uri")
                 settingsViewModel.processIntent(SettingsIntent.FolderSelected(uri))
             } catch (e: SecurityException) {
                 TimberLogger.logE(tag, "Failed to take persistable URI permission for $uri", e)
-                Toast.makeText(context, "Failed to get persistent access to the folder.", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    "Failed to get persistent access to the folder.",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
     val noAppToOpenFolder = stringResource(R.string.no_app_to_open_folder)
-    LaunchedEffect(key1 = settingsViewModel) { // Use a key that won't change, or the ViewModel itself
+    LaunchedEffect(key1 = settingsViewModel) {
         settingsViewModel.effect.collect { effect ->
             when (effect) {
                 is SettingsEffect.LaunchPermissionRequest -> {
@@ -148,7 +149,7 @@ fun SettingsScreen(
                 }
 
                 is SettingsEffect.LaunchFolderPicker -> {
-                    folderPickerLauncher.launch(null) // Initially, no specific URI is needed for picking
+                    folderPickerLauncher.launch(null)
                 }
 
                 is SettingsEffect.LaunchViewFolderIntent -> {
@@ -164,9 +165,14 @@ fun SettingsScreen(
                             noAppToOpenFolder,
                             Toast.LENGTH_SHORT
                         ).show()
-                        TimberLogger.logE(tag, "No activity found to handle folder URI: ${effect.folderUri}", e)
+                        TimberLogger.logE(
+                            tag,
+                            "No activity found to handle folder URI: ${effect.folderUri}",
+                            e
+                        )
                     }
                 }
+
                 is SettingsEffect.NavigateToCategoriesScreen -> {
                     navigationViewModel?.navigateToCategories()
                 }
@@ -207,7 +213,10 @@ fun SettingsScreenContent(
                 title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navigationViewModel?.goBack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            stringResource(R.string.action_back)
+                        )
                     }
                 }
             )
@@ -280,34 +289,21 @@ fun SettingsScreenContent(
                         textAlign = TextAlign.Center
                     )
                 } else {
-                    LazyColumn(modifier = Modifier.weight(1f)) { // Make LazyColumn take available space
+                    LazyColumn(modifier = Modifier.weight(1f)) {
                         items(
                             uiState.comicsFolders.size,
-                            key = { index -> uiState.comicsFolders[index].toString() } // Use URI as key
+                            key = { index -> uiState.comicsFolders[index].toString() }
                         ) { index ->
                             val folderUri = uiState.comicsFolders[index]
                             ComicsFolderUriItem(
                                 folderUri = folderUri,
-                                onFolderClick = { uri ->
-                                    onIntent?.invoke(
-                                        SettingsIntent.OpenFolder(
-                                            uri
-                                        )
-                                    )
-                                },
-                                onRemoveClick = { uri ->
-                                    onIntent?.invoke(
-                                        SettingsIntent.RemoveFolderClicked(
-                                            uri
-                                        )
-                                    )
-                                }
+                                onIntent = { intent -> onIntent?.invoke(intent) }
                             )
                             HorizontalDivider()
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp.scaled())) // Add some space before the new button
+                Spacer(modifier = Modifier.height(16.dp.scaled()))
 
                 // Manage Categories Section
                 Card(
@@ -326,7 +322,7 @@ fun SettingsScreenContent(
                         }
                     )
                 }
-                 Spacer(modifier = Modifier.height(16.dp.scaled()))
+                Spacer(modifier = Modifier.height(16.dp.scaled()))
             }
         }
     }
@@ -383,7 +379,7 @@ fun PermissionItem(
             Text(
                 text = getPermissionRationaleSettings(permission),
                 fontSize = 12.sp.scaled(),
-                color = MaterialTheme.colorScheme.tertiary, // Using tertiary for rationale
+                color = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(
                     top = 4.dp.scaled(),
                     start = 8.dp.scaled(),
@@ -408,8 +404,7 @@ fun PermissionItem(
 @Composable
 fun ComicsFolderUriItem(
     folderUri: Uri,
-    onFolderClick: (Uri) -> Unit,
-    onRemoveClick: (Uri) -> Unit
+    onIntent: ((SettingsIntent) -> Unit)? = null
 ) {
     val path = remember(folderUri) { folderUri.path ?: "Unknown path" }
     val decodedPath = remember(path) { Uri.decode(path) }
@@ -417,7 +412,7 @@ fun ComicsFolderUriItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onFolderClick(folderUri) }
+            .clickable { onIntent?.invoke(SettingsIntent.FolderSelected(folderUri)) }
             .padding(vertical = 12.dp.scaled()),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -428,10 +423,10 @@ fun ComicsFolderUriItem(
                 .weight(1f)
                 .padding(end = 8.dp.scaled()),
             overflow = TextOverflow.Ellipsis,
-            maxLines = 2, // Allow up to 2 lines for longer paths
+            maxLines = 2,
             style = MaterialTheme.typography.bodyMedium
         )
-        IconButton(onClick = { onRemoveClick(folderUri) }) {
+        IconButton(onClick = { onIntent?.invoke(SettingsIntent.RemoveFolderClicked(folderUri)) }) {
             Icon(
                 Icons.Filled.Delete,
                 contentDescription = stringResource(R.string.settings_remove_folder_action_desc),

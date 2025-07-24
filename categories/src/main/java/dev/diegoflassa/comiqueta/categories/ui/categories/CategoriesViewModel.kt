@@ -41,7 +41,11 @@ class CategoriesViewModel @Inject constructor(
         viewModelScope.launch {
             when (intent) {
                 is CategoriesIntent.LoadCategories -> loadCategories()
-                is CategoriesIntent.ShowAddCategoryDialog -> {
+                is CategoriesIntent.NavigateBack -> {
+                    _effect.send(CategoriesEffect.NavigateBack)
+                }
+
+                is CategoriesIntent.CategoryAdd -> {
                     _uiState.update {
                         it.copy(
                             showDialog = true,
@@ -50,7 +54,10 @@ class CategoriesViewModel @Inject constructor(
                         )
                     }
                 }
-                is CategoriesIntent.ShowEditCategoryDialog -> {
+
+                is CategoriesIntent.CategoryDelete -> deleteCategory(intent.category)
+
+                is CategoriesIntent.CategoryEdit -> {
                     _uiState.update {
                         it.copy(
                             showDialog = true,
@@ -59,15 +66,23 @@ class CategoriesViewModel @Inject constructor(
                         )
                     }
                 }
+
                 is CategoriesIntent.DismissDialog -> {
-                    _uiState.update { it.copy(showDialog = false, categoryToEdit = null, newCategoryName = "") }
+                    _uiState.update {
+                        it.copy(
+                            showDialog = false,
+                            categoryToEdit = null,
+                            newCategoryName = ""
+                        )
+                    }
                     _effect.send(CategoriesEffect.NavigateBack)
                 }
+
                 is CategoriesIntent.SetNewCategoryName -> {
                     _uiState.update { it.copy(newCategoryName = intent.name) }
                 }
+
                 is CategoriesIntent.SaveCategory -> saveCategory()
-                is CategoriesIntent.DeleteCategory -> deleteCategory(intent.category)
                 is CategoriesIntent.DeleteCategoryById -> deleteCategoryById(intent.categoryId)
             }
         }
@@ -82,7 +97,13 @@ class CategoriesViewModel @Inject constructor(
                     _effect.send(CategoriesEffect.ShowToast("Error loading categories: ${e.message}"))
                 }
                 .collect { categories ->
-                    _uiState.update { it.copy(isLoading = false, categories = categories, error = null) }
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            categories = categories,
+                            error = null
+                        )
+                    }
                 }
         }
     }
@@ -112,7 +133,13 @@ class CategoriesViewModel @Inject constructor(
         // or rely on the loadCategories flow to update the list and loading state.
         // For simplicity here, we assume the list will refresh or the operation is atomic enough.
         // Consider explicit refresh or better state management if operations are slow.
-         _uiState.update { it.copy(isLoading = false, categoryToEdit = null, newCategoryName = "") } // Reset dialog state
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                categoryToEdit = null,
+                newCategoryName = ""
+            )
+        } // Reset dialog state
     }
 
     private suspend fun deleteCategory(category: CategoryEntity) {
@@ -123,10 +150,10 @@ class CategoriesViewModel @Inject constructor(
         } catch (e: Exception) {
             _effect.send(CategoriesEffect.ShowToast("Error deleting category: ${e.message}"))
         }
-         _uiState.update { it.copy(isLoading = false) }
+        _uiState.update { it.copy(isLoading = false) }
     }
 
-     private suspend fun deleteCategoryById(categoryId: Long) {
+    private suspend fun deleteCategoryById(categoryId: Long) {
         _uiState.update { it.copy(isLoading = true) }
         try {
             deleteCategoryUseCase.byId(categoryId)
@@ -134,6 +161,6 @@ class CategoriesViewModel @Inject constructor(
         } catch (e: Exception) {
             _effect.send(CategoriesEffect.ShowToast("Error deleting category: ${e.message}"))
         }
-         _uiState.update { it.copy(isLoading = false) }
+        _uiState.update { it.copy(isLoading = false) }
     }
 }

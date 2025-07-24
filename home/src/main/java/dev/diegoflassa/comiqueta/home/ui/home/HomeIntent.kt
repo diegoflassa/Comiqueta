@@ -3,11 +3,13 @@ package dev.diegoflassa.comiqueta.home.ui.home
 import android.net.Uri
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
+import dev.diegoflassa.comiqueta.core.navigation.Screen
 import dev.diegoflassa.comiqueta.home.ui.enums.ViewMode
 
 sealed interface HomeIntent {
     data object LoadInitialData : HomeIntent
     data class SearchComics(val query: String) : HomeIntent
+    data class NavigateTo(val screen: Screen) : HomeIntent
     data class CategorySelected(val category: CategoryEntity) : HomeIntent
     data class ViewModeChanged(val viewMode: ViewMode) : HomeIntent
     data object AddFolderClicked : HomeIntent
