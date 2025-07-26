@@ -113,7 +113,6 @@ import dev.diegoflassa.comiqueta.core.theme.tabSelectedText
 import dev.diegoflassa.comiqueta.core.theme.tabUnselectedText
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.home.ui.enums.BottomNavItems
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
 private const val tag = "HomeScreen"
@@ -126,6 +125,12 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     TimberLogger.logI(tag, "HomeScreen")
+    val test = rememberPreviewLazyPagingItems(sampleComics)
+    if (test.itemCount > 0) {
+        TimberLogger.logD(tag, "")
+    } else {
+        TimberLogger.logD(tag, "")
+    }
     val uiState by homeViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
@@ -193,6 +198,163 @@ fun HomeScreen(
         uiState = uiState,
         onIntent = homeViewModel::reduce
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreenContentPreview(
+    modifier: Modifier = Modifier,
+    comics: List<Comic>,
+    latestComics: List<Comic>,
+    favoriteComics: List<Comic>,
+    uiState: HomeUIState,
+    onIntent: ((HomeIntent) -> Unit)? = null,
+) {
+    val fabDiameter = ComiquetaTheme.dimen.fabDiameter.scaled()
+    val bottomBarHeight = ComiquetaTheme.dimen.bottomBarHeight.scaled()
+    val isEmpty =
+        (comics.isEmpty()) && uiState.searchQuery.isBlank() && uiState.selectedCategory == null && uiState.isLoading.not()
+
+    val topSystemBarInsetDp = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
+
+    Scaffold(
+        modifier = modifier.background(ComiquetaTheme.colorScheme.background),
+        topBar = {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(topSystemBarInsetDp)
+            )
+            TopAppBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                title = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = ComiquetaTheme.dimen.appBarHorizontalPadding),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            "Comiqueta",
+                            style = ComiquetaTheme.typography.comiquetaTitleText.scaled()
+                        )
+                    }
+                },
+                actions = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .padding(end = ComiquetaTheme.dimen.appBarHorizontalPadding),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton(onClick = { onIntent?.invoke(HomeIntent.NavigateTo(Screen.Settings)) }) {
+                            Icon(
+                                modifier = Modifier.size(ComiquetaTheme.dimen.iconSettings.scaled()),
+                                imageVector = Icons.Outlined.Settings,
+                                tint = ComiquetaTheme.colorScheme.settingIconTint,
+                                contentDescription = "Settings"
+                            )
+                        }
+                    }
+                },
+            )
+        },
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when {
+                uiState.isLoading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                isEmpty -> {
+                    EmptyStateContent(onIntent = onIntent)
+                }
+
+                else -> {
+                    ComicsContentPreview(
+                        comics = comics,
+                        latestComics = latestComics,
+                        favoriteComics = favoriteComics,
+                        uiState = uiState,
+                        onIntent = onIntent,
+                    )
+                }
+            }
+
+            BottomAppBar(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(bottomBarHeight)
+                    .graphicsLayer(
+                        shape = ComiquetaTheme.shapes.bottomBarShape, clip = true
+                    ),
+                tonalElevation = 4.dp.scaled(),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 12.dp, bottom = 6.dp, start = 16.dp, end = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    BottomNavItem(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Home,
+                        label = stringResource(R.string.bottom_nav_home),
+                        type = BottomNavItems.HOME,
+                        isSelected = true
+                    ) { onIntent?.invoke(HomeIntent.ShowAllComics) }
+                    BottomNavItem(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Star,
+                        label = stringResource(R.string.bottom_nav_catalog),
+                        type = BottomNavItems.CATALOG,
+                        isSelected = false
+                    ) { onIntent?.invoke(HomeIntent.ShowAllComics) }
+                    Spacer(modifier = Modifier.width(fabDiameter + 16.dp.scaled()))
+                    BottomNavItem(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.AutoMirrored.Filled.List,
+                        label = stringResource(R.string.bottom_nav_bookmarks),
+                        type = BottomNavItems.BOOKMARKS,
+                        isSelected = false
+                    ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
+                    BottomNavItem(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Favorite,
+                        label = stringResource(R.string.bottom_nav_favorites),
+                        type = BottomNavItems.FAVORITES,
+                        isSelected = false
+                    ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
+                }
+            }
+
+            ExtendedFloatingActionButton(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .zIndex(1F)
+                    .size(fabDiameter)
+                    .offset(y = (-17).dp.scaled()),
+                onClick = { onIntent?.invoke(HomeIntent.AddFolderClicked) },
+                shape = CircleShape,
+            ) {
+                Icon(
+                    modifier = Modifier.size(ComiquetaTheme.dimen.fabIconSize.scaled()),
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.add_fab_description)
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -492,6 +654,35 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
+fun HorizontalComicsRowPreview(
+    comics: List<Comic?>,
+    modifier: Modifier = Modifier,
+    onIntent: ((HomeIntent) -> Unit)? = null
+) {
+    LazyRow(
+        modifier = modifier,
+        contentPadding = PaddingValues(
+            horizontal = 16.dp,
+            vertical = 8.dp
+        ),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(
+            count = comics.size,
+            key = { index -> comics[index]?.filePath.toString() }
+        ) { index ->
+            val comic = comics[index]
+            if (comic != null) {
+                ComicCoverItem(comic = comic, onIntent = onIntent)
+            } else {
+                // Optional: You can display a placeholder while items are loading
+                // PlaceholderComicCoverItem()
+            }
+        }
+    }
+}
+
+@Composable
 fun HorizontalComicsRow(
     comics: LazyPagingItems<Comic>,
     modifier: Modifier = Modifier,
@@ -516,6 +707,123 @@ fun HorizontalComicsRow(
                 // Optional: You can display a placeholder while items are loading
                 // PlaceholderComicCoverItem()
             }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ComicsContentPreview(
+    modifier: Modifier = Modifier,
+    comics: List<Comic?>,
+    latestComics: List<Comic?>,
+    favoriteComics: List<Comic?>,
+    uiState: HomeUIState,
+    onIntent: ((HomeIntent) -> Unit)? = null,
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Search Bar
+        item {
+            OutlinedTextField(
+                value = uiState.searchQuery,
+                onValueChange = { onIntent?.invoke(HomeIntent.SearchComics(it)) },
+                placeholder = {
+                    Box(
+                        modifier = Modifier.fillMaxHeight(),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = stringResource(R.string.search_comics_placeholder),
+                            style = ComiquetaTheme.typography.searchText.scaled()
+                        )
+                    }
+                },
+                leadingIcon = {
+                    Icon(
+                        modifier = Modifier.size(ComiquetaTheme.dimen.iconSize.scaled()),
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = stringResource(R.string.search_icon_description),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = ComiquetaTheme.dimen.searchTopPadding,
+                        bottom = ComiquetaTheme.dimen.searchBottomPadding,
+                        start = ComiquetaTheme.dimen.searchHorizontalPadding,
+                        end = ComiquetaTheme.dimen.searchHorizontalPadding
+                    )
+                    .height(ComiquetaTheme.dimen.inputHeight.scaled())
+                    .clip(RoundedCornerShape(8.dp.scaled())),
+                colors = getOutlinedTextFieldDefaultsColors(),
+                singleLine = true
+            )
+        }
+
+        if (uiState.categories.isNotEmpty()) {
+            item {
+                CategoriesSection(
+                    categories = uiState.categories,
+                    selectedCategory = uiState.selectedCategory,
+                    onCategoryClicked = { category ->
+                        onIntent?.invoke(HomeIntent.CategorySelected(category))
+                    })
+            }
+        }
+
+        // Latest Comics Section
+        if (latestComics.isNotEmpty()) {
+            item {
+                SectionHeader(title = stringResource(R.string.latest_comics_section_title))
+                HorizontalComicsRowPreview(comics = latestComics, onIntent = onIntent)
+                Spacer(modifier = Modifier.height(16.dp.scaled()))
+            }
+        }
+
+        // Favorite Comics Section
+        if (favoriteComics.isNotEmpty()) {
+            item {
+                SectionHeader(title = stringResource(R.string.favorite_comics_section_title))
+                HorizontalComicsRowPreview(comics = favoriteComics, onIntent = onIntent)
+                Spacer(modifier = Modifier.height(16.dp.scaled()))
+            }
+        }
+
+        if (comics.isNotEmpty()) {
+            item {
+                SectionHeader(
+                    title = if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
+                        stringResource(R.string.results_section_title)
+                    } else {
+                        stringResource(R.string.all_comics_section_title)
+                    }
+                )
+            }
+            items(comics.size, key = { index ->
+                val item = comics[index]
+                item?.filePath?.toString() ?: index
+            }) { index ->
+                val comic = comics[index]
+                ComicListItem(comic = comic, onIntent = onIntent)
+                Spacer(modifier = Modifier.height(8.dp.scaled()))
+            }
+        } else if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
+            item {
+                Text(
+                    text = stringResource(R.string.no_comics_found_for_search),
+                    modifier = Modifier
+                        .padding(16.dp.scaled())
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+        item {
+            Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.bottomBarHeight.scaled() + ComiquetaTheme.dimen.fabDiameter.scaled() / 2))
         }
     }
 }
@@ -635,7 +943,6 @@ fun ComicsContent(
         }
     }
 }
-
 
 @Composable
 fun ComicCoverItem(
@@ -762,11 +1069,20 @@ fun BottomNavItem(
  */
 @Composable
 fun <T : Any> rememberPreviewLazyPagingItems(
-    items: List<T>
+    items: List<T>,
+    onItemsLoaded: ((Int) -> Unit)? = null
 ): LazyPagingItems<T> {
-    val pagingData: PagingData<T> = PagingData.from(items)
-    val flow: Flow<PagingData<T>> = flowOf(pagingData)
-    return flow.collectAsLazyPagingItems()
+    val pagingData = remember { PagingData.from(items) }
+    val flow = remember { flowOf(pagingData) }
+    val lazyPagingItems = flow.collectAsLazyPagingItems()
+
+    LaunchedEffect(lazyPagingItems.itemCount) {
+        if (lazyPagingItems.itemCount > 0) {
+            onItemsLoaded?.invoke(lazyPagingItems.itemCount)
+        }
+    }
+
+    return lazyPagingItems
 }
 
 private val sampleComics = listOf(
@@ -803,6 +1119,40 @@ private val sampleCategories = listOf(
     CategoryEntity(id = 3, name = "Fantasy")
 )
 
+// --- Previews for HorizontalComicsRowPreview (the one taking List<Comic?>) ---
+
+@Preview(
+    name = "HorizontalComicsRowPreview (List based) - With Data",
+    group = "List-based Rows",
+    showBackground = true
+)
+@Composable
+fun PreviewOfHorizontalComicsRowPreview_WithData() {
+    ComiquetaThemeContent {
+        val comicsForPreview = sampleComics
+        HorizontalComicsRowPreview(
+            comics = comicsForPreview,
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(
+    name = "HorizontalComicsRowPreview (List based) - Empty",
+    group = "List-based Rows",
+    showBackground = true
+)
+@Composable
+fun PreviewOfHorizontalComicsRowPreview_Empty() {
+    ComiquetaThemeContent {
+        HorizontalComicsRowPreview(
+            comics = emptyList(),
+            onIntent = {}
+        )
+    }
+}
+
+
 // Previews With Data
 @Preview(
     name = "Phone - Light - With Data",
@@ -820,11 +1170,10 @@ private val sampleCategories = listOf(
 @Composable
 fun HomeScreenContentWithComicsPreviewPhone() {
     ComiquetaThemeContent {
-        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
-        HomeScreenContent(
-            comics = emptyComics,
-            latestComics = emptyComics,
-            favoriteComics = emptyComics,
+        HomeScreenContentPreview(
+            comics = emptyList(),
+            latestComics = emptyList(),
+            favoriteComics = emptyList(),
             uiState = HomeUIState(
                 isLoading = false,
                 categories = sampleCategories,
@@ -849,13 +1198,10 @@ fun HomeScreenContentWithComicsPreviewPhone() {
 @Composable
 fun HomeScreenContentWithComicsPreviewFoldable() {
     ComiquetaThemeContent {
-        val comics = rememberPreviewLazyPagingItems(emptyList<Comic>())
-        val latestComics = rememberPreviewLazyPagingItems(sampleComics.filter { it.isNew })
-        val favoriteComics = rememberPreviewLazyPagingItems(sampleComics.filter { it.isFavorite })
-        HomeScreenContent(
-            comics = comics,
-            latestComics = latestComics,
-            favoriteComics = favoriteComics,
+        HomeScreenContentPreview(
+            comics = emptyList(),
+            latestComics = sampleComics.filter { it.isNew },
+            favoriteComics = sampleComics.filter { it.isFavorite },
             uiState = HomeUIState(
                 isLoading = false,
                 categories = sampleCategories,
@@ -880,13 +1226,10 @@ fun HomeScreenContentWithComicsPreviewFoldable() {
 @Composable
 fun HomeScreenContentWithComicsPreviewTablet() {
     ComiquetaThemeContent {
-        val comics = rememberPreviewLazyPagingItems(emptyList<Comic>())
-        val latestComics = rememberPreviewLazyPagingItems(sampleComics.filter { it.isNew })
-        val favoriteComics = rememberPreviewLazyPagingItems(sampleComics.filter { it.isFavorite })
-        HomeScreenContent(
-            comics = comics,
-            latestComics = latestComics,
-            favoriteComics = favoriteComics,
+        HomeScreenContentPreview(
+            comics = emptyList(),
+            latestComics = sampleComics.filter { it.isNew },
+            favoriteComics = sampleComics.filter { it.isFavorite },
             uiState = HomeUIState(
                 isLoading = false,
                 categories = sampleCategories,
@@ -912,11 +1255,10 @@ fun HomeScreenContentWithComicsPreviewTablet() {
 @Composable
 fun HomeScreenContentLoadingPreview() {
     ComiquetaThemeContent {
-        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
-        HomeScreenContent(
-            comics = emptyComics,
-            latestComics = emptyComics,
-            favoriteComics = emptyComics,
+        HomeScreenContentPreview(
+            comics = emptyList(),
+            latestComics = emptyList(),
+            favoriteComics = emptyList(),
             uiState = HomeUIState(isLoading = true), onIntent = {})
     }
 }
@@ -937,11 +1279,10 @@ fun HomeScreenContentLoadingPreview() {
 @Composable
 fun HomeScreenContentEmptyPreview() {
     ComiquetaThemeContent {
-        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
-        HomeScreenContent(
-            comics = emptyComics,
-            latestComics = emptyComics,
-            favoriteComics = emptyComics,
+        HomeScreenContentPreview(
+            comics = emptyList(),
+            latestComics = emptyList(),
+            favoriteComics = emptyList(),
             uiState = HomeUIState(
                 isLoading = false,
                 categories = listOf(
@@ -951,6 +1292,116 @@ fun HomeScreenContentEmptyPreview() {
                     )
                 ),
             ), onIntent = {})
+    }
+}
+
+// --- Previews for ComicsContent ---
+
+@Preview(name = "ComicsContent - All Data", group = "ComicsContent Previews", showBackground = true)
+@Composable
+fun ComicsContentPreview_AllData() {
+    ComiquetaThemeContent {
+        val comics = rememberPreviewLazyPagingItems(sampleComics)
+        val latest = rememberPreviewLazyPagingItems(sampleComics.filter { it.isNew }.take(3))
+        val favorites =
+            rememberPreviewLazyPagingItems(sampleComics.filter { it.isFavorite }.take(2))
+        ComicsContent(
+            comics = comics,
+            latestComics = latest,
+            favoriteComics = favorites,
+            uiState = HomeUIState(
+                isLoading = false,
+                categories = sampleCategories,
+                selectedCategory = sampleCategories.first()
+            ),
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(
+    name = "ComicsContent - Empty Results",
+    group = "ComicsContent Previews",
+    showBackground = true
+)
+@Composable
+fun ComicsContentPreview_EmptyResults() {
+    ComiquetaThemeContent {
+        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
+        // Keep latest/favorites to show those sections can still appear even if main comics are empty
+        val latest = rememberPreviewLazyPagingItems(sampleComics.filter { it.isNew }.take(3))
+        val favorites =
+            rememberPreviewLazyPagingItems(sampleComics.filter { it.isFavorite }.take(2))
+        ComicsContent(
+            comics = emptyComics,
+            latestComics = latest,
+            favoriteComics = favorites,
+            uiState = HomeUIState(
+                isLoading = false,
+                searchQuery = "NonExistent", // Simulate a search yielding no results
+                categories = sampleCategories,
+                selectedCategory = sampleCategories.first()
+            ),
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(
+    name = "ComicsContent - Only Main Comics",
+    group = "ComicsContent Previews",
+    showBackground = true
+)
+@Composable
+fun ComicsContentPreview_OnlyMainComics() {
+    ComiquetaThemeContent {
+        val comics = rememberPreviewLazyPagingItems(sampleComics)
+        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
+        ComicsContent(
+            comics = comics,
+            latestComics = emptyComics, // No latest
+            favoriteComics = emptyComics, // No favorites
+            uiState = HomeUIState(
+                isLoading = false,
+                categories = sampleCategories,
+                selectedCategory = sampleCategories.first()
+            ),
+            onIntent = {}
+        )
+    }
+}
+
+// --- Previews for HorizontalComicsRow ---
+
+@Preview(
+    name = "HorizontalComicsRow - With Data",
+    group = "HorizontalComicsRow Previews",
+    showBackground = true
+)
+@Composable
+fun HorizontalComicsRowPreview_WithData() {
+    ComiquetaThemeContent {
+        val comics = rememberPreviewLazyPagingItems(sampleComics.take(4))
+        HorizontalComicsRow(
+            comics = comics,
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(
+    name = "HorizontalComicsRow - Empty",
+    group = "HorizontalComicsRow Previews",
+    showBackground = true
+)
+@Composable
+fun HorizontalComicsRowPreview_Empty() {
+    ComiquetaThemeContent {
+        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
+        HorizontalComicsRow(
+            comics = emptyComics,
+            onIntent = {}
+        )
     }
 }
 // --- Previews End ---

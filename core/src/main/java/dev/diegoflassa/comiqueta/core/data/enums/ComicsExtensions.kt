@@ -1,4 +1,4 @@
-package dev.diegoflassa.comiqueta.core.data
+package dev.diegoflassa.comiqueta.core.data.enums
 
 enum class ComicsExtensions(val extension: String) {
     CBZ(".cbz"),
