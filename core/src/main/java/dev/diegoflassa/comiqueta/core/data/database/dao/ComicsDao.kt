@@ -2,7 +2,6 @@ package dev.diegoflassa.comiqueta.core.data.database.dao
 
 import android.net.Uri
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -12,8 +11,12 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ComicsDao {
+
+    @Query("SELECT * FROM comics WHERE file_path = :filePath")
+    suspend fun getComicByFilePath(filePath: Uri): ComicEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertComic(comic: ComicEntity)
+    suspend fun insertComic(comic: ComicEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertComics(comics: List<ComicEntity>)
@@ -21,27 +24,36 @@ interface ComicsDao {
     @Update
     suspend fun updateComic(comic: ComicEntity)
 
-    @Delete
-    suspend fun deleteComic(comic: ComicEntity)
+    @Query("DELETE FROM comics WHERE file_path = :filePath")
+    suspend fun deleteComicByFilePath(filePath: Uri)
+
+    @Query(
+        """
+        SELECT * FROM comics
+        WHERE
+            (:categoryId IS NULL OR comic_category_id = :categoryId) 
+            AND (:filterByFavorite IS NULL OR is_favorite = :filterByFavorite)
+            AND (:filterByNew IS NULL OR is_new = :filterByNew)
+            AND (:filterByRead IS NULL OR was_read = :filterByRead) 
+        ORDER BY title ASC
+        LIMIT :limit OFFSET :offset
+    """
+    )
+    suspend fun getComicsPaginated(
+        limit: Int,
+        offset: Int,
+        categoryId: Long?,
+        filterByFavorite: Boolean?,
+        filterByNew: Boolean?,
+        filterByRead: Boolean?
+    ): List<ComicEntity>
+
+    @Query("SELECT EXISTS(SELECT * FROM comics WHERE file_path = :filePath)")
+    suspend fun comicExists(filePath: String): Boolean
+
+    @Query("UPDATE comics SET is_favorite = :isFavorite WHERE file_path = :filePath")
+    suspend fun updateFavoriteStatus(filePath: String, isFavorite: Boolean)
 
     @Query("DELETE FROM comics")
-    suspend fun deleteAllComics()
-
-    @Query("SELECT * FROM comics WHERE file_path = :filePath")
-    fun getComicByPath(filePath: String): Flow<ComicEntity?>
-
-    @Query("SELECT * FROM comics WHERE file_path = :filePath LIMIT 1")
-    suspend fun getComicByFilePath(filePath: Uri): ComicEntity?
-
-    @Query("SELECT * FROM comics ORDER BY title ASC")
-    fun getAllComics(): Flow<List<ComicEntity>>
-
-    @Query("SELECT * FROM comics WHERE is_favorite = 1 ORDER BY title ASC")
-    fun getFavoriteComics(): Flow<List<ComicEntity>>
-
-    @Query("SELECT * FROM comics WHERE is_new = 1 ORDER BY title ASC")
-    fun getNewComics(): Flow<List<ComicEntity>>
-
-    @Query("SELECT * FROM comics WHERE has_been_read = 0 ORDER BY title ASC")
-    fun getUnreadComics(): Flow<List<ComicEntity>>
+    suspend fun clearAllComics()
 }

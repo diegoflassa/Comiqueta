@@ -52,6 +52,8 @@ dependencies {
     implementation(libs.ax.activity.compose)
     implementation(libs.ax.lifecycle.viewmodel.compose)
     implementation(libs.ax.navigation.compose)
+    implementation(libs.ax.paging.runtime.ktx)
+    implementation(libs.ax.paging.compose)
     implementation(libs.kotlinx.serialization.json)
 
     //Compose Testing

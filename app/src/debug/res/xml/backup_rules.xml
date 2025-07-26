@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude everything from the 'file' domain (internal storage) -->
+    <exclude
+        domain="file"
+        path="." />
+
+    <!-- Exclude all databases -->
+    <exclude
+        domain="database"
+        path="." />
+
+    <!-- Exclude all shared preferences -->
+    <exclude
+        domain="sharedpref"
+        path="." />
+
+    <!-- Exclude everything from the 'external' domain (getExternalFilesDir()) -->
+    <exclude
+        domain="external"
+        path="." />
+
+    <!--The 'root' domain typically isn't used for app-specific data backup
+        but can be included for completeness if desired.    -->
+    <exclude
+        domain="root"
+        path="." />
+</full-backup-content>

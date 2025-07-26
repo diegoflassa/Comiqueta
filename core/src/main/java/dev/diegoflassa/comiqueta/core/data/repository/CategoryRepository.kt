@@ -3,15 +3,15 @@ package dev.diegoflassa.comiqueta.core.data.repository
 import dev.diegoflassa.comiqueta.core.data.database.dao.CategoryDao
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
-import dev.diegoflassa.comiqueta.core.domain.repository.CategoryRepository
+import dev.diegoflassa.comiqueta.core.domain.repository.ICategoryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class CategoryRepositoryImpl @Inject constructor(
+class CategoryRepository @Inject constructor(
     private val categoryDao: CategoryDao
-) : CategoryRepository {
+) : ICategoryRepository {
     override fun getAllCategories(): Flow<List<CategoryEntity>> {
         return categoryDao.getAll()
     }

@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -88,6 +87,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
+import dev.diegoflassa.comiqueta.core.data.database.entity.asExternalModel
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
@@ -98,6 +98,11 @@ import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.home.R
 import kotlinx.coroutines.flow.collectLatest
 import androidx.core.net.toUri
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
+import dev.diegoflassa.comiqueta.core.data.model.Comic
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.theme.bottomAppBarSelectedIcon
@@ -108,6 +113,8 @@ import dev.diegoflassa.comiqueta.core.theme.tabSelectedText
 import dev.diegoflassa.comiqueta.core.theme.tabUnselectedText
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.home.ui.enums.BottomNavItems
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 private const val tag = "HomeScreen"
 
@@ -125,17 +132,18 @@ fun HomeScreen(
     val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree(), onResult = { uri: Uri? ->
             uri?.let {
-                homeViewModel.processIntent(HomeIntent.FolderSelected(it))
+                homeViewModel.reduce(HomeIntent.FolderSelected(it))
             }
         })
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(), onResult = { isGranted: Boolean ->
-            homeViewModel.processIntent(HomeIntent.FolderPermissionResult(isGranted))
+            homeViewModel.reduce(HomeIntent.FolderPermissionResult(isGranted))
         })
 
     LaunchedEffect(Unit) {
-        homeViewModel.processIntent(HomeIntent.LoadInitialData)
+        homeViewModel.reduce(HomeIntent.CheckInitialFolderPermission)
+        homeViewModel.reduce(HomeIntent.LoadComics)
     }
 
     LaunchedEffect(key1 = homeViewModel.effect) {
@@ -150,7 +158,7 @@ fun HomeScreen(
                 }
 
                 is HomeEffect.NavigateToComicDetail -> {
-                    navigationViewModel.navigateTo(Screen.Viewer(effect.comicPath))
+                    navigationViewModel.navigateTo(Screen.Viewer(effect.comicPath ?: Uri.EMPTY))
                 }
 
                 is HomeEffect.RequestStoragePermission -> {
@@ -163,10 +171,27 @@ fun HomeScreen(
             }
         }
     }
-
+    val comics: LazyPagingItems<Comic> = homeViewModel.comicsFlow.collectAsLazyPagingItems()
+    val latestComics: LazyPagingItems<Comic> =
+        homeViewModel.latestComicsFlow.collectAsLazyPagingItems()
+    val favoriteComics: LazyPagingItems<Comic> =
+        homeViewModel.favoriteComicsFlow.collectAsLazyPagingItems()
+    // In HomeScreen or where you pass these to HomeScreenContent
+    LaunchedEffect(comics.loadState) {
+        TimberLogger.logD("Comics LoadState", "${comics.loadState}")
+    }
+    LaunchedEffect(latestComics.loadState) {
+        TimberLogger.logD("Comics LoadState", "${latestComics.loadState}")
+    }
+    LaunchedEffect(favoriteComics.loadState) {
+        TimberLogger.logD("Comics LoadState", "${favoriteComics.loadState}")
+    }
     HomeScreenContent(
+        comics = comics,
+        latestComics = latestComics,
+        favoriteComics = favoriteComics,
         uiState = uiState,
-        onIntent = homeViewModel::processIntent
+        onIntent = homeViewModel::reduce
     )
 }
 
@@ -174,13 +199,16 @@ fun HomeScreen(
 @Composable
 fun HomeScreenContent(
     modifier: Modifier = Modifier,
+    comics: LazyPagingItems<Comic>,
+    latestComics: LazyPagingItems<Comic>,
+    favoriteComics: LazyPagingItems<Comic>,
     uiState: HomeUIState,
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
     val fabDiameter = ComiquetaTheme.dimen.fabDiameter.scaled()
     val bottomBarHeight = ComiquetaTheme.dimen.bottomBarHeight.scaled()
     val isEmpty =
-        uiState.allComics.isEmpty() && uiState.searchQuery.isBlank() && uiState.selectedCategory == null && !uiState.isLoading
+        (comics.itemCount == 0) && uiState.searchQuery.isBlank() && uiState.selectedCategory == null && uiState.isLoading.not()
 
     val topSystemBarInsetDp = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
 
@@ -247,6 +275,9 @@ fun HomeScreenContent(
 
                 else -> {
                     ComicsContent(
+                        comics = comics,
+                        latestComics = latestComics,
+                        favoriteComics = favoriteComics,
                         uiState = uiState,
                         onIntent = onIntent,
                     )
@@ -273,32 +304,32 @@ fun HomeScreenContent(
                     BottomNavItem(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Home,
-                        label = stringResource(R.string.home),
+                        label = stringResource(R.string.bottom_nav_home),
                         type = BottomNavItems.HOME,
                         isSelected = true
-                    ) { onIntent?.invoke(HomeIntent.NavigateTo(Screen.Home)) }
+                    ) { onIntent?.invoke(HomeIntent.ShowAllComics) }
                     BottomNavItem(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Star,
-                        label = stringResource(R.string.catalog),
+                        label = stringResource(R.string.bottom_nav_catalog),
                         type = BottomNavItems.CATALOG,
                         isSelected = false
-                    ) { onIntent?.invoke(HomeIntent.NavigateTo(Screen.Catalog)) }
+                    ) { onIntent?.invoke(HomeIntent.ShowAllComics) }
                     Spacer(modifier = Modifier.width(fabDiameter + 16.dp.scaled()))
                     BottomNavItem(
                         modifier = Modifier.weight(1f),
                         icon = Icons.AutoMirrored.Filled.List,
-                        label = stringResource(R.string.bookmarks),
+                        label = stringResource(R.string.bottom_nav_bookmarks),
                         type = BottomNavItems.BOOKMARKS,
                         isSelected = false
-                    ) { onIntent?.invoke(HomeIntent.NavigateTo(Screen.Bookmark)) }
+                    ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
                     BottomNavItem(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Favorite,
-                        label = stringResource(R.string.favorites),
+                        label = stringResource(R.string.bottom_nav_favorites),
                         type = BottomNavItems.FAVORITES,
                         isSelected = false
-                    ) { onIntent?.invoke(HomeIntent.NavigateTo(Screen.Favorites)) }
+                    ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
                 }
             }
 
@@ -462,16 +493,29 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun HorizontalComicsRow(
-    comics: List<ComicEntity>,
+    comics: LazyPagingItems<Comic>,
+    modifier: Modifier = Modifier,
     onIntent: ((HomeIntent) -> Unit)? = null
 ) {
     LazyRow(
+        modifier = modifier,
         contentPadding = PaddingValues(
-            horizontal = 16.dp.scaled(), vertical = 8.dp.scaled()
-        ), horizontalArrangement = Arrangement.spacedBy(16.dp.scaled())
+            horizontal = 16.dp,
+            vertical = 8.dp
+        ),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(comics, key = { it.filePath.toString() }) { comic ->
-            ComicCoverItem(comic = comic, onIntent = onIntent)
+        items(
+            count = comics.itemCount,
+            key = comics.itemKey { comic -> comic.filePath.toString() }
+        ) { index ->
+            val comic = comics[index]
+            if (comic != null) {
+                ComicCoverItem(comic = comic, onIntent = onIntent)
+            } else {
+                // Optional: You can display a placeholder while items are loading
+                // PlaceholderComicCoverItem()
+            }
         }
     }
 }
@@ -480,6 +524,9 @@ fun HorizontalComicsRow(
 @Composable
 fun ComicsContent(
     modifier: Modifier = Modifier,
+    comics: LazyPagingItems<Comic>,
+    latestComics: LazyPagingItems<Comic>,
+    favoriteComics: LazyPagingItems<Comic>,
     uiState: HomeUIState,
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
@@ -497,7 +544,7 @@ fun ComicsContent(
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Text(
-                            text = stringResource(R.string.search_placeholder),
+                            text = stringResource(R.string.search_comics_placeholder),
                             style = ComiquetaTheme.typography.searchText.scaled()
                         )
                     }
@@ -525,7 +572,6 @@ fun ComicsContent(
             )
         }
 
-        // Categories Section
         if (uiState.categories.isNotEmpty()) {
             item {
                 CategoriesSection(
@@ -538,8 +584,7 @@ fun ComicsContent(
         }
 
         // Latest Comics Section
-        val latestComics = uiState.latestComics
-        if (latestComics.isNotEmpty()) {
+        if (latestComics.itemCount > 0) {
             item {
                 SectionHeader(title = stringResource(R.string.latest_comics_section_title))
                 HorizontalComicsRow(comics = latestComics, onIntent = onIntent)
@@ -548,8 +593,7 @@ fun ComicsContent(
         }
 
         // Favorite Comics Section
-        val favoriteComics = uiState.favoriteComics
-        if (favoriteComics.isNotEmpty()) {
+        if (favoriteComics.itemCount > 0) {
             item {
                 SectionHeader(title = stringResource(R.string.favorite_comics_section_title))
                 HorizontalComicsRow(comics = favoriteComics, onIntent = onIntent)
@@ -557,15 +601,7 @@ fun ComicsContent(
             }
         }
 
-        val comicsToDisplay = if (uiState.searchQuery.isBlank()) {
-            uiState.allComics
-        } else {
-            uiState.allComics.filter { comic ->
-                comic.title?.contains(uiState.searchQuery, ignoreCase = true) == true
-            }
-        }
-
-        if (comicsToDisplay.isNotEmpty()) {
+        if (comics.itemCount > 0) {
             item {
                 SectionHeader(
                     title = if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
@@ -575,7 +611,11 @@ fun ComicsContent(
                     }
                 )
             }
-            items(comicsToDisplay, key = { it.filePath.toString() }) { comic ->
+            items(comics.itemCount, key = { index ->
+                val item = comics.peek(index)
+                item?.filePath?.toString() ?: index
+            }) { index ->
+                val comic = comics[index]
                 ComicListItem(comic = comic, onIntent = onIntent)
                 Spacer(modifier = Modifier.height(8.dp.scaled()))
             }
@@ -599,7 +639,7 @@ fun ComicsContent(
 
 @Composable
 fun ComicCoverItem(
-    modifier: Modifier = Modifier, comic: ComicEntity,
+    modifier: Modifier = Modifier, comic: Comic,
     onIntent: ((HomeIntent) -> Unit)? = null
 ) {
     Card(
@@ -612,7 +652,8 @@ fun ComicCoverItem(
     ) {
         Image(
             painter = rememberAsyncImagePainter(
-                model = comic.coverPath ?: comic.filePath.takeIf { it != Uri.EMPTY },
+                model = comic.coverPath.takeIf { it != Uri.EMPTY }
+                    ?: comic.filePath.takeIf { it != Uri.EMPTY },
                 error = painterResource(id = R.drawable.ic_placeholder_comic),
                 placeholder = painterResource(id = R.drawable.ic_placeholder_comic)
             ),
@@ -626,7 +667,7 @@ fun ComicCoverItem(
 
 @Composable
 fun ComicListItem(
-    comic: ComicEntity,
+    comic: Comic?,
     onIntent: ((HomeIntent) -> Unit)? = null
 ) {
     Card(
@@ -643,11 +684,12 @@ fun ComicListItem(
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = comic.coverPath ?: comic.filePath.takeIf { it != Uri.EMPTY },
+                    model = comic?.coverPath?.takeIf { it != Uri.EMPTY }
+                        ?: comic?.filePath?.takeIf { it != Uri.EMPTY },
                     error = painterResource(id = R.drawable.ic_placeholder_comic),
                     placeholder = painterResource(id = R.drawable.ic_placeholder_comic)
                 ),
-                contentDescription = comic.title
+                contentDescription = comic?.title
                     ?: stringResource(id = R.string.comic_cover_image_description),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -658,18 +700,18 @@ fun ComicListItem(
             Spacer(modifier = Modifier.width(16.dp.scaled()))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = comic.title ?: stringResource(id = R.string.unknown_title),
+                    text = comic?.title ?: stringResource(id = R.string.unknown_title),
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                 )
-                comic.author?.let {
+                comic?.author?.let {
                     Text(
                         text = it,
                         fontSize = 14.sp,
                     )
                 }
             }
-            if (comic.isFavorite) {
+            if (comic?.isFavorite == true) {
                 Icon(
                     Icons.Filled.Favorite,
                     contentDescription = stringResource(R.string.favorite_icon_description),
@@ -712,6 +754,21 @@ fun BottomNavItem(
 
 // --- Previews Start ---
 
+/**
+ * Helper function to create LazyPagingItems for Composable Previews.
+ *
+ * @param items The list of items to display in the preview.
+ * @return LazyPagingItems<T> ready for preview.
+ */
+@Composable
+fun <T : Any> rememberPreviewLazyPagingItems(
+    items: List<T>
+): LazyPagingItems<T> {
+    val pagingData: PagingData<T> = PagingData.from(items)
+    val flow: Flow<PagingData<T>> = flowOf(pagingData)
+    return flow.collectAsLazyPagingItems()
+}
+
 private val sampleComics = listOf(
     ComicEntity(
         filePath = "file:///comic1".toUri(),
@@ -720,25 +777,25 @@ private val sampleComics = listOf(
         isFavorite = true,
         isNew = true,
         coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+1".toUri() // Using a placeholder URL
-    ), ComicEntity(
+    ).asExternalModel(), ComicEntity(
         filePath = "file:///comic2".toUri(),
         title = "Mystery of the Void",
         // author = "Author B",
         isNew = true,
         coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+2".toUri()
-    ), ComicEntity(
+    ).asExternalModel(), ComicEntity(
         filePath = "file:///comic3".toUri(),
         title = "Chronicles of Code",
         // author = "Author C",
         isFavorite = false,
         coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+3".toUri()
-    ), ComicEntity(
+    ).asExternalModel(), ComicEntity(
         filePath = "file:///comic4".toUri(),
         title = "Epic Tales",
         // author = "Author D",
         isFavorite = true,
         coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+4".toUri()
-    )
+    ).asExternalModel()
 )
 private val sampleCategories = listOf(
     CategoryEntity(id = 1, name = "All"),
@@ -747,51 +804,91 @@ private val sampleCategories = listOf(
 )
 
 // Previews With Data
-@Preview(name = "Phone - Light - With Data", group = "Screen - With Data", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440")
-@Preview(name = "Phone - Dark - With Data", group = "Screen - With Data", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Phone - Light - With Data",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
+@Preview(
+    name = "Phone - Dark - With Data",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun HomeScreenContentWithComicsPreviewPhone() {
     ComiquetaThemeContent {
+        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
         HomeScreenContent(
+            comics = emptyComics,
+            latestComics = emptyComics,
+            favoriteComics = emptyComics,
             uiState = HomeUIState(
                 isLoading = false,
-                allComics = sampleComics,
-                latestComics = sampleComics.filter { it.isNew },
-                favoriteComics = sampleComics.filter { it.isFavorite },
                 categories = sampleCategories,
                 selectedCategory = sampleCategories.first()
             ), onIntent = {})
     }
 }
 
-@Preview(name = "Foldable - Light - With Data", group = "Screen - With Data", showBackground = true, device = Devices.FOLDABLE)
-@Preview(name = "Foldable - Dark - With Data", group = "Screen - With Data", showBackground = true, device = Devices.FOLDABLE, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Foldable - Light - With Data",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = Devices.FOLDABLE
+)
+@Preview(
+    name = "Foldable - Dark - With Data",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = Devices.FOLDABLE,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun HomeScreenContentWithComicsPreviewFoldable() {
     ComiquetaThemeContent {
+        val comics = rememberPreviewLazyPagingItems(emptyList<Comic>())
+        val latestComics = rememberPreviewLazyPagingItems(sampleComics.filter { it.isNew })
+        val favoriteComics = rememberPreviewLazyPagingItems(sampleComics.filter { it.isFavorite })
         HomeScreenContent(
+            comics = comics,
+            latestComics = latestComics,
+            favoriteComics = favoriteComics,
             uiState = HomeUIState(
                 isLoading = false,
-                allComics = sampleComics,
-                latestComics = sampleComics.filter { it.isNew },
-                favoriteComics = sampleComics.filter { it.isFavorite },
                 categories = sampleCategories,
                 selectedCategory = sampleCategories.first()
             ), onIntent = {})
     }
 }
 
-@Preview(name = "Tablet - Light - With Data", group = "Screen - With Data", showBackground = true, device = Devices.TABLET)
-@Preview(name = "Tablet - Dark - With Data", group = "Screen - With Data", showBackground = true, device = Devices.TABLET, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Tablet - Light - With Data",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = Devices.TABLET
+)
+@Preview(
+    name = "Tablet - Dark - With Data",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = Devices.TABLET,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun HomeScreenContentWithComicsPreviewTablet() {
     ComiquetaThemeContent {
+        val comics = rememberPreviewLazyPagingItems(emptyList<Comic>())
+        val latestComics = rememberPreviewLazyPagingItems(sampleComics.filter { it.isNew })
+        val favoriteComics = rememberPreviewLazyPagingItems(sampleComics.filter { it.isFavorite })
         HomeScreenContent(
+            comics = comics,
+            latestComics = latestComics,
+            favoriteComics = favoriteComics,
             uiState = HomeUIState(
                 isLoading = false,
-                allComics = sampleComics,
-                latestComics = sampleComics.filter { it.isNew },
-                favoriteComics = sampleComics.filter { it.isFavorite },
                 categories = sampleCategories,
                 selectedCategory = sampleCategories.first()
             ), onIntent = {})
@@ -799,28 +896,60 @@ fun HomeScreenContentWithComicsPreviewTablet() {
 }
 
 // Previews for Other States (Loading, Empty)
-@Preview(name = "Phone - Light - Loading", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440")
-@Preview(name = "Phone - Dark - Loading", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Phone - Light - Loading",
+    group = "Screen - Other States",
+    showBackground = true,
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
+@Preview(
+    name = "Phone - Dark - Loading",
+    group = "Screen - Other States",
+    showBackground = true,
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun HomeScreenContentLoadingPreview() {
     ComiquetaThemeContent {
+        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
         HomeScreenContent(
+            comics = emptyComics,
+            latestComics = emptyComics,
+            favoriteComics = emptyComics,
             uiState = HomeUIState(isLoading = true), onIntent = {})
     }
 }
 
-@Preview(name = "Phone - Light - Empty", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440")
-@Preview(name = "Phone - Dark - Empty", group = "Screen - Other States", showBackground = true, device = "spec:width=1080px,height=2560px,dpi=440", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Phone - Light - Empty",
+    group = "Screen - Other States",
+    showBackground = true,
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
+@Preview(
+    name = "Phone - Dark - Empty",
+    group = "Screen - Other States",
+    showBackground = true,
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun HomeScreenContentEmptyPreview() {
     ComiquetaThemeContent {
+        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
         HomeScreenContent(
+            comics = emptyComics,
+            latestComics = emptyComics,
+            favoriteComics = emptyComics,
             uiState = HomeUIState(
                 isLoading = false,
-                allComics = emptyList(),
-                latestComics = emptyList(),
-                favoriteComics = emptyList(),
-                categories = listOf(CategoryEntity(id = 1L, name = "All")),
+                categories = listOf(
+                    CategoryEntity(
+                        id = 1L,
+                        name = "All"
+                    )
+                ),
             ), onIntent = {})
     }
 }

@@ -8,5 +8,5 @@ sealed interface HomeEffect {
     data object LaunchFolderPicker : HomeEffect
     data class NavigateTo(val screen: Screen) : HomeEffect
     data class RequestStoragePermission(val permission: String) : HomeEffect
-    data class NavigateToComicDetail(val comicPath: Uri) : HomeEffect
+    data class NavigateToComicDetail(val comicPath: Uri?) : HomeEffect
 }
