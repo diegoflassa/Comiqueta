@@ -113,6 +113,7 @@ import dev.diegoflassa.comiqueta.core.theme.tabSelectedText
 import dev.diegoflassa.comiqueta.core.theme.tabUnselectedText
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.home.ui.enums.BottomNavItems
+import dev.diegoflassa.comiqueta.home.ui.enums.ViewMode
 import kotlinx.coroutines.flow.flowOf
 
 private const val tag = "HomeScreen"
@@ -1119,61 +1120,27 @@ private val sampleCategories = listOf(
     CategoryEntity(id = 3, name = "Fantasy")
 )
 
-// --- Previews for HorizontalComicsRowPreview (the one taking List<Comic?>) ---
-
-@Preview(
-    name = "HorizontalComicsRowPreview (List based) - With Data",
-    group = "List-based Rows",
-    showBackground = true
-)
-@Composable
-fun PreviewOfHorizontalComicsRowPreview_WithData() {
-    ComiquetaThemeContent {
-        val comicsForPreview = sampleComics
-        HorizontalComicsRowPreview(
-            comics = comicsForPreview,
-            onIntent = {}
-        )
-    }
-}
-
-@Preview(
-    name = "HorizontalComicsRowPreview (List based) - Empty",
-    group = "List-based Rows",
-    showBackground = true
-)
-@Composable
-fun PreviewOfHorizontalComicsRowPreview_Empty() {
-    ComiquetaThemeContent {
-        HorizontalComicsRowPreview(
-            comics = emptyList(),
-            onIntent = {}
-        )
-    }
-}
-
-
 // Previews With Data
 @Preview(
-    name = "Phone - Light - With Data",
+    name = "Phone - Light - With Data - Grid",
     group = "Screen - With Data",
     showBackground = true,
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Preview(
-    name = "Phone - Dark - With Data",
+    name = "Phone - Dark - With Data - Grid",
     group = "Screen - With Data",
     showBackground = true,
     device = "spec:width=1080px,height=2560px,dpi=440",
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun HomeScreenContentWithComicsPreviewPhone() {
+fun HomeScreenContentWithComicsGridPreviewPhone() {
     ComiquetaThemeContent {
         HomeScreenContentPreview(
-            comics = emptyList(),
-            latestComics = emptyList(),
-            favoriteComics = emptyList(),
+            comics = sampleComics,
+            latestComics = sampleComics.filter { it.isNew },
+            favoriteComics = sampleComics.filter { it.isFavorite },
             uiState = HomeUIState(
                 isLoading = false,
                 categories = sampleCategories,
@@ -1183,23 +1150,52 @@ fun HomeScreenContentWithComicsPreviewPhone() {
 }
 
 @Preview(
-    name = "Foldable - Light - With Data",
+    name = "Phone - Light - With Data - List",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
+@Preview(
+    name = "Phone - Dark - With Data - List",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun HomeScreenContentWithComicsListPreviewPhone() {
+    ComiquetaThemeContent {
+        HomeScreenContentPreview(
+            comics = sampleComics,
+            latestComics = sampleComics.filter { it.isNew },
+            favoriteComics = sampleComics.filter { it.isFavorite },
+            uiState = HomeUIState(
+                isLoading = false,
+                viewMode = ViewMode.LIST,
+                categories = sampleCategories,
+                selectedCategory = sampleCategories.first()
+            ), onIntent = {})
+    }
+}
+
+@Preview(
+    name = "Foldable - Light - With Data - Grid",
     group = "Screen - With Data",
     showBackground = true,
     device = Devices.FOLDABLE
 )
 @Preview(
-    name = "Foldable - Dark - With Data",
+    name = "Foldable - Dark - With Data - Grid",
     group = "Screen - With Data",
     showBackground = true,
     device = Devices.FOLDABLE,
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun HomeScreenContentWithComicsPreviewFoldable() {
+fun HomeScreenContentWithComicsGridPreviewFoldable() {
     ComiquetaThemeContent {
         HomeScreenContentPreview(
-            comics = emptyList(),
+            comics = sampleComics,
             latestComics = sampleComics.filter { it.isNew },
             favoriteComics = sampleComics.filter { it.isFavorite },
             uiState = HomeUIState(
@@ -1211,27 +1207,85 @@ fun HomeScreenContentWithComicsPreviewFoldable() {
 }
 
 @Preview(
-    name = "Tablet - Light - With Data",
+    name = "Foldable - Light - With Data - List",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = Devices.FOLDABLE
+)
+@Preview(
+    name = "Foldable - Dark - With Data - List",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = Devices.FOLDABLE,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun HomeScreenContentWithComicsListPreviewFoldable() {
+    ComiquetaThemeContent {
+        HomeScreenContentPreview(
+            comics = sampleComics,
+            latestComics = sampleComics.filter { it.isNew },
+            favoriteComics = sampleComics.filter { it.isFavorite },
+            uiState = HomeUIState(
+                isLoading = false,
+                viewMode = ViewMode.LIST,
+                categories = sampleCategories,
+                selectedCategory = sampleCategories.first()
+            ), onIntent = {})
+    }
+}
+
+@Preview(
+    name = "Tablet - Light - With Data - Grid",
     group = "Screen - With Data",
     showBackground = true,
     device = Devices.TABLET
 )
 @Preview(
-    name = "Tablet - Dark - With Data",
+    name = "Tablet - Dark - With Data - Grid",
     group = "Screen - With Data",
     showBackground = true,
     device = Devices.TABLET,
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun HomeScreenContentWithComicsPreviewTablet() {
+fun HomeScreenContentWithComicsGridPreviewTablet() {
     ComiquetaThemeContent {
         HomeScreenContentPreview(
-            comics = emptyList(),
+            comics = sampleComics,
             latestComics = sampleComics.filter { it.isNew },
             favoriteComics = sampleComics.filter { it.isFavorite },
             uiState = HomeUIState(
                 isLoading = false,
+                categories = sampleCategories,
+                selectedCategory = sampleCategories.first()
+            ), onIntent = {})
+    }
+}
+
+@Preview(
+    name = "Tablet - Light - With Data - List",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = Devices.TABLET
+)
+@Preview(
+    name = "Tablet - Dark - With  - List",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = Devices.TABLET,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun HomeScreenContentWithComicsListPreviewTablet() {
+    ComiquetaThemeContent {
+        HomeScreenContentPreview(
+            comics = sampleComics,
+            latestComics = sampleComics.filter { it.isNew },
+            favoriteComics = sampleComics.filter { it.isFavorite },
+            uiState = HomeUIState(
+                isLoading = false,
+                viewMode = ViewMode.LIST,
                 categories = sampleCategories,
                 selectedCategory = sampleCategories.first()
             ), onIntent = {})
@@ -1294,114 +1348,3 @@ fun HomeScreenContentEmptyPreview() {
             ), onIntent = {})
     }
 }
-
-// --- Previews for ComicsContent ---
-
-@Preview(name = "ComicsContent - All Data", group = "ComicsContent Previews", showBackground = true)
-@Composable
-fun ComicsContentPreview_AllData() {
-    ComiquetaThemeContent {
-        val comics = rememberPreviewLazyPagingItems(sampleComics)
-        val latest = rememberPreviewLazyPagingItems(sampleComics.filter { it.isNew }.take(3))
-        val favorites =
-            rememberPreviewLazyPagingItems(sampleComics.filter { it.isFavorite }.take(2))
-        ComicsContent(
-            comics = comics,
-            latestComics = latest,
-            favoriteComics = favorites,
-            uiState = HomeUIState(
-                isLoading = false,
-                categories = sampleCategories,
-                selectedCategory = sampleCategories.first()
-            ),
-            onIntent = {}
-        )
-    }
-}
-
-@Preview(
-    name = "ComicsContent - Empty Results",
-    group = "ComicsContent Previews",
-    showBackground = true
-)
-@Composable
-fun ComicsContentPreview_EmptyResults() {
-    ComiquetaThemeContent {
-        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
-        // Keep latest/favorites to show those sections can still appear even if main comics are empty
-        val latest = rememberPreviewLazyPagingItems(sampleComics.filter { it.isNew }.take(3))
-        val favorites =
-            rememberPreviewLazyPagingItems(sampleComics.filter { it.isFavorite }.take(2))
-        ComicsContent(
-            comics = emptyComics,
-            latestComics = latest,
-            favoriteComics = favorites,
-            uiState = HomeUIState(
-                isLoading = false,
-                searchQuery = "NonExistent", // Simulate a search yielding no results
-                categories = sampleCategories,
-                selectedCategory = sampleCategories.first()
-            ),
-            onIntent = {}
-        )
-    }
-}
-
-@Preview(
-    name = "ComicsContent - Only Main Comics",
-    group = "ComicsContent Previews",
-    showBackground = true
-)
-@Composable
-fun ComicsContentPreview_OnlyMainComics() {
-    ComiquetaThemeContent {
-        val comics = rememberPreviewLazyPagingItems(sampleComics)
-        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
-        ComicsContent(
-            comics = comics,
-            latestComics = emptyComics, // No latest
-            favoriteComics = emptyComics, // No favorites
-            uiState = HomeUIState(
-                isLoading = false,
-                categories = sampleCategories,
-                selectedCategory = sampleCategories.first()
-            ),
-            onIntent = {}
-        )
-    }
-}
-
-// --- Previews for HorizontalComicsRow ---
-
-@Preview(
-    name = "HorizontalComicsRow - With Data",
-    group = "HorizontalComicsRow Previews",
-    showBackground = true
-)
-@Composable
-fun HorizontalComicsRowPreview_WithData() {
-    ComiquetaThemeContent {
-        val comics = rememberPreviewLazyPagingItems(sampleComics.take(4))
-        HorizontalComicsRow(
-            comics = comics,
-            onIntent = {}
-        )
-    }
-}
-
-@Preview(
-    name = "HorizontalComicsRow - Empty",
-    group = "HorizontalComicsRow Previews",
-    showBackground = true
-)
-@Composable
-fun HorizontalComicsRowPreview_Empty() {
-    ComiquetaThemeContent {
-        val emptyComics = rememberPreviewLazyPagingItems(emptyList<Comic>())
-        HorizontalComicsRow(
-            comics = emptyComics,
-            onIntent = {}
-        )
-    }
-}
-// --- Previews End ---
