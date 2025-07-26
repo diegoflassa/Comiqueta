@@ -111,6 +111,7 @@ import dev.diegoflassa.comiqueta.core.theme.getOutlinedTextFieldDefaultsColors
 import dev.diegoflassa.comiqueta.core.theme.settingIconTint
 import dev.diegoflassa.comiqueta.core.theme.tabSelectedText
 import dev.diegoflassa.comiqueta.core.theme.tabUnselectedText
+import dev.diegoflassa.comiqueta.core.theme.transparent
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.home.ui.enums.BottomNavItems
 import dev.diegoflassa.comiqueta.home.ui.enums.ViewMode
@@ -211,7 +212,7 @@ fun HomeScreenContentPreview(
     uiState: HomeUIState,
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
-    val fabDiameter = ComiquetaTheme.dimen.fabDiameter.scaled()
+    val fabDiameter = ComiquetaTheme.dimen.fabDiameter
     val bottomBarHeight = ComiquetaTheme.dimen.bottomBarHeight.scaled()
     val isEmpty =
         (comics.isEmpty()) && uiState.searchQuery.isBlank() && uiState.selectedCategory == null && uiState.isLoading.not()
@@ -290,54 +291,11 @@ fun HomeScreenContentPreview(
                 }
             }
 
-            BottomAppBar(
+            HomeBottomAppBar(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .height(bottomBarHeight)
-                    .graphicsLayer(
-                        shape = ComiquetaTheme.shapes.bottomBarShape, clip = true
-                    ),
-                tonalElevation = 4.dp.scaled(),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 12.dp, bottom = 6.dp, start = 16.dp, end = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    BottomNavItem(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Home,
-                        label = stringResource(R.string.bottom_nav_home),
-                        type = BottomNavItems.HOME,
-                        isSelected = true
-                    ) { onIntent?.invoke(HomeIntent.ShowAllComics) }
-                    BottomNavItem(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Star,
-                        label = stringResource(R.string.bottom_nav_catalog),
-                        type = BottomNavItems.CATALOG,
-                        isSelected = false
-                    ) { onIntent?.invoke(HomeIntent.ShowAllComics) }
-                    Spacer(modifier = Modifier.width(fabDiameter + 16.dp.scaled()))
-                    BottomNavItem(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.AutoMirrored.Filled.List,
-                        label = stringResource(R.string.bottom_nav_bookmarks),
-                        type = BottomNavItems.BOOKMARKS,
-                        isSelected = false
-                    ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
-                    BottomNavItem(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Favorite,
-                        label = stringResource(R.string.bottom_nav_favorites),
-                        type = BottomNavItems.FAVORITES,
-                        isSelected = false
-                    ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
-                }
-            }
+                    .align(Alignment.BottomCenter),
+                bottomBarHeight = bottomBarHeight
+            )
 
             ExtendedFloatingActionButton(
                 modifier = Modifier
@@ -447,54 +405,11 @@ fun HomeScreenContent(
                 }
             }
 
-            BottomAppBar(
+            HomeBottomAppBar(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .height(bottomBarHeight)
-                    .graphicsLayer(
-                        shape = ComiquetaTheme.shapes.bottomBarShape, clip = true
-                    ),
-                tonalElevation = 4.dp.scaled(),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 12.dp, bottom = 6.dp, start = 16.dp, end = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    BottomNavItem(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Home,
-                        label = stringResource(R.string.bottom_nav_home),
-                        type = BottomNavItems.HOME,
-                        isSelected = true
-                    ) { onIntent?.invoke(HomeIntent.ShowAllComics) }
-                    BottomNavItem(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Star,
-                        label = stringResource(R.string.bottom_nav_catalog),
-                        type = BottomNavItems.CATALOG,
-                        isSelected = false
-                    ) { onIntent?.invoke(HomeIntent.ShowAllComics) }
-                    Spacer(modifier = Modifier.width(fabDiameter + 16.dp.scaled()))
-                    BottomNavItem(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.AutoMirrored.Filled.List,
-                        label = stringResource(R.string.bottom_nav_bookmarks),
-                        type = BottomNavItems.BOOKMARKS,
-                        isSelected = false
-                    ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
-                    BottomNavItem(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Favorite,
-                        label = stringResource(R.string.bottom_nav_favorites),
-                        type = BottomNavItems.FAVORITES,
-                        isSelected = false
-                    ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
-                }
-            }
+                    .align(Alignment.BottomCenter),
+                bottomBarHeight = bottomBarHeight
+            )
 
             ExtendedFloatingActionButton(
                 modifier = Modifier
@@ -511,6 +426,81 @@ fun HomeScreenContent(
                     contentDescription = stringResource(R.string.add_fab_description)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun HomeBottomAppBar(
+    modifier: Modifier = Modifier,
+    bottomBarHeight: Dp = ComiquetaTheme.dimen.bottomBarHeight.scaled(),
+    onIntent: ((HomeIntent) -> Unit)? = null
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(bottomBarHeight)
+            .background(ComiquetaTheme.colorScheme.transparent)
+            .zIndex(1f),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Left Group
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .background(ComiquetaTheme.colorScheme.background),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BottomNavItem(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Home,
+                label = stringResource(R.string.bottom_nav_home),
+                type = BottomNavItems.HOME,
+                isSelected = true // Example: Home is selected by default in this preview
+            ) { onIntent?.invoke(HomeIntent.ShowAllComics) }
+            BottomNavItem(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Star,
+                label = stringResource(R.string.bottom_nav_catalog),
+                type = BottomNavItems.CATALOG,
+                // For preview, uiState might not have currentBottomNavItem,
+                // so set isSelected directly or adapt uiState for preview
+                isSelected = false // Example: Catalog is not selected
+            ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
+        }
+        BottomAppBar(
+            modifier = modifier
+                .width(90.dp.scaled())
+                .height(bottomBarHeight)
+                .graphicsLayer(
+                    shape = ComiquetaTheme.shapes.bottomBarShape, clip = true
+                ),
+            containerColor = ComiquetaTheme.colorScheme.background,
+            tonalElevation = 4.dp.scaled(),
+        ) {}
+        // Right Group
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .background(ComiquetaTheme.colorScheme.background),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BottomNavItem(
+                modifier = Modifier.weight(1f),
+                icon = Icons.AutoMirrored.Filled.List,
+                label = stringResource(R.string.bottom_nav_bookmarks),
+                type = BottomNavItems.BOOKMARKS,
+                isSelected = false // Example
+            ) { onIntent?.invoke(HomeIntent.ShowNewComics) }
+            BottomNavItem(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Favorite,
+                label = stringResource(R.string.bottom_nav_favorites),
+                type = BottomNavItems.FAVORITES,
+                isSelected = false // Example
+            ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
         }
     }
 }
@@ -1119,6 +1109,94 @@ private val sampleCategories = listOf(
     CategoryEntity(id = 2, name = "Sci-Fi"),
     CategoryEntity(id = 3, name = "Fantasy")
 )
+
+// BottomAppBar Previews
+@Preview(
+    name = "Phone - BottomAppBar",
+    group = "BottomAppBar - Phone",
+    showBackground = true,
+    device = "spec:width=1080px,height=2560px,dpi=440"
+)
+@Preview(
+    name = "Phone - BottomAppBar",
+    group = "BottomAppBar - Phone",
+    showBackground = true,
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun BottomAppBarPreviewPhone() {
+    ComiquetaThemeContent {
+        Box(
+            modifier = Modifier
+                .height((ComiquetaTheme.dimen.bottomBarHeight * 2).scaled())
+                .fillMaxWidth()
+        ) {
+            HomeBottomAppBar(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            )
+        }
+    }
+}
+
+@Preview(
+    name = "Foldable - BottomAppBar",
+    group = "BottomAppBar - Foldable",
+    showBackground = true,
+    device = Devices.FOLDABLE
+)
+@Preview(
+    name = "Foldable - BottomAppBar",
+    group = "BottomAppBar - Foldable",
+    showBackground = true,
+    device = Devices.FOLDABLE,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun BottomAppBarPreviewFoldable() {
+    ComiquetaThemeContent {
+        Box(
+            modifier = Modifier
+                .height((ComiquetaTheme.dimen.bottomBarHeight * 2).scaled())
+                .fillMaxWidth()
+        ) {
+            HomeBottomAppBar(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            )
+        }
+    }
+}
+
+@Preview(
+    name = "Tablet - BottomAppBar",
+    group = "BottomAppBar - Tablet",
+    showBackground = true,
+    device = Devices.TABLET
+)
+@Preview(
+    name = "Tablet - BottomAppBar",
+    group = "BottomAppBar - Tablet",
+    showBackground = true,
+    device = Devices.TABLET,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun BottomAppBarPreviewTablet() {
+    ComiquetaThemeContent {
+        Box(
+            modifier = Modifier
+                .height((ComiquetaTheme.dimen.bottomBarHeight * 2).scaled())
+                .fillMaxWidth()
+        ) {
+            HomeBottomAppBar(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            )
+        }
+    }
+}
 
 // Previews With Data
 @Preview(

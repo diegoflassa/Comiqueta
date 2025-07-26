@@ -18,7 +18,7 @@ data class ComiquetaDimen(
     val inputHeight: Dp = 40.dp,
     val iconSettings: Dp = 24.dp,
     val iconSize: Dp = 18.dp,
-    val fabDiameter: Dp = 48.dp,
+    val fabDiameter: Dp = 42.dp,
     val fabIconSize: Dp = 22.dp,
     val bottomBarHeight: Dp = 50.dp,
     val bottomAppBarIconSize: Dp = 20.dp,
