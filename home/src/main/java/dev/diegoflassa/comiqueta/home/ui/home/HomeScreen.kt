@@ -448,7 +448,7 @@ private fun HomeBottomAppBar(
         Row(
             modifier = Modifier
                 .weight(1f)
-                .background(ComiquetaTheme.colorScheme.background),
+                .background(ComiquetaTheme.colorScheme.surface),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -476,14 +476,14 @@ private fun HomeBottomAppBar(
                 .graphicsLayer(
                     shape = ComiquetaTheme.shapes.bottomBarShape, clip = true
                 ),
-            containerColor = ComiquetaTheme.colorScheme.background,
+            containerColor = ComiquetaTheme.colorScheme.surface,
             tonalElevation = 4.dp.scaled(),
         ) {}
         // Right Group
         Row(
             modifier = Modifier
                 .weight(1f)
-                .background(ComiquetaTheme.colorScheme.background),
+                .background(ComiquetaTheme.colorScheme.surface),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
