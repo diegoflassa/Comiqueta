@@ -38,7 +38,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +62,7 @@ import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.createBitmap
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import android.graphics.Color as AndroidColor
@@ -85,7 +85,7 @@ fun ViewerScreen(
             viewerViewModel.processIntent(ViewerIntent.LoadComic(comicPath))
         }
     }
-    val viewerUIState: ViewerUIState by viewerViewModel.uiState.collectAsState()
+    val viewerUIState: ViewerUIState by viewerViewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = Unit) {
         viewerViewModel.effect.collect { effect ->

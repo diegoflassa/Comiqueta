@@ -42,7 +42,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -57,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
@@ -100,7 +100,7 @@ fun SettingsScreen(
     TimberLogger.logI(tag, "SettingsScreen")
     val context = LocalContext.current
     val activity = context as? Activity
-    val settingsUIState: SettingsUIState by settingsViewModel.uiState.collectAsState()
+    val settingsUIState: SettingsUIState by settingsViewModel.uiState.collectAsStateWithLifecycle()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()

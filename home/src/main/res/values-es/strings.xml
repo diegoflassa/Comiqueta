@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">Comiqueta</string>
+
+    <!-- Top App Bar -->
+    <string name="top_bar_settings_icon_desc">Configuración</string>
+    <string name="search_comics_placeholder">Buscar cómics…</string>
+    <string name="search_icon_description">Ícono de búsqueda</string>
+    <string name="view_as_list_description">Ver como lista</string>
+    <string name="view_as_grid_description">Ver como cuadrícula</string>
+
+    <!-- Categories -->
+    <string name="category_all">Todos</string>
+
+    <!-- Sections -->
+    <string name="section_title_favorites">Favoritos</string>
+    <string name="latest_comics_section_title">Últimos Cómics</string>
+    <string name="favorite_comics_section_title">Tus Favoritos</string>
+    <string name="results_section_title">Resultados</string>
+    <string name="all_comics_section_title">Todos los Cómics</string>
+
+    <!-- Comic Item States -->
+    <string name="missing_cover_for_comic">Falta portada para %s</string>
+    <string name="error_loading_cover_for_comic">Error al cargar portada para %s</string>
+    <string name="comic_cover_image_description">Portada del cómic</string>
+    <string name="unknown_title">Título Desconocido</string>
+    <string name="favorite_icon_description">Favorito</string>
+
+    <!-- Loading & Error States -->
+    <string name="error_loading_comics_message">Error al cargar cómics: %s</string>
+    <string name="error_unknown">Error desconocido</string>
+    <string name="button_retry">Reintentar</string>
+    <string name="error_loading_more_comics_message">Error al cargar más: %s</string>
+    <string name="no_comics_found_for_search">No hay cómics que coincidan con tu búsqueda o filtro.</string>
+
+    <!-- Empty State (General) -->
+    <string name="empty_state_title_no_comics">No se encontraron cómics.</string>
+    <string name="empty_state_message_add_folder">Añade una carpeta para empezar a explorar tu colección.</string>
+
+    <!-- Empty State (from HomeScreen.kt EmptyStateContent directly) -->
+    <string name="empty_state_title">¡Nada por aquí todavía!</string>
+    <string name="empty_state_message">Empieza añadiendo tus carpetas de cómics.</string>
+    <string name="add_folder_button">Añadir Carpeta</string>
+
+    <!-- FAB (Main FAB in HomeBottomAppBar) -->
+    <string name="add_fab_description">Añadir Carpeta</string>
+
+    <!-- Bottom Navigation -->
+    <string name="bottom_nav_home">Inicio</string>
+    <string name="bottom_nav_catalog">Catálogo</string>
+    <string name="bottom_nav_bookmarks">Marcadores</string>
+    <string name="bottom_nav_favorites">Favoritos</string>
+    <string name="bottom_nav_library">Biblioteca</string>
+    <string name="home_section_collapse">Contraer sección</string>
+    <string name="home_section_expand">Expandir sección</string>
+</resources>

@@ -6,8 +6,8 @@
     <string name="search_comics_placeholder">Buscar quadrinhos…</string>
     <!-- Corrected/Ensured Key from HomeScreen.kt -->
     <string name="search_icon_description">Ícone de busca</string>
-    <string name="view_mode_list_desc">Mudar para Visualização em Lista</string>
-    <string name="view_mode_grid_desc">Mudar para Visualização em Grade</string>
+    <string name="view_as_list_description">Visualizar como lista</string>
+    <string name="view_as_grid_description">Visualizar como grid</string>
 
     <!-- Categories -->
     <string name="category_all">Todos</string>
@@ -51,5 +51,7 @@
     <string name="bottom_nav_bookmarks">Salvos</string>
     <string name="bottom_nav_favorites">Favoritos</string>
     <string name="bottom_nav_library">Biblioteca</string>
+    <string name="home_section_collapse">Recolher seção</string>
+    <string name="home_section_expand">Expandir seção</string>
 
 </resources>

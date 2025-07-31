@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_app_to_open_folder">No se encontró ninguna aplicación para abrir esta carpeta.</string>
+    <string name="settings_title">Configuración</string>
+    <string name="action_back">Volver</string>
+    <string name="settings_section_permissions_title">Permisos de la Aplicación</string>
+    <string name="settings_permissions_none_required">No se requieren permisos especiales de esta lista para esta versión de Android.</string>
+    <string name="settings_permission_read_external_storage_rationale_extended">El permiso \'Leer Almacenamiento Externo\' es necesario en versiones antiguas de Android para que la aplicación pueda seleccionar la carpeta de tu biblioteca de cómics y escanear su contenido. Si deniegas el permiso, no podrás seleccionar una carpeta. Siempre puedes gestionar los permisos desde los Ajustes de la Aplicación.</string>
+    <string name="settings_section_monitored_folders_title">Carpetas de Cómics Supervisadas</string>
+    <string name="settings_monitored_folders_empty">Actualmente no se están supervisando carpetas de cómics. Añade carpetas desde la pantalla principal.</string>
+    <string name="settings_permission_status_granted">Concedido</string>
+    <string name="settings_button_app_settings">Ajustes</string>
+    <string name="settings_button_grant_permission">Conceder</string>
+    <string name="settings_permission_denied_permanently_message">Permiso denegado. Para habilitar esta función, por favor concede el permiso en los Ajustes de la Aplicación.</string>
+    <string name="settings_remove_folder_action_desc">Eliminar carpeta</string>
+    <string name="settings_manage_categories_title">Gestionar Categorías</string>
+    <string name="settings_manage_categories_description">Ver, crear, editar o eliminar categorías de cómics</string>
+    <string name="settings_manage_categories_icon_desc">Ícono de gestionar categorías</string>
+</resources>

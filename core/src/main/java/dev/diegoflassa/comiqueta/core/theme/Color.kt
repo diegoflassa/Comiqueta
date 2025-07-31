@@ -56,6 +56,8 @@ object ComiquetaLightColors {
     val bottomAppBarUnselectedIconLight = Color(0xFFBCBCBC)
     val bottomAppBarSelectedTextLight = Color(0xFF333333)
     val bottomAppBarUnselectedTextLight = Color(0xFFBCBCBC)
+    val headerSelectedIconLight = Color(0xFFBCBCBC)
+    val headerUnselectedIconLight = Color(0xFFFFFFFF)
 }
 
 object ComiquetaDarkColors {
@@ -101,8 +103,10 @@ object ComiquetaDarkColors {
     val tabUnselectedTextDark = Color(0xFFBCBCBC)
     val bottomAppBarSelectedIconDark = Color(0xFFFFFFFF)
     val bottomAppBarUnselectedIconDark = Color(0xFFBCBCBC)
-    val bottomAppBarSelectedTextDark = Color(0xFFBBBBBB)
-    val bottomAppBarUnselectedTextDark = Color(0xFFBCBCBC)
+    val bottomAppBarSelectedTextDark = Color(0xFFFFFFFF)
+    val bottomAppBarUnselectedTextDark = Color(0xFF333333)
+    val headerSelectedIconDark = Color(0xFF333333)
+    val headerUnselectedIconDark = Color(0xFFBCBCBC)
 }
 
 @Composable
@@ -292,5 +296,27 @@ val ColorScheme.bottomAppBarUnselectedText: Color
             ComiquetaLightColors.bottomAppBarUnselectedTextLight
         } else {
             ComiquetaDarkColors.bottomAppBarUnselectedTextDark
+        }
+    }
+
+val ColorScheme.headerSelectedIcon: Color
+    @Composable
+    @ReadOnlyComposable
+    get() {
+        return if (this.primary == comiquetaLightColorScheme.primary) {
+            ComiquetaLightColors.headerSelectedIconLight
+        } else {
+            ComiquetaDarkColors.headerSelectedIconDark
+        }
+    }
+
+val ColorScheme.headerUnselectedIcon: Color
+    @Composable
+    @ReadOnlyComposable
+    get() {
+        return if (this.primary == comiquetaLightColorScheme.primary) {
+            ComiquetaLightColors.headerUnselectedIconLight
+        } else {
+            ComiquetaDarkColors.headerUnselectedIconDark
         }
     }

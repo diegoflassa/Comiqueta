@@ -5,18 +5,13 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,25 +20,16 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -52,41 +38,26 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults.PrimaryIndicator
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.rememberAsyncImagePainter
 import dev.diegoflassa.comiqueta.core.data.database.entity.asExternalModel
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
@@ -98,28 +69,30 @@ import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.home.R
 import kotlinx.coroutines.flow.collectLatest
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import dev.diegoflassa.comiqueta.core.data.model.Comic
-import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
-import dev.diegoflassa.comiqueta.core.theme.bottomAppBarSelectedIcon
-import dev.diegoflassa.comiqueta.core.theme.bottomAppBarUnselectedIcon
 import dev.diegoflassa.comiqueta.core.theme.getOutlinedTextFieldDefaultsColors
 import dev.diegoflassa.comiqueta.core.theme.settingIconTint
-import dev.diegoflassa.comiqueta.core.theme.tabSelectedText
-import dev.diegoflassa.comiqueta.core.theme.tabUnselectedText
-import dev.diegoflassa.comiqueta.core.theme.transparent
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
-import dev.diegoflassa.comiqueta.home.ui.enums.BottomNavItems
 import dev.diegoflassa.comiqueta.home.ui.enums.ViewMode
+import dev.diegoflassa.comiqueta.home.ui.widgets.CategoriesSection
+import dev.diegoflassa.comiqueta.home.ui.widgets.ComicCoverItem
+import dev.diegoflassa.comiqueta.home.ui.widgets.ComicListItem
+import dev.diegoflassa.comiqueta.home.ui.widgets.EmptyStateContent
+import dev.diegoflassa.comiqueta.home.ui.widgets.HomeBottomAppBar
+import dev.diegoflassa.comiqueta.home.ui.widgets.HorizontalComicsRow
+import dev.diegoflassa.comiqueta.home.ui.widgets.HorizontalComicsRowPreview
+import dev.diegoflassa.comiqueta.home.ui.widgets.SectionHeader
 import kotlinx.coroutines.flow.flowOf
 
-private const val tag = "HomeScreen"
+const val COMIC_COVER_ASPECT_RATIO = 2f / 3f
 
-private const val COMIC_COVER_ASPECT_RATIO = 2f / 3f
+private const val tag = "HomeScreen"
 
 @Composable
 fun HomeScreen(
@@ -133,7 +106,7 @@ fun HomeScreen(
     } else {
         TimberLogger.logD(tag, "")
     }
-    val uiState by homeViewModel.uiState.collectAsState()
+    val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     val folderPickerLauncher = rememberLauncherForActivityResult(
@@ -430,294 +403,31 @@ fun HomeScreenContent(
     }
 }
 
-@Composable
-private fun HomeBottomAppBar(
-    modifier: Modifier = Modifier,
-    bottomBarHeight: Dp = ComiquetaTheme.dimen.bottomBarHeight.scaled(),
-    onIntent: ((HomeIntent) -> Unit)? = null
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(bottomBarHeight)
-            .background(ComiquetaTheme.colorScheme.transparent)
-            .zIndex(1f),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Left Group
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .background(ComiquetaTheme.colorScheme.surface),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            BottomNavItem(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Default.Home,
-                label = stringResource(R.string.bottom_nav_home),
-                type = BottomNavItems.HOME,
-                isSelected = true // Example: Home is selected by default in this preview
-            ) { onIntent?.invoke(HomeIntent.ShowAllComics) }
-            BottomNavItem(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Default.Star,
-                label = stringResource(R.string.bottom_nav_catalog),
-                type = BottomNavItems.CATALOG,
-                // For preview, uiState might not have currentBottomNavItem,
-                // so set isSelected directly or adapt uiState for preview
-                isSelected = false // Example: Catalog is not selected
-            ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
-        }
-        BottomAppBar(
-            modifier = modifier
-                .width(90.dp.scaled())
-                .height(bottomBarHeight)
-                .graphicsLayer(
-                    shape = ComiquetaTheme.shapes.bottomBarShape, clip = true
-                ),
-            containerColor = ComiquetaTheme.colorScheme.surface,
-            tonalElevation = 4.dp.scaled(),
-        ) {}
-        // Right Group
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .background(ComiquetaTheme.colorScheme.surface),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            BottomNavItem(
-                modifier = Modifier.weight(1f),
-                icon = Icons.AutoMirrored.Filled.List,
-                label = stringResource(R.string.bottom_nav_bookmarks),
-                type = BottomNavItems.BOOKMARKS,
-                isSelected = false // Example
-            ) { onIntent?.invoke(HomeIntent.ShowNewComics) }
-            BottomNavItem(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Default.Favorite,
-                label = stringResource(R.string.bottom_nav_favorites),
-                type = BottomNavItems.FAVORITES,
-                isSelected = false // Example
-            ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
-        }
-    }
-}
-
-
-@Composable
-fun EmptyStateContent(
-    modifier: Modifier = Modifier,
-    onIntent: ((HomeIntent) -> Unit)? = null
-) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp.scaled()),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = stringResource(R.string.empty_state_title),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Spacer(modifier = Modifier.height(8.dp.scaled()))
-            Text(
-                text = stringResource(R.string.empty_state_message),
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(16.dp.scaled()))
-            ExtendedFloatingActionButton(
-                onClick = { onIntent?.invoke(HomeIntent.AddFolderClicked) },
-                icon = {
-                    Icon(
-                        Icons.Filled.Add,
-                        contentDescription = stringResource(R.string.add_folder_button)
-                    )
-                },
-                text = { Text(stringResource(R.string.add_folder_button)) })
-        }
-    }
-}
-
-@Composable
-fun CategoriesSection(
-    categories: List<CategoryEntity>,
-    selectedCategory: CategoryEntity?,
-    onCategoryClicked: (CategoryEntity) -> Unit
-) {
-    if (categories.isEmpty()) {
-        return
-    }
-
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-
-    val textWidths = remember { mutableStateMapOf<Int, Dp>() }
-    val density = LocalDensity.current
-
-    TabRow(
-        modifier = Modifier.padding(horizontal = ComiquetaTheme.dimen.tabHorizontalPadding),
-        containerColor = ComiquetaTheme.colorScheme.background,
-        selectedTabIndex = selectedTabIndex,
-        indicator = { tabPositions ->
-            selectedTabIndex = categories.indexOf(selectedCategory).let {
-                if (it == -1) 0 else it
-            }
-            if (tabPositions.isNotEmpty() && selectedTabIndex >= 0 && selectedTabIndex < tabPositions.size) {
-                val currentTabPosition = tabPositions[selectedTabIndex]
-                val currentTextWidth = textWidths[selectedTabIndex]?.scaled() ?: 0.dp
-                TimberLogger.logI(tag, "Got size[$selectedTabIndex]: $currentTextWidth")
-
-                if (currentTextWidth > 0.dp) {
-                    val mainIndicatorHeight = 2.dp.scaled()
-                    val mainIndicatorColor = ComiquetaTheme.colorScheme.tabSelectedText
-
-                    PrimaryIndicator(
-                        modifier = Modifier
-                            .tabIndicatorOffset(currentTabPosition)
-                            .width(currentTextWidth.scaled())
-                            .wrapContentSize(Alignment.BottomStart)
-                            .padding(start = 16.dp),
-                        height = mainIndicatorHeight,
-                        color = mainIndicatorColor
-                    )
-                }
-            } else {
-                Box(Modifier)
-            }
-        }) {
-        categories.forEachIndexed { index, category ->
-            val categoryText = if (category.name.equals(
-                    UserPreferencesKeys.DEFAULT_CATEGORY_ALL, ignoreCase = true
-                )
-            ) {
-                stringResource(id = dev.diegoflassa.comiqueta.core.R.string.all)
-            } else {
-                category.name
-            }
-
-            Tab(
-                //modifier = Modifier.background(ComiquetaTheme.colorScheme.transparent),
-                selected = selectedTabIndex == index,
-                onClick = { onCategoryClicked(category) },
-                text = {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            modifier = Modifier
-                                .wrapContentWidth()
-                                .onSizeChanged { intSize ->
-                                    TimberLogger.logI(
-                                        tag, "Setted size[$index]: ${intSize.width}"
-                                    )
-                                    textWidths[index] = with(density) { intSize.width.toDp() }
-                                }
-                                .align(Alignment.CenterStart),
-                            text = categoryText,
-                            style = ComiquetaTheme.typography.tabText,
-                            color = if (selectedTabIndex == index) ComiquetaTheme.colorScheme.tabSelectedText else ComiquetaTheme.colorScheme.tabUnselectedText,
-                            textAlign = TextAlign.Start,
-                            maxLines = 1)
-                    }
-                })
-        }
-
-    }
-}
-
-@Composable
-fun SectionHeader(title: String, modifier: Modifier = Modifier) {
-    Text(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                start = 16.dp.scaled(),
-                end = 16.dp.scaled(),
-                top = 16.dp.scaled(),
-                bottom = 8.dp.scaled()
-            ),
-        text = title,
-        textAlign = TextAlign.Start,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
-    )
-}
-
-@Composable
-fun HorizontalComicsRowPreview(
-    comics: List<Comic?>,
-    modifier: Modifier = Modifier,
-    onIntent: ((HomeIntent) -> Unit)? = null
-) {
-    LazyRow(
-        modifier = modifier,
-        contentPadding = PaddingValues(
-            horizontal = 16.dp,
-            vertical = 8.dp
-        ),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(
-            count = comics.size,
-            key = { index -> comics[index]?.filePath.toString() }
-        ) { index ->
-            val comic = comics[index]
-            if (comic != null) {
-                ComicCoverItem(comic = comic, onIntent = onIntent)
-            } else {
-                // Optional: You can display a placeholder while items are loading
-                // PlaceholderComicCoverItem()
-            }
-        }
-    }
-}
-
-@Composable
-fun HorizontalComicsRow(
-    comics: LazyPagingItems<Comic>,
-    modifier: Modifier = Modifier,
-    onIntent: ((HomeIntent) -> Unit)? = null
-) {
-    LazyRow(
-        modifier = modifier,
-        contentPadding = PaddingValues(
-            horizontal = 16.dp,
-            vertical = 8.dp
-        ),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(
-            count = comics.itemCount,
-            key = comics.itemKey { comic -> comic.filePath.toString() }
-        ) { index ->
-            val comic = comics[index]
-            if (comic != null) {
-                ComicCoverItem(comic = comic, onIntent = onIntent)
-            } else {
-                // Optional: You can display a placeholder while items are loading
-                // PlaceholderComicCoverItem()
-            }
-        }
-    }
-}
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ComicsContentPreview(
+    // For Previews with List<Comic>
     modifier: Modifier = Modifier,
-    comics: List<Comic?>,
-    latestComics: List<Comic?>,
-    favoriteComics: List<Comic?>,
+    comics: List<Comic>,
+    latestComics: List<Comic>,
+    favoriteComics: List<Comic>,
     uiState: HomeUIState,
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
+    var sectionHeaderLatestViewMode by remember { mutableStateOf(ViewMode.GRID) }
+    var sectionHeaderFavoritesViewMode by remember { mutableStateOf(ViewMode.GRID) }
+    var sectionHeaderAllViewMode by remember { mutableStateOf(ViewMode.LIST) }
+
+    var latestComicsExpanded by remember { mutableStateOf(true) }
+    var favoriteComicsExpanded by remember { mutableStateOf(true) }
+    var allComicsExpanded by remember { mutableStateOf(true) }
+
+    val screenWidthDp = LocalWindowInfo.current.containerSize.width.dp
     LazyColumn(
-        modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Search Bar
-        item {
+        item { // Search Bar
             OutlinedTextField(
                 value = uiState.searchQuery,
                 onValueChange = { onIntent?.invoke(HomeIntent.SearchComics(it)) },
@@ -756,64 +466,127 @@ fun ComicsContentPreview(
         }
 
         if (uiState.categories.isNotEmpty()) {
-            item {
+            item { // Categories Section
                 CategoriesSection(
                     categories = uiState.categories,
                     selectedCategory = uiState.selectedCategory,
                     onCategoryClicked = { category ->
                         onIntent?.invoke(HomeIntent.CategorySelected(category))
-                    })
-            }
-        }
-
-        // Latest Comics Section
-        if (latestComics.isNotEmpty()) {
-            item {
-                SectionHeader(title = stringResource(R.string.latest_comics_section_title))
-                HorizontalComicsRowPreview(comics = latestComics, onIntent = onIntent)
-                Spacer(modifier = Modifier.height(16.dp.scaled()))
-            }
-        }
-
-        // Favorite Comics Section
-        if (favoriteComics.isNotEmpty()) {
-            item {
-                SectionHeader(title = stringResource(R.string.favorite_comics_section_title))
-                HorizontalComicsRowPreview(comics = favoriteComics, onIntent = onIntent)
-                Spacer(modifier = Modifier.height(16.dp.scaled()))
-            }
-        }
-
-        if (comics.isNotEmpty()) {
-            item {
-                SectionHeader(
-                    title = if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
-                        stringResource(R.string.results_section_title)
-                    } else {
-                        stringResource(R.string.all_comics_section_title)
                     }
                 )
             }
-            items(comics.size, key = { index ->
-                val item = comics[index]
-                item?.filePath?.toString() ?: index
-            }) { index ->
-                val comic = comics[index]
-                ComicListItem(comic = comic, onIntent = onIntent)
-                Spacer(modifier = Modifier.height(8.dp.scaled()))
+        }
+
+        if (latestComics.isNotEmpty()) {
+            item { // Latest Comics Header
+                SectionHeader(
+                    title = stringResource(R.string.latest_comics_section_title),
+                    isExpanded = latestComicsExpanded,
+                    onHeaderClick = { latestComicsExpanded = !latestComicsExpanded },
+                    currentViewMode = sectionHeaderLatestViewMode
+                ) { newViewMode -> sectionHeaderLatestViewMode = newViewMode }
             }
-        } else if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
-            item {
-                Text(
-                    text = stringResource(R.string.no_comics_found_for_search),
-                    modifier = Modifier
-                        .padding(16.dp.scaled())
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                )
+            if (latestComicsExpanded) {
+                item {
+                    HorizontalComicsRowPreview(comics = latestComics, onIntent = onIntent)
+                    Spacer(modifier = Modifier.height(16.dp.scaled()))
+                }
             }
         }
-        item {
+
+        if (favoriteComics.isNotEmpty()) {
+            item { // Favorite Comics Header
+                SectionHeader(
+                    title = stringResource(R.string.favorite_comics_section_title),
+                    isExpanded = favoriteComicsExpanded,
+                    onHeaderClick = { favoriteComicsExpanded = !favoriteComicsExpanded },
+                    currentViewMode = sectionHeaderFavoritesViewMode
+                ) { newViewMode -> sectionHeaderFavoritesViewMode = newViewMode }
+            }
+            if (favoriteComicsExpanded) {
+                item {
+                    HorizontalComicsRowPreview(comics = favoriteComics, onIntent = onIntent)
+                    Spacer(modifier = Modifier.height(16.dp.scaled()))
+                }
+            }
+        }
+
+        // "All Comics" / "Results" Section
+        if (comics.isNotEmpty() || uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
+            item { // All Comics / Results Header
+                SectionHeader(
+                    title = if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) stringResource(
+                        R.string.results_section_title
+                    ) else stringResource(R.string.all_comics_section_title),
+                    isExpanded = allComicsExpanded,
+                    showGridListOption = true,
+                    onHeaderClick = { allComicsExpanded = !allComicsExpanded },
+                    currentViewMode = sectionHeaderAllViewMode
+                ) { newViewMode -> sectionHeaderAllViewMode = newViewMode }
+            }
+            if (allComicsExpanded) {
+                if (comics.isNotEmpty()) {
+                    when (sectionHeaderAllViewMode) {
+                        ViewMode.LIST -> {
+                            items(
+                                comics.size,
+                                key = { index -> comics[index].filePath.toString() }) { index ->
+                                ComicListItem(
+                                    comic = comics[index],
+                                    aspectRatio = COMIC_COVER_ASPECT_RATIO,
+                                    onIntent = onIntent
+                                )
+                                Spacer(modifier = Modifier.height(8.dp.scaled()))
+                            }
+                        }
+
+                        ViewMode.GRID -> {
+                            item {
+                                val currentGridColumnCount = when {
+                                    screenWidthDp < 600.dp -> 3
+                                    screenWidthDp < 840.dp -> 4
+                                    else -> 5
+                                }
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(currentGridColumnCount),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .padding(horizontal = 16.dp.scaled()),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp.scaled()),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp.scaled()),
+                                    contentPadding = PaddingValues(vertical = 8.dp.scaled())
+                                ) {
+                                    items(
+                                        count = comics.size,
+                                        key = { index -> comics[index].filePath.toString() }
+                                    ) { index ->
+                                        ComicCoverItem(
+                                            comic = comics[index],
+                                            aspectRatio = COMIC_COVER_ASPECT_RATIO,
+                                            onIntent = onIntent
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(16.dp.scaled()))
+                            }
+                        }
+                    }
+                } else if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
+                    item { // No Results
+                        Text(
+                            text = stringResource(R.string.no_comics_found_for_search),
+                            modifier = Modifier
+                                .padding(16.dp.scaled())
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+
+        item { // Spacer for BottomAppBar and FAB
             Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.bottomBarHeight.scaled() + ComiquetaTheme.dimen.fabDiameter.scaled() / 2))
         }
     }
@@ -822,6 +595,7 @@ fun ComicsContentPreview(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ComicsContent(
+    // For actual app with LazyPagingItems
     modifier: Modifier = Modifier,
     comics: LazyPagingItems<Comic>,
     latestComics: LazyPagingItems<Comic>,
@@ -829,11 +603,20 @@ fun ComicsContent(
     uiState: HomeUIState,
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
+    var sectionHeaderLatestViewMode by remember { mutableStateOf(ViewMode.GRID) }
+    var sectionHeaderFavoritesViewMode by remember { mutableStateOf(ViewMode.GRID) }
+    var sectionHeaderAllViewMode by remember { mutableStateOf(ViewMode.LIST) }
+
+    var latestComicsExpanded by remember { mutableStateOf(true) }
+    var favoriteComicsExpanded by remember { mutableStateOf(true) }
+    var allComicsExpanded by remember { mutableStateOf(true) }
+
+    val screenWidthDp = LocalWindowInfo.current.containerSize.width.dp
     LazyColumn(
-        modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Search Bar
-        item {
+        item { // Search Bar
             OutlinedTextField(
                 value = uiState.searchQuery,
                 onValueChange = { onIntent?.invoke(HomeIntent.SearchComics(it)) },
@@ -872,181 +655,133 @@ fun ComicsContent(
         }
 
         if (uiState.categories.isNotEmpty()) {
-            item {
+            item { // Categories Section
                 CategoriesSection(
                     categories = uiState.categories,
                     selectedCategory = uiState.selectedCategory,
                     onCategoryClicked = { category ->
                         onIntent?.invoke(HomeIntent.CategorySelected(category))
-                    })
-            }
-        }
-
-        // Latest Comics Section
-        if (latestComics.itemCount > 0) {
-            item {
-                SectionHeader(title = stringResource(R.string.latest_comics_section_title))
-                HorizontalComicsRow(comics = latestComics, onIntent = onIntent)
-                Spacer(modifier = Modifier.height(16.dp.scaled()))
-            }
-        }
-
-        // Favorite Comics Section
-        if (favoriteComics.itemCount > 0) {
-            item {
-                SectionHeader(title = stringResource(R.string.favorite_comics_section_title))
-                HorizontalComicsRow(comics = favoriteComics, onIntent = onIntent)
-                Spacer(modifier = Modifier.height(16.dp.scaled()))
-            }
-        }
-
-        if (comics.itemCount > 0) {
-            item {
-                SectionHeader(
-                    title = if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
-                        stringResource(R.string.results_section_title)
-                    } else {
-                        stringResource(R.string.all_comics_section_title)
                     }
                 )
             }
-            items(comics.itemCount, key = { index ->
-                val item = comics.peek(index)
-                item?.filePath?.toString() ?: index
-            }) { index ->
-                val comic = comics[index]
-                ComicListItem(comic = comic, onIntent = onIntent)
-                Spacer(modifier = Modifier.height(8.dp.scaled()))
-            }
-        } else if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
-            item {
-                Text(
-                    text = stringResource(R.string.no_comics_found_for_search),
-                    modifier = Modifier
-                        .padding(16.dp.scaled())
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                )
-            }
         }
-        item {
-            Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.bottomBarHeight.scaled() + ComiquetaTheme.dimen.fabDiameter.scaled() / 2))
-        }
-    }
-}
 
-@Composable
-fun ComicCoverItem(
-    modifier: Modifier = Modifier, comic: Comic,
-    onIntent: ((HomeIntent) -> Unit)? = null
-) {
-    Card(
-        modifier = modifier
-            .height(150.dp.scaled())
-            .aspectRatio(COMIC_COVER_ASPECT_RATIO)
-            .clickable { onIntent?.invoke(HomeIntent.ComicSelected(comic)) },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp.scaled()),
-        shape = RoundedCornerShape(8.dp.scaled())
-    ) {
-        Image(
-            painter = rememberAsyncImagePainter(
-                model = comic.coverPath.takeIf { it != Uri.EMPTY }
-                    ?: comic.filePath.takeIf { it != Uri.EMPTY },
-                error = painterResource(id = R.drawable.ic_placeholder_comic),
-                placeholder = painterResource(id = R.drawable.ic_placeholder_comic)
-            ),
-            contentDescription = comic.title
-                ?: stringResource(id = R.string.comic_cover_image_description),
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-@Composable
-fun ComicListItem(
-    comic: Comic?,
-    onIntent: ((HomeIntent) -> Unit)? = null
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp.scaled(), vertical = 4.dp.scaled())
-            .clickable { onIntent?.invoke(HomeIntent.ComicSelected(comic)) },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp.scaled()),
-        shape = RoundedCornerShape(8.dp.scaled())
-    ) {
-        Row(
-            modifier = Modifier.padding(8.dp.scaled()),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = comic?.coverPath?.takeIf { it != Uri.EMPTY }
-                        ?: comic?.filePath?.takeIf { it != Uri.EMPTY },
-                    error = painterResource(id = R.drawable.ic_placeholder_comic),
-                    placeholder = painterResource(id = R.drawable.ic_placeholder_comic)
-                ),
-                contentDescription = comic?.title
-                    ?: stringResource(id = R.string.comic_cover_image_description),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .height(90.dp.scaled())
-                    .aspectRatio(COMIC_COVER_ASPECT_RATIO)
-                    .clip(RoundedCornerShape(4.dp.scaled()))
-            )
-            Spacer(modifier = Modifier.width(16.dp.scaled()))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = comic?.title ?: stringResource(id = R.string.unknown_title),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                )
-                comic?.author?.let {
-                    Text(
-                        text = it,
-                        fontSize = 14.sp,
-                    )
+        if (latestComics.itemCount > 0) {
+            item { // Latest Comics Header
+                SectionHeader(
+                    title = stringResource(R.string.latest_comics_section_title),
+                    isExpanded = latestComicsExpanded,
+                    onHeaderClick = { latestComicsExpanded = !latestComicsExpanded },
+                    currentViewMode = sectionHeaderLatestViewMode
+                ) { newViewMode -> sectionHeaderLatestViewMode = newViewMode }
+            }
+            if (latestComicsExpanded) {
+                item {
+                    HorizontalComicsRow(comics = latestComics, onIntent = onIntent)
+                    Spacer(modifier = Modifier.height(16.dp.scaled()))
                 }
             }
-            if (comic?.isFavorite == true) {
-                Icon(
-                    Icons.Filled.Favorite,
-                    contentDescription = stringResource(R.string.favorite_icon_description),
-                    modifier = Modifier.padding(start = 8.dp.scaled())
-                )
+        }
+
+        if (favoriteComics.itemCount > 0) {
+            item { // Favorite Comics Header
+                SectionHeader(
+                    title = stringResource(R.string.favorite_comics_section_title),
+                    isExpanded = favoriteComicsExpanded,
+                    onHeaderClick = { favoriteComicsExpanded = !favoriteComicsExpanded },
+                    currentViewMode = sectionHeaderFavoritesViewMode
+                ) { newViewMode -> sectionHeaderFavoritesViewMode = newViewMode }
+            }
+            if (favoriteComicsExpanded) {
+                item {
+                    HorizontalComicsRow(comics = favoriteComics, onIntent = onIntent)
+                    Spacer(modifier = Modifier.height(16.dp.scaled()))
+                }
             }
         }
-    }
-}
 
-@Composable
-fun BottomNavItem(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    label: String,
-    type: BottomNavItems = BottomNavItems.UNKNOWN,
-    isSelected: Boolean,
-    onClick: ((BottomNavItems) -> Unit)? = null,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .clickable(onClick = { onClick?.invoke(type) }),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            modifier = Modifier.size(ComiquetaTheme.dimen.bottomAppBarIconSize.scaled()),
-            imageVector = icon,
-            contentDescription = label,
-            tint = if (isSelected) ComiquetaTheme.colorScheme.bottomAppBarSelectedIcon else ComiquetaTheme.colorScheme.bottomAppBarUnselectedIcon
-        )
-        Text(
-            text = label,
-            color = if (isSelected) ComiquetaTheme.colorScheme.tabSelectedText else ComiquetaTheme.colorScheme.tabUnselectedText,
-            style = ComiquetaTheme.typography.bottomAppBarText
-        )
+        // "All Comics" / "Results" Section
+        if (comics.itemCount > 0 || uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
+            item { // All Comics / Results Header
+                SectionHeader(
+                    title = if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) stringResource(
+                        R.string.results_section_title
+                    ) else stringResource(R.string.all_comics_section_title),
+                    isExpanded = allComicsExpanded,
+                    showGridListOption = true,
+                    onHeaderClick = { allComicsExpanded = !allComicsExpanded },
+                    currentViewMode = sectionHeaderAllViewMode
+                ) { newViewMode -> sectionHeaderAllViewMode = newViewMode }
+            }
+
+            if (allComicsExpanded) {
+                if (comics.itemCount > 0) {
+                    when (sectionHeaderAllViewMode) {
+                        ViewMode.LIST -> {
+                            items(
+                                count = comics.itemCount,
+                                key = comics.itemKey { it.filePath }
+                            ) { index ->
+                                val comic = comics[index]
+                                ComicListItem(
+                                    comic = comic,
+                                    aspectRatio = COMIC_COVER_ASPECT_RATIO,
+                                    onIntent = onIntent
+                                )
+                                Spacer(modifier = Modifier.height(8.dp.scaled()))
+                            }
+                        }
+
+                        ViewMode.GRID -> {
+                            item {
+                                val currentGridColumnCount = when {
+                                    screenWidthDp < 600.dp -> 3
+                                    screenWidthDp < 840.dp -> 4
+                                    else -> 5
+                                }
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(currentGridColumnCount),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight() // Consider performance
+                                        .padding(horizontal = 16.dp.scaled()),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp.scaled()),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp.scaled()),
+                                    contentPadding = PaddingValues(vertical = 8.dp.scaled())
+                                ) {
+                                    items(
+                                        count = comics.itemCount,
+                                        key = comics.itemKey { it.filePath.toString() }
+                                    ) { index ->
+                                        val comic = comics[index]
+                                        ComicCoverItem(
+                                            comic = comic,
+                                            aspectRatio = COMIC_COVER_ASPECT_RATIO,
+                                            onIntent = onIntent
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(16.dp.scaled()))
+                            }
+                        }
+                    }
+                } else if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
+                    item { // No Results
+                        Text(
+                            text = stringResource(R.string.no_comics_found_for_search),
+                            modifier = Modifier
+                                .padding(16.dp.scaled())
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+
+        item { // Spacer for BottomAppBar and FAB
+            Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.bottomBarHeight.scaled() + ComiquetaTheme.dimen.fabDiameter.scaled() / 2))
+        }
     }
 }
 

@@ -6,8 +6,8 @@
     <string name="search_comics_placeholder">Search comics…</string>
     <!-- Corrected/Ensured Key from HomeScreen.kt -->
     <string name="search_icon_description">Search icon</string>
-    <string name="view_mode_list_desc">Switch to List View</string>
-    <string name="view_mode_grid_desc">Switch to Grid View</string>
+    <string name="view_as_list_description">View as list</string>
+    <string name="view_as_grid_description">View as grid</string>
 
     <!-- Categories -->
     <string name="category_all">All</string>
@@ -53,5 +53,6 @@
     <string name="bottom_nav_bookmarks">Bookmarks</string>
     <string name="bottom_nav_favorites">Favorites</string>
     <string name="bottom_nav_library">Library</string>
-
+    <string name="home_section_collapse">Collapse home</string>
+    <string name="home_section_expand">Expand home</string>
 </resources>
