@@ -12,12 +12,12 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
-import dev.diegoflassa.comiqueta.home.ui.home.HomeScreen
+import dev.diegoflassa.comiqueta.categories.ui.CategoriesScreen
+import dev.diegoflassa.comiqueta.ui.home.HomeScreen
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.navigation.Screen
-import dev.diegoflassa.comiqueta.settings.ui.settings.SettingsScreen
-import dev.diegoflassa.comiqueta.categories.ui.categories.CategoriesScreen
-import dev.diegoflassa.comiqueta.viewer.ui.viewer.ViewerScreen
+import dev.diegoflassa.comiqueta.ui.SettingsScreen
+import dev.diegoflassa.comiqueta.viewer.ui.ViewerScreen
 
 @Composable
 fun NavDisplay(modifier: Modifier, navigationViewModel: NavigationViewModel) {

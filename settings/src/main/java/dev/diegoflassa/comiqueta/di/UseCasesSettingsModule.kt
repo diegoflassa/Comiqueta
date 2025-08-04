@@ -4,7 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.diegoflassa.comiqueta.core.data.repository.ComicsFolderRepository
+import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.AddMonitoredFolderUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.GetMonitoredFoldersUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.RemoveMonitoredFolderUseCase
@@ -17,19 +17,19 @@ object UseCasesSettingsModule {
 
     @Provides
     @Singleton
-    fun provideGetMonitoredFoldersUseCase(comicsFolderRepository: ComicsFolderRepository): GetMonitoredFoldersUseCase {
+    fun provideGetMonitoredFoldersUseCase(comicsFolderRepository: IComicsFolderRepository): GetMonitoredFoldersUseCase {
         return GetMonitoredFoldersUseCase(comicsFolderRepository)
     }
 
     @Provides
     @Singleton
-    fun provideAddMonitoredFolderUseCase(comicsFolderRepository: ComicsFolderRepository): AddMonitoredFolderUseCase {
+    fun provideAddMonitoredFolderUseCase(comicsFolderRepository: IComicsFolderRepository): AddMonitoredFolderUseCase {
         return AddMonitoredFolderUseCase(comicsFolderRepository)
     }
 
     @Provides
     @Singleton
-    fun provideRemoveMonitoredFolderUseCase(comicsFolderRepository: ComicsFolderRepository): RemoveMonitoredFolderUseCase {
+    fun provideRemoveMonitoredFolderUseCase(comicsFolderRepository: IComicsFolderRepository): RemoveMonitoredFolderUseCase {
         return RemoveMonitoredFolderUseCase(comicsFolderRepository)
     }
 

@@ -1,7 +1,6 @@
 package dev.diegoflassa.comiqueta.core.data.repository
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
@@ -12,13 +11,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Manages persistable URI permissions using Android's ContentResolver.
- * This class also provides a flow to observe changes to the persisted permissions.
- * It does NOT interact with the application's database.
- * Database operations for comic folders should be handled separately.
+ * Concrete implementation for managing persistable URI permissions.
  */
 @Singleton
-open class ComicsFolderRepository @Inject constructor(@ApplicationContext context: Context) {
+class ComicsFolderRepository @Inject constructor(
+    @param:ApplicationContext private val context: Context
+) : IComicsFolderRepository {
 
     private val contentResolver = context.contentResolver
 
@@ -44,42 +42,17 @@ open class ComicsFolderRepository @Inject constructor(@ApplicationContext contex
         }
     }
 
-    /**
-     * Provides a Flow that emits the current list of persisted folder URIs
-     * and subsequent updates when permissions are taken or released via this repository.
-     *
-     * @return A StateFlow emitting a list of Uris.
-     */
-    open fun getPersistedPermissionsFlow(): StateFlow<List<Uri>> {
+    override fun getPersistedPermissionsFlow(): StateFlow<List<Uri>> {
         return _persistedFoldersFlow.asStateFlow()
     }
 
-    /**
-     * Retrieves all persistable URI permissions currently held by the application.
-     * This method provides a snapshot and does not update reactively.
-     * For reactive updates, use [getPersistedPermissionsFlow].
-     *
-     * @return A list of Uris for which the app holds persistable permissions.
-     */
-    open fun getPersistedPermissions(): List<Uri> {
-        // Return the current value from the flow, which is kept up-to-date,
-        // or fetch directly if a fresh, non-cached read is strictly needed.
-        // For simplicity and consistency with the flow, using its current value.
-        // Alternatively, call: return fetchCurrentPersistedPermissions()
+    override fun getPersistedPermissions(): List<Uri> {
         return _persistedFoldersFlow.value
     }
 
-    /**
-     * Takes persistable URI permission for the given URI.
-     * Updates the persisted permissions flow on success.
-     *
-     * @param uri The Uri for which to take permission.
-     * @param flags The Intent flags for the permission (e.g., Intent.FLAG_GRANT_READ_URI_PERMISSION).
-     * @return True if the permission was successfully taken, false otherwise.
-     */
-    open fun takePersistablePermission(
+    override fun takePersistablePermission(
         uri: Uri,
-        flags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        flags: Int
     ): Boolean {
         return try {
             contentResolver.takePersistableUriPermission(uri, flags)
@@ -99,17 +72,9 @@ open class ComicsFolderRepository @Inject constructor(@ApplicationContext contex
         }
     }
 
-    /**
-     * Releases persistable URI permission for the given URI.
-     * Updates the persisted permissions flow on success.
-     *
-     * @param uri The Uri for which to release permission.
-     * @param flags The Intent flags used when the permission was taken (e.g., Intent.FLAG_GRANT_READ_URI_PERMISSION).
-     * @return True if the permission was successfully released, false otherwise.
-     */
-    open fun releasePersistablePermission(
+    override fun releasePersistablePermission(
         uri: Uri,
-        flags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        flags: Int
     ): Boolean {
         return try {
             contentResolver.releasePersistableUriPermission(uri, flags)

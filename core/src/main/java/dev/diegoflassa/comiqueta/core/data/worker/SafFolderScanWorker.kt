@@ -18,7 +18,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
-import dev.diegoflassa.comiqueta.core.data.repository.ComicsFolderRepository
+import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.model.ComicFileType
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +39,7 @@ class SafFolderScanWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val comicsDao: ComicsDao,
-    private val comicsFolderRepository: ComicsFolderRepository
+    private val IComicsFolderRepository: IComicsFolderRepository
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
@@ -53,7 +53,7 @@ class SafFolderScanWorker @AssistedInject constructor(
         TimberLogger.logD(tag, "Starting scheduled scan of persisted folders.")
 
         val folderUrisToScan = try {
-            comicsFolderRepository.getPersistedPermissions()
+            IComicsFolderRepository.getPersistedPermissions()
         } catch (e: Exception) {
             TimberLogger.logE(
                 tag,

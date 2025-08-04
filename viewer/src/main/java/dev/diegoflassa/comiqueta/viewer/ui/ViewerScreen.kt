@@ -1,0 +1,526 @@
+package dev.diegoflassa.comiqueta.viewer.ui
+
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.calculateCentroid
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+// import androidx.compose.runtime.snapshotFlow // No longer needed for swipe detection
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.core.graphics.createBitmap
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
+import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
+import android.graphics.Color as AndroidColor
+import kotlin.math.abs
+
+private const val tag = "ViewerScreen"
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ViewerScreen(
+    modifier: Modifier = Modifier,
+    comicPath: Uri? = null, // This is the navigation argument
+    navigationViewModel: NavigationViewModel? = hiltActivityViewModel(),
+    viewerViewModel: ViewerViewModel = hiltViewModel()
+) {
+    TimberLogger.logI(tag, "ViewerScreen composable")
+    val context = LocalContext.current
+
+    // Observe UI state from ViewModel
+    val viewerUIState: ViewerUIState by viewerViewModel.uiState.collectAsStateWithLifecycle()
+
+    // Effect for loading comic when comicPath changes (from navigation args)
+    LaunchedEffect(comicPath) {
+        if (comicPath != null) {
+            TimberLogger.logI(tag, "New comicPath received: $comicPath")
+            viewerViewModel.reduce(ViewerIntent.LoadComic(comicPath.toString()))
+        } else {
+            TimberLogger.logI(tag, "comicPath is null")
+        }
+    }
+
+    // Effect for handling one-time side effects from ViewModel
+    LaunchedEffect(key1 = Unit) {
+        viewerViewModel.effect.collect { effect ->
+            when (effect) {
+                is ViewerEffect.ShowError -> {
+                    TimberLogger.logI(tag, "Showing error toast: ${effect.message}")
+                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                    // Notify ViewModel that error has been shown, so it can clear it if needed
+                    viewerViewModel.reduce(ViewerIntent.ErrorShown)
+                }
+            }
+        }
+    }
+
+    ViewerScreenContent(
+        modifier = modifier,
+        navigationViewModel = navigationViewModel,
+        uiState = viewerUIState,
+        onIntent = { intent -> viewerViewModel.reduce(intent) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+fun ViewerScreenContent(
+    modifier: Modifier = Modifier,
+    navigationViewModel: NavigationViewModel? = null,
+    uiState: ViewerUIState = ViewerUIState(),
+    onIntent: ((ViewerIntent) -> Unit)? = null
+) {
+    BackHandler { navigationViewModel?.goBack() }
+
+    // Pager state setup - currentPage is 0-indexed
+    val pagerState = rememberPagerState(
+        initialPage = uiState.currentPage,
+        pageCount = { uiState.pageCount.coerceAtLeast(0) }
+    )
+
+    // Effect to scroll pager when ViewModel's currentPage changes externally
+    LaunchedEffect(uiState.currentPage, uiState.pageCount) {
+        if (uiState.pageCount > 0) {
+            val targetPage =
+                uiState.currentPage.coerceIn(0, (uiState.pageCount - 1).coerceAtLeast(0))
+            if (pagerState.currentPage != targetPage) {
+                TimberLogger.logI(
+                    tag,
+                    "Scrolling pager to target page: $targetPage (ViewModel state: ${uiState.currentPage})"
+                )
+                try {
+                    pagerState.scrollToPage(targetPage)
+                } catch (e: Exception) {
+                    TimberLogger.logE(tag, "Error scrolling to page: $targetPage", e)
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(pagerState.settledPage) {
+        val settledPage = pagerState.settledPage
+        if (uiState.pageCount > 0 && settledPage != uiState.currentPage) {
+            onIntent?.invoke(ViewerIntent.GoToPage(settledPage))
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            AnimatedVisibility(uiState.isUiVisible, enter = fadeIn(), exit = fadeOut()) {
+                TopAppBar(
+                    title = { Text(uiState.comicTitle) },
+                    navigationIcon = {
+                        IconButton(onClick = { navigationViewModel?.goBack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    )
+                )
+            }
+        },
+        bottomBar = {
+            AnimatedVisibility(
+                visible = uiState.isUiVisible && uiState.pageCount > 0,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                BottomAppBar(
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                ) {
+                    Text(
+                        // Display 1-indexed page number to user
+                        text = "${uiState.currentPage + 1} / ${uiState.pageCount}",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        },
+        modifier = modifier.fillMaxSize()
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .clickable(
+                    enabled = !uiState.isLoading && uiState.error == null && uiState.pageCount > 0, // Enable only if not loading, no error, and comic loaded
+                    onClick = { onIntent?.invoke(ViewerIntent.ToggleUiVisibility) }
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            var scale by remember { mutableFloatStateOf(1f) }
+            var offsetX by remember { mutableFloatStateOf(0f) }
+            var offsetY by remember { mutableFloatStateOf(0f) }
+            var isImageZoomed by remember { mutableStateOf(false) }
+
+            // Reset zoom/pan when the displayed page (via pagerState.currentPage -> now settledPage for consistency, though currentPage is fine here often)
+            // or if the underlying bitmap for the current page changes.
+            LaunchedEffect(
+                pagerState.settledPage,
+                uiState.currentBitmap
+            ) { // Changed to settledPage for consistency
+                TimberLogger.logI(
+                    tag,
+                    "Resetting zoom/pan for pager settledPage: ${pagerState.settledPage}"
+                )
+                scale = 1f
+                offsetX = 0f
+                offsetY = 0f
+                isImageZoomed = false
+            }
+
+            when {
+                uiState.isLoading && uiState.currentBitmap == null -> {
+                    TimberLogger.logI(tag, "Displaying global loading indicator")
+                    CircularProgressIndicator()
+                }
+
+                uiState.error != null -> {
+                    TimberLogger.logI(tag, "Displaying error message: ${uiState.error}")
+                    Text(
+                        text = uiState.error,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .clickable { onIntent?.invoke(ViewerIntent.ErrorShown) }, // User acknowledges error
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                uiState.pageCount > 0 -> {
+                    TimberLogger.logI(
+                        tag,
+                        "Displaying HorizontalPager. Current VM page: ${uiState.currentPage}, Pager current: ${pagerState.currentPage}, Pager settled: ${pagerState.settledPage}"
+                    )
+                    HorizontalPager(
+                        state = pagerState,
+                        userScrollEnabled = !isImageZoomed, // Disable pager swipe when zoomed
+                        modifier = Modifier.fillMaxSize()
+                    ) { pageIndexInPager -> // This is the index of the page the Pager wants to display
+
+                        val bitmapToDisplay =
+                            if (pageIndexInPager == uiState.currentPage) uiState.currentBitmap else null
+
+                        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                            val viewConfiguration = LocalViewConfiguration.current
+                            val touchSlop = viewConfiguration.touchSlop
+
+                            val imageModifier = Modifier
+                                .fillMaxSize()
+                                .pointerInput(
+                                    bitmapToDisplay,
+                                    pagerState.currentPage
+                                ) { // Key on bitmap and Pager's *current* page for immediate gesture input response
+                                    if (bitmapToDisplay != null) {
+                                        awaitPointerEventScope {
+                                            while (true) {
+                                                val event = awaitPointerEvent()
+                                                val changes = event.changes
+                                                val hasTwoPointers = changes.size >= 2
+
+                                                val rawZoom = event.calculateZoom()
+                                                val rawPan = event.calculatePan()
+                                                val rawCentroid =
+                                                    event.calculateCentroid(useCurrent = true)
+
+                                                val zoom =
+                                                    if (rawZoom.isNaN() || rawZoom.isInfinite()) 1f else rawZoom
+                                                val pan =
+                                                    if (rawPan == Offset.Unspecified) Offset.Zero else rawPan
+                                                val centroid =
+                                                    if (rawCentroid == Offset.Unspecified) Offset.Zero else rawCentroid
+
+                                                if (hasTwoPointers || scale > 1f) {
+                                                    val oldScale = scale
+                                                    val newScale = (scale * zoom).coerceIn(1f, 5f)
+                                                    isImageZoomed = newScale > 1f
+
+                                                    if (newScale > 1f) {
+                                                        val containerWidthPx =
+                                                            constraints.maxWidth.toFloat()
+                                                        val containerHeightPx =
+                                                            constraints.maxHeight.toFloat()
+                                                        val imageAspectRatio =
+                                                            bitmapToDisplay.width.toFloat() / bitmapToDisplay.height.toFloat()
+                                                        val containerAspectRatio =
+                                                            containerWidthPx / containerHeightPx
+
+                                                        val fittedImageWidth: Float
+                                                        val fittedImageHeight: Float
+
+                                                        if (imageAspectRatio > containerAspectRatio) {
+                                                            fittedImageWidth = containerWidthPx
+                                                            fittedImageHeight =
+                                                                fittedImageWidth / imageAspectRatio
+                                                        } else {
+                                                            fittedImageHeight = containerHeightPx
+                                                            fittedImageWidth =
+                                                                fittedImageHeight * imageAspectRatio
+                                                        }
+
+                                                        val scaledImageWidth =
+                                                            fittedImageWidth * newScale
+                                                        val scaledImageHeight =
+                                                            fittedImageHeight * newScale
+
+                                                        val maxTranslateX =
+                                                            (scaledImageWidth - containerWidthPx).coerceAtLeast(
+                                                                0f
+                                                            ) / 2f
+                                                        val maxTranslateY =
+                                                            (scaledImageHeight - containerHeightPx).coerceAtLeast(
+                                                                0f
+                                                            ) / 2f
+
+                                                        offsetX =
+                                                            (offsetX + centroid.x * (1 - newScale / oldScale) + pan.x).coerceIn(
+                                                                -maxTranslateX,
+                                                                maxTranslateX
+                                                            )
+                                                        offsetY =
+                                                            (offsetY + centroid.y * (1 - newScale / oldScale) + pan.y).coerceIn(
+                                                                -maxTranslateY,
+                                                                maxTranslateY
+                                                            )
+                                                    } else {
+                                                        offsetX = 0f
+                                                        offsetY = 0f
+                                                    }
+                                                    scale = newScale
+                                                    changes.forEach { it.consume() }
+                                                } else if (changes.isNotEmpty()) {
+                                                    val firstChange = changes.first()
+                                                    if (firstChange.pressed && firstChange.previousPressed && firstChange.positionChanged()) {
+                                                        val delta =
+                                                            firstChange.position - firstChange.previousPosition
+                                                        if (abs(delta.x) > touchSlop && abs(delta.x) > abs(
+                                                                delta.y
+                                                            )
+                                                        ) {
+                                                            // Horizontal swipe at 1x scale, do nothing to let pager handle it.
+                                                        } else if (abs(delta.y) > touchSlop) {
+                                                            firstChange.consume() // Consume vertical scroll at 1x
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                .graphicsLayer(
+                                    scaleX = scale,
+                                    scaleY = scale,
+                                    translationX = offsetX,
+                                    translationY = offsetY
+                                )
+
+                            if (bitmapToDisplay != null) {
+                                Image(
+                                    bitmap = bitmapToDisplay,
+                                    contentDescription = "Page ${pageIndexInPager + 1}", // User-facing page number
+                                    contentScale = ContentScale.Fit,
+                                    modifier = imageModifier.background(MaterialTheme.colorScheme.surfaceVariant)
+                                )
+                            } else {
+                                // Placeholder for pages not currently loaded/visible or if it's not the active page
+                                Box(
+                                    Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            MaterialTheme.colorScheme.surfaceVariant.copy(
+                                                alpha = 0.5f
+                                            )
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    // Show loading indicator only if this IS the current page being loaded
+                                    if (pageIndexInPager == uiState.currentPage && uiState.isLoading) {
+                                        CircularProgressIndicator()
+                                    } else if (pageIndexInPager == uiState.currentPage && uiState.error == null) {
+                                        // If it's the current page, but no bitmap and not loading, it might be an issue or post-error state
+                                        Text(
+                                            "Page ${pageIndexInPager + 1}", // User-facing page number
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            style = MaterialTheme.typography.labelMedium
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                else -> {
+                    TimberLogger.logI(tag, "Displaying 'No comic loaded' message")
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            "No comic loaded.",
+                            style = MaterialTheme.typography.headlineSmall,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            "Please select a comic from the library.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Creates a single dummy ImageBitmap for preview purposes.
+ */
+private fun createDummyBitmapForPreview(
+    pageNumber: Int = 1,
+    width: Int = 600,
+    height: Int = 800
+): ImageBitmap {
+    val bitmap = createBitmap(width, height)
+    val canvas = Canvas(bitmap)
+    val paint = Paint().apply {
+        color = if (pageNumber % 2 == 0) AndroidColor.LTGRAY else AndroidColor.DKGRAY
+        style = Paint.Style.FILL
+    }
+    canvas.drawPaint(paint)
+    paint.color = AndroidColor.WHITE
+    paint.textSize = 50f
+    paint.textAlign = Paint.Align.CENTER
+    canvas.drawText("Page $pageNumber (Preview)", canvas.width / 2f, canvas.height / 2f, paint)
+    return bitmap.asImageBitmap()
+}
+
+@PreviewScreenSizes
+@Composable
+fun ViewerScreenPreviewEmpty() {
+    ComiquetaThemeContent {
+        ViewerScreenContent(
+            uiState = ViewerUIState(
+                isLoading = false,
+                comicTitle = "",
+                error = null,
+                pageCount = 0,
+                currentPage = 0
+            ),
+            onIntent = {}
+        )
+    }
+}
+
+@PreviewScreenSizes
+@Composable
+fun ViewerScreenPreviewLoading() {
+    ComiquetaThemeContent {
+        ViewerScreenContent(
+            uiState = ViewerUIState(
+                isLoading = true,
+                comicTitle = "Loading Comic...",
+                pageCount = 5,
+                currentPage = 0, // 0-indexed
+                error = null
+            ),
+            onIntent = {}
+        )
+    }
+}
+
+@PreviewScreenSizes
+@Composable
+fun ViewerScreenPreviewWithComic() {
+    ComiquetaThemeContent {
+        ViewerScreenContent(
+            uiState = ViewerUIState(
+                isLoading = false,
+                currentBitmap = createDummyBitmapForPreview(pageNumber = 1),
+                currentPage = 0, // 0-indexed, so page 1
+                pageCount = 5,
+                comicTitle = "Sample Comic Title",
+                error = null
+            ),
+            onIntent = {}
+        )
+    }
+}
+
+@PreviewScreenSizes
+@Composable
+fun ViewerScreenPreviewWithError() {
+    ComiquetaThemeContent {
+        ViewerScreenContent(
+            uiState = ViewerUIState(
+                isLoading = false,
+                error = "Failed to load this amazing comic book. Please try again!",
+                comicTitle = "Error Comic",
+                pageCount = 0,
+                currentPage = 0
+            ),
+            onIntent = {}
+        )
+    }
+}

@@ -18,27 +18,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-open class ComicsRepository @Inject constructor(
-    private val comicsDao: ComicsDao // Using the updated ComicsDao
-) {
+class ComicsRepository @Inject constructor(
+    private val comicsDao: ComicsDao
+) : IComicsRepository {
 
-    companion object {
-        private const val DEFAULT_PAGE_SIZE = 20
-    }
-
-    /**
-     * Get a stream of paginated comics, filterable by category and flags.
-     *
-     * @param categoryId Optional Long to filter comics by a specific category.
-     * @param flags A Set of ComicFlags to filter comics by (e.g., FAVORITE, NEW, READ).
-     *              An empty set means no flag-based filtering beyond category.
-     * @param pageSize The number of items to load per page.
-     * @return A Flow of PagingData containing Comic objects.
-     */
-    open fun getComicsPaginated(
-        categoryId: Long? = 0,
-        flags: Set<ComicFlags> = emptySet(),
-        pageSize: Int = DEFAULT_PAGE_SIZE
+    override fun getComicsPaginated(
+        categoryId: Long?,
+        flags: Set<ComicFlags>,
+        pageSize: Int
     ): Flow<PagingData<Comic>> {
         val pagerFlow: Flow<PagingData<ComicEntity>> = Pager(
             config = PagingConfig(
@@ -59,58 +46,27 @@ open class ComicsRepository @Inject constructor(
         }
     }
 
-    /**
-     * Retrieves a single comic by its file path (Primary Key).
-     *
-     * @param filePath The Uri of the comic file.
-     * @return The [Comic] if found, otherwise null.
-     */
-    open suspend fun getComicByFilePath(filePath: Uri): Comic? {
-        // Assuming comicsDao.getComicByFilePath(filePath: Uri) now exists and is correct
+    override suspend fun getComicByFilePath(filePath: Uri): Comic? {
         return comicsDao.getComicByFilePath(filePath)?.asExternalModel()
     }
 
-    /**
-     * Inserts a single comic into the database.
-     *
-     * @param comic The [Comic] object to insert.
-     */
-    open suspend fun insertComic(comic: Comic) {
+    override suspend fun insertComic(comic: Comic) {
         comicsDao.insertComic(comic.asEntity())
     }
 
-    /**
-     * Inserts a list of comics into the database.
-     *
-     * @param comics The list of [Comic] objects to insert.
-     */
-    open suspend fun insertComics(comics: List<ComicEntity>) {
+    override suspend fun insertComics(comics: List<ComicEntity>) {
         comicsDao.insertComics(comics)
     }
 
-    /**
-     * Updates an existing comic in the database.
-     *
-     * @param comic The [Comic] object with updated information.
-     */
-    open suspend fun updateComic(comic: Comic) {
+    override suspend fun updateComic(comic: Comic) {
         comicsDao.updateComic(comic.asEntity())
     }
 
-    /**
-     * Deletes a comic by its file path (Primary Key).
-     *
-     * @param filePath The Uri of the comic file to delete.
-     */
-    open suspend fun deleteComicByFilePath(filePath: Uri) {
-        // Assuming comicsDao.deleteComicByFilePath(filePath: Uri) now exists
+    override suspend fun deleteComicByFilePath(filePath: Uri) {
         comicsDao.deleteComicByFilePath(filePath)
     }
 
-    /**
-     * Deletes all comics from the database. Use with caution.
-     */
-    open suspend fun clearAllComics() {
+    override suspend fun clearAllComics() {
         comicsDao.clearAllComics()
     }
 }

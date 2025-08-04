@@ -1,7 +1,7 @@
 package dev.diegoflassa.comiqueta.core.domain.usecase.folder
 
 import android.net.Uri
-import dev.diegoflassa.comiqueta.core.data.repository.ComicsFolderRepository
+import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -9,7 +9,7 @@ import javax.inject.Inject
  * Use case to retrieve the list of monitored comic folder URIs.
  */
 open class GetMonitoredFoldersUseCase @Inject constructor(
-    private val comicsFolderRepository: ComicsFolderRepository
+    private val IComicsFolderRepository: IComicsFolderRepository
 ) {
     //operator fun invoke(): List<Uri> {
     // Assuming getPersistedPermissions() is the correct suspend function
@@ -21,6 +21,6 @@ open class GetMonitoredFoldersUseCase @Inject constructor(
 
     // If your repository provides a Flow and you want the UseCase to return a Flow:
     open operator fun invoke(): Flow<List<Uri>> {
-        return comicsFolderRepository.getPersistedPermissionsFlow() // Assuming such a method exists
+        return IComicsFolderRepository.getPersistedPermissionsFlow() // Assuming such a method exists
     }
 }
