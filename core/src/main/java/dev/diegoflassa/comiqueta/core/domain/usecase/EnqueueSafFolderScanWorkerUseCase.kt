@@ -13,11 +13,9 @@ import javax.inject.Inject
  * to scan persisted comic folders.
  */
 class EnqueueSafFolderScanWorkerUseCase @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    private val workManager: WorkManager
 ) {
     operator fun invoke() {
-        val workManager = WorkManager.getInstance(context)
-
         val scanWorkRequest = OneTimeWorkRequestBuilder<SafFolderScanWorker>()
             // You can add constraints here if needed, for example:
             // .setConstraints(Constraints.Builder().setRequiresBatteryNotLow(true).build())

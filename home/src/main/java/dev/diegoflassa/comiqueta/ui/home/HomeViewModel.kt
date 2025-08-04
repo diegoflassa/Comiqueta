@@ -10,12 +10,14 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
 import dev.diegoflassa.comiqueta.core.domain.usecase.EnqueueSafFolderScanWorkerUseCase
-import dev.diegoflassa.comiqueta.domain.usecase.GetPaginatedComicsUseCase
+import dev.diegoflassa.comiqueta.domain.usecase.IGetPaginatedComicsUseCase
+import dev.diegoflassa.comiqueta.domain.usecase.GetPaginatedComicsParams // Import the new top-level Params
 import dev.diegoflassa.comiqueta.domain.usecase.LoadCategoriesUseCase
 import dev.diegoflassa.comiqueta.ui.enums.BottomNavItems
 import dev.diegoflassa.comiqueta.core.data.model.Comic
@@ -36,7 +38,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val applicationContext: Application,
-    private val getPaginatedComicsUseCase: GetPaginatedComicsUseCase,
+    private val getPaginatedComicsUseCase: IGetPaginatedComicsUseCase,
     private val loadCategoriesUseCase: LoadCategoriesUseCase,
     private val comicsFolderRepository: IComicsFolderRepository,
 ) : ViewModel() {
@@ -84,7 +86,7 @@ class HomeViewModel @Inject constructor(
                 // Launch fetching of all three lists concurrently
                 async {
                     getPaginatedComicsUseCase(
-                        GetPaginatedComicsUseCase.Params(
+                        GetPaginatedComicsParams( // Use the imported top-level Params
                             categoryId = sanitizedCategory,
                             flags = flags
                         )
@@ -101,7 +103,7 @@ class HomeViewModel @Inject constructor(
 
                 async {
                     getPaginatedComicsUseCase(
-                        GetPaginatedComicsUseCase.Params(
+                        GetPaginatedComicsParams( // Use the imported top-level Params
                             flags = setOf(
                                 ComicFlags.NEW
                             )
@@ -119,7 +121,7 @@ class HomeViewModel @Inject constructor(
 
                 async {
                     getPaginatedComicsUseCase(
-                        GetPaginatedComicsUseCase.Params(
+                        GetPaginatedComicsParams( // Use the imported top-level Params
                             flags = setOf(
                                 ComicFlags.FAVORITE
                             )
@@ -369,7 +371,7 @@ class HomeViewModel @Inject constructor(
         )
         if (success) {
             _effect.send(HomeEffect.ShowToast("Background scan for folder $uri started."))
-            triggerFolderScan() // Make sure this uses the specific URI or a general scan
+            triggerFolderScan()
         } else {
             _effect.send(HomeEffect.ShowToast("Failed to secure access to folder."))
         }
@@ -379,7 +381,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // If EnqueueSafFolderScanWorkerUseCase can take a specific Uri, pass it.
-                EnqueueSafFolderScanWorkerUseCase(applicationContext).invoke()
+                EnqueueSafFolderScanWorkerUseCase(WorkManager.getInstance(applicationContext)).invoke()
                 _effect.send(HomeEffect.ShowToast("Folder scan enqueued."))
             } catch (ex: Exception) {
                 TimberLogger.logE("HomeViewModel", "Failed to enqueue folder scan worker", ex)

@@ -30,6 +30,15 @@ ax-test-runner = "1.7.0"
 uiautomator = "2.3.0"
 benchmark-macro-junit4 = "1.4.0"
 
+#Unit Tests
+org-jetbrains-kotlinx-coroutines-test = "1.10.2"
+org-mockito-core = "5.18.0"
+org-mockito-inline = "5.2.0"
+org-mockito-kotlin = "6.0.0"
+app-cash-turbine = "1.2.1"
+androidx-paging-common = "3.3.6"
+com-google-truth = "1.4.4"
+
 #Firebase
 firebase-bom = "34.0.0"
 
@@ -176,6 +185,15 @@ ax-test-runner = { module = "androidx.test:runner", version.ref = "ax-test-runne
 ax-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiautomator" }
 ax-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark-macro-junit4" }
 
+#Unit Tests
+org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "org-jetbrains-kotlinx-coroutines-test" }
+org-mockito-core = { module = "org.mockito:mockito-core", version.ref = "org-mockito-core" }
+org-mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "org-mockito-inline" }
+org-mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "org-mockito-kotlin" }
+app-cash-turbine = { module = "app.cash.turbine:turbine", version.ref = "app-cash-turbine" }
+androidx-paging-common = { module = "androidx.paging:paging-common-ktx", version.ref = "androidx-paging-common" }
+com-google-truth = { module = "com.google.truth:truth", version.ref = "com-google-truth" }
+
 #Firebase
 com-google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 com-google-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
@@ -213,7 +231,7 @@ ax-compose-ui-test = { module = "androidx.compose.ui:ui-test" }
 ax-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 ax-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 org-mockito-android = { module = "org.mockito:mockito-android", version.ref = "org-mockito-android" }
-#org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "org-jetbrains-kotlinx-coroutines-test" }
+#org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "org-jetbrains-kotlinx-coroutines-test" } # This is an old commented one, we added a new one under #Unit Tests
 
 #Compose Navigation 3
 ##Core Navigation 3 libraries

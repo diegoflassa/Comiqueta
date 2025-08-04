@@ -11,7 +11,6 @@ import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.data.extensions.modoDebugHabilitado
-import javax.inject.Inject
 
 @TypeConverters(UriConverter::class)
 @Database(
