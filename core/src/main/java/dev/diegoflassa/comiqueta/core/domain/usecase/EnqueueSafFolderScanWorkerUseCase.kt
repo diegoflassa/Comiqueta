@@ -1,10 +1,8 @@
 package dev.diegoflassa.comiqueta.core.domain.usecase
 
-import android.content.Context
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.diegoflassa.comiqueta.core.data.worker.SafFolderScanWorker
 import javax.inject.Inject
 
@@ -23,8 +21,8 @@ class EnqueueSafFolderScanWorkerUseCase @Inject constructor(
 
         // Enqueue the work as unique work to prevent multiple instances if already scheduled
         workManager.enqueueUniqueWork(
-            SafFolderScanWorker::class.java.name, // Using class name as unique work name
-            ExistingWorkPolicy.KEEP, // Or use .REPLACE if you want a new worker to start immediately, canceling the old one
+            SafFolderScanWorker::class.java.name,
+            ExistingWorkPolicy.KEEP,
             scanWorkRequest
         )
     }
