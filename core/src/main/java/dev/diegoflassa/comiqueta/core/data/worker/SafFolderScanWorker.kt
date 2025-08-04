@@ -12,6 +12,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.github.junrar.Archive as JunrarArchive
 import com.github.junrar.rarfile.FileHeader as JunrarFileHeader
 import dagger.assisted.Assisted
@@ -39,7 +40,7 @@ class SafFolderScanWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val comicsDao: ComicsDao,
-    private val IComicsFolderRepository: IComicsFolderRepository
+    private val comicsFolderRepository: IComicsFolderRepository
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
@@ -53,8 +54,9 @@ class SafFolderScanWorker @AssistedInject constructor(
         TimberLogger.logD(tag, "Starting scheduled scan of persisted folders.")
 
         val folderUrisToScan = try {
-            IComicsFolderRepository.getPersistedPermissions()
+            comicsFolderRepository.getPersistedPermissions()
         } catch (e: Exception) {
+            FirebaseCrashlytics.getInstance().recordException(e)
             TimberLogger.logE(
                 tag,
                 "Error fetching persisted folders from repository.",
@@ -76,6 +78,7 @@ class SafFolderScanWorker @AssistedInject constructor(
             val rootDoc = try {
                 DocumentFile.fromTreeUri(appContext, folderUri)
             } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(e)
                 TimberLogger.logE(
                     tag,
                     "Error creating DocumentFile from URI: $folderUri",
@@ -86,6 +89,7 @@ class SafFolderScanWorker @AssistedInject constructor(
             }
 
             if (rootDoc == null || !rootDoc.isDirectory) {
+                FirebaseCrashlytics.getInstance().recordException(Exception("Root document is null or not a directory. URI: $folderUri"))
                 TimberLogger.logW(
                     tag,
                     "Root document is null or not a directory. URI: $folderUri"
@@ -102,6 +106,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                 scanDocumentFileForComics(rootDoc)
                 TimberLogger.logD(tag, "Scan finished for URI: $folderUri")
             } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(e)
                 TimberLogger.logE(
                     tag,
                     "Exception during scan of folder: ${rootDoc.name} (URI: $folderUri)",
@@ -186,6 +191,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                             "Successfully saved/updated comic: ${comicToSave.title}"
                         )
                     } catch (e: Exception) {
+                        FirebaseCrashlytics.getInstance().recordException(e)
                         TimberLogger.logE(
                             tag,
                             "Error saving/updating comic ${comicToSave.title}: ${e.message}",
@@ -259,6 +265,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                                     }
                                 }
                         } catch (e: Exception) {
+                            FirebaseCrashlytics.getInstance().recordException(e)
                             TimberLogger.logE(
                                 tag,
                                 "Error listing entries in archive ${comicFile.name} (ext: $extension): ${e.message}",
@@ -301,6 +308,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                                         }
                                     }
                             } catch (e: Exception) {
+                                FirebaseCrashlytics.getInstance().recordException(e)
                                 TimberLogger.logE(
                                     tag,
                                     "Error extracting first image from archive ${comicFile.name} (ext: $extension): ${e.message}",
@@ -326,6 +334,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                                     }
                                 }
                         } catch (e: Exception) {
+                            FirebaseCrashlytics.getInstance().recordException(e)
                             TimberLogger.logE(
                                 tag,
                                 "Error listing entries in CBR (junrar) ${comicFile.name}: ${e.message}",
@@ -379,6 +388,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                                         }
                                     }
                             } catch (e: Exception) {
+                                FirebaseCrashlytics.getInstance().recordException(e)
                                 TimberLogger.logE(
                                     tag,
                                     "Error extracting first image from CBR (junrar) ${comicFile.name}: ${e.message}",
@@ -397,6 +407,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                 }
 
             } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(e)
                 TimberLogger.logE(
                     tag,
                     "General error extracting cover for ${comicFile.name}: ${e.message}",

@@ -9,7 +9,7 @@ import javax.inject.Inject
  * Use case to retrieve the list of monitored comic folder URIs.
  */
 open class GetMonitoredFoldersUseCase @Inject constructor(
-    private val IComicsFolderRepository: IComicsFolderRepository
+    private val comicsFolderRepository: IComicsFolderRepository
 ) {
     //operator fun invoke(): List<Uri> {
     // Assuming getPersistedPermissions() is the correct suspend function
@@ -21,6 +21,6 @@ open class GetMonitoredFoldersUseCase @Inject constructor(
 
     // If your repository provides a Flow and you want the UseCase to return a Flow:
     open operator fun invoke(): Flow<List<Uri>> {
-        return IComicsFolderRepository.getPersistedPermissionsFlow() // Assuming such a method exists
+        return comicsFolderRepository.getPersistedPermissionsFlow() // Assuming such a method exists
     }
 }
