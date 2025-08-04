@@ -7,6 +7,10 @@ import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.AddCategoryUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.DeleteCategoryUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.GetCategoriesUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.category.IAddCategoryUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.category.IDeleteCategoryUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.category.IGetCategoriesUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.category.IUpdateCategoryUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.UpdateCategoryUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -21,10 +25,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CategoriesViewModel @Inject constructor(
-    private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val addCategoryUseCase: AddCategoryUseCase,
-    private val updateCategoryUseCase: UpdateCategoryUseCase,
-    private val deleteCategoryUseCase: DeleteCategoryUseCase
+    private val getCategoriesUseCase: IGetCategoriesUseCase,
+    private val addCategoryUseCase: IAddCategoryUseCase,
+    private val updateCategoryUseCase: IUpdateCategoryUseCase,
+    private val deleteCategoryUseCase: IDeleteCategoryUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CategoriesUIState())

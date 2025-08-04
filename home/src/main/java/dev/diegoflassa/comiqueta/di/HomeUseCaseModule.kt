@@ -15,10 +15,10 @@ import dev.diegoflassa.comiqueta.domain.usecase.ILoadCategoriesUseCase // Import
 
 @Module
 @InstallIn(ViewModelComponent::class)
-abstract class HomeUseCaseModule { // Changed to abstract class
+abstract class HomeUseCaseModule {
 
     @Binds
-    @ViewModelScoped // ViewModelScoped can be applied to @Binds
+    @ViewModelScoped
     abstract fun bindGetPaginatedComicsUseCase(
         getPaginatedComicsUseCase: GetPaginatedComicsUseCase
     ): IGetPaginatedComicsUseCase

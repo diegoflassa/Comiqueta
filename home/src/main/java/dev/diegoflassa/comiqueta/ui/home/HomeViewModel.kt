@@ -17,11 +17,12 @@ import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
 import dev.diegoflassa.comiqueta.core.domain.usecase.EnqueueSafFolderScanWorkerUseCase
 import dev.diegoflassa.comiqueta.domain.usecase.IGetPaginatedComicsUseCase
-import dev.diegoflassa.comiqueta.domain.usecase.GetPaginatedComicsParams // Import the new top-level Params
+import dev.diegoflassa.comiqueta.domain.usecase.PaginatedComicsParams // Import the new top-level Params
 import dev.diegoflassa.comiqueta.domain.usecase.LoadCategoriesUseCase
 import dev.diegoflassa.comiqueta.ui.enums.BottomNavItems
 import dev.diegoflassa.comiqueta.core.data.model.Comic
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
+import dev.diegoflassa.comiqueta.domain.usecase.ILoadCategoriesUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -39,7 +40,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val applicationContext: Application,
     private val getPaginatedComicsUseCase: IGetPaginatedComicsUseCase,
-    private val loadCategoriesUseCase: LoadCategoriesUseCase,
+    private val loadCategoriesUseCase: ILoadCategoriesUseCase,
     private val comicsFolderRepository: IComicsFolderRepository,
 ) : ViewModel() {
 
@@ -86,7 +87,7 @@ class HomeViewModel @Inject constructor(
                 // Launch fetching of all three lists concurrently
                 async {
                     getPaginatedComicsUseCase(
-                        GetPaginatedComicsParams( // Use the imported top-level Params
+                        PaginatedComicsParams( // Use the imported top-level Params
                             categoryId = sanitizedCategory,
                             flags = flags
                         )
@@ -103,7 +104,7 @@ class HomeViewModel @Inject constructor(
 
                 async {
                     getPaginatedComicsUseCase(
-                        GetPaginatedComicsParams( // Use the imported top-level Params
+                        PaginatedComicsParams( // Use the imported top-level Params
                             flags = setOf(
                                 ComicFlags.NEW
                             )
@@ -121,7 +122,7 @@ class HomeViewModel @Inject constructor(
 
                 async {
                     getPaginatedComicsUseCase(
-                        GetPaginatedComicsParams( // Use the imported top-level Params
+                        PaginatedComicsParams( // Use the imported top-level Params
                             flags = setOf(
                                 ComicFlags.FAVORITE
                             )

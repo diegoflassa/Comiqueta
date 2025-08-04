@@ -10,13 +10,16 @@ import javax.inject.Inject
  */
 open class AddMonitoredFolderUseCase @Inject constructor(
     private val comicsFolderRepository: IComicsFolderRepository
-) {
-    open operator fun invoke(uri: Uri): Boolean {
+) : IAddMonitoredFolderUseCase {
+    override operator fun invoke(uri: Uri): Boolean {
         // The repository's takePersistablePermission might be a misnomer if the UI is taking it.
         // It should ideally just be an "addFolder" or "saveFolder" type of method.
         // For now, I'll assume comicsFolderRepository.takePersistablePermission is the method that stores the URI.
         // If it also tries to take permission, this might be redundant or problematic if the UI already did.
         // Change to renaming repository method to e.g., "storeMonitoredFolderUri"
-        return comicsFolderRepository.takePersistablePermission(uri, 0) // Flags might be irrelevant if UI handles it
+        return comicsFolderRepository.takePersistablePermission(
+            uri,
+            0
+        ) // Flags might be irrelevant if UI handles it
     }
 }

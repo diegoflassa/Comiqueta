@@ -11,12 +11,15 @@ import javax.inject.Inject
  */
 open class RemoveMonitoredFolderUseCase @Inject constructor(
     private val comicsFolderRepository: IComicsFolderRepository
-) {
-    open operator fun invoke(uri: Uri): Boolean {
+) : IRemoveMonitoredFolderUseCase {
+    override operator fun invoke(uri: Uri): Boolean {
         // Similar to AddMonitoredFolderUseCase, the repository method should ideally just remove the URI from storage.
         // If comicsFolderRepository.releasePersistablePermission also tries to release from ContentResolver,
         // it might be okay, or you might separate it to have the UI layer always handle ContentResolver interaction.
         // For now, aligning with existing repository method name.
-        return comicsFolderRepository.releasePersistablePermission(uri, 0) // Flags might be irrelevant
+        return comicsFolderRepository.releasePersistablePermission(
+            uri,
+            0
+        ) // Flags might be irrelevant
     }
 }

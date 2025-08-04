@@ -1,4 +1,4 @@
-package dev.diegoflassa.comiqueta.settings.model
+package dev.diegoflassa.comiqueta.data.model
 
 /**
  * Represents the display status of an OS permission.

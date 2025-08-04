@@ -1,7 +1,7 @@
 package dev.diegoflassa.comiqueta.ui
 
 import android.net.Uri
-import dev.diegoflassa.comiqueta.settings.model.PermissionDisplayStatus
+import dev.diegoflassa.comiqueta.data.model.PermissionDisplayStatus
 
 /**
  * Represents the complete state of the Settings screen.

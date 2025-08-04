@@ -10,7 +10,7 @@ import javax.inject.Inject
  */
 open class GetMonitoredFoldersUseCase @Inject constructor(
     private val comicsFolderRepository: IComicsFolderRepository
-) {
+) : IGetMonitoredFoldersUseCase {
     //operator fun invoke(): List<Uri> {
     // Assuming getPersistedPermissions() is the correct suspend function
     // If it returns a Flow, adjust accordingly (e.g., repository.getPersistedPermissions().firstOrNull() ?: emptyList())
@@ -20,7 +20,7 @@ open class GetMonitoredFoldersUseCase @Inject constructor(
     //}
 
     // If your repository provides a Flow and you want the UseCase to return a Flow:
-    open operator fun invoke(): Flow<List<Uri>> {
+    override operator fun invoke(): Flow<List<Uri>> {
         return comicsFolderRepository.getPersistedPermissionsFlow() // Assuming such a method exists
     }
 }

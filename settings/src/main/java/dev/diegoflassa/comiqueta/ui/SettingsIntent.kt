@@ -2,7 +2,7 @@ package dev.diegoflassa.comiqueta.ui
 
 import android.app.Activity
 import android.net.Uri
-import dev.diegoflassa.comiqueta.settings.model.PermissionDisplayStatus
+import dev.diegoflassa.comiqueta.data.model.PermissionDisplayStatus
 
 /**
  * Represents user actions or events that can modify the state or trigger effects.

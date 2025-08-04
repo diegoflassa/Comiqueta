@@ -63,7 +63,7 @@ import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
-import dev.diegoflassa.comiqueta.settings.model.PermissionDisplayStatus
+import dev.diegoflassa.comiqueta.data.model.PermissionDisplayStatus
 
 private const val tag = "SettingsScreen"
 

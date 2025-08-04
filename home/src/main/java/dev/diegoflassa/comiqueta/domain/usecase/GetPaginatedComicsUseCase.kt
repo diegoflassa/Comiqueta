@@ -13,7 +13,7 @@ import javax.inject.Inject
 class GetPaginatedComicsUseCase @Inject constructor(
     private val comicsRepository: IComicsRepository
 ) : IGetPaginatedComicsUseCase {
-    override operator fun invoke(params: GetPaginatedComicsParams): Flow<PagingData<Comic>> { // Changed here
+    override operator fun invoke(params: PaginatedComicsParams): Flow<PagingData<Comic>> { // Changed here
         return comicsRepository.getComicsPaginated(
             categoryId = params.categoryId,
             flags = params.flags

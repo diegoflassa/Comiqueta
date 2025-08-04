@@ -10,12 +10,12 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
-import dev.diegoflassa.comiqueta.core.domain.usecase.folder.AddMonitoredFolderUseCase
-import dev.diegoflassa.comiqueta.core.domain.usecase.folder.GetMonitoredFoldersUseCase
-import dev.diegoflassa.comiqueta.core.domain.usecase.folder.RemoveMonitoredFolderUseCase
-import dev.diegoflassa.comiqueta.core.domain.usecase.permission.GetRelevantOsPermissionsUseCase
-import dev.diegoflassa.comiqueta.settings.domain.usecase.RefreshPermissionDisplayStatusUseCase
-import dev.diegoflassa.comiqueta.settings.model.PermissionDisplayStatus
+import dev.diegoflassa.comiqueta.core.domain.usecase.folder.IAddMonitoredFolderUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.folder.IGetMonitoredFoldersUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.folder.IRemoveMonitoredFolderUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.permission.IGetRelevantOsPermissionsUseCase
+import dev.diegoflassa.comiqueta.data.model.PermissionDisplayStatus
+import dev.diegoflassa.comiqueta.domain.usecase.IRefreshPermissionDisplayStatusUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,11 +31,11 @@ import javax.inject.Inject
 @HiltViewModel
 open class SettingsViewModel @Inject constructor(
     @param:ApplicationContext private val applicationContext: Context,
-    private val getMonitoredFoldersUseCase: GetMonitoredFoldersUseCase,
-    private val addMonitoredFolderUseCase: AddMonitoredFolderUseCase,
-    private val removeMonitoredFolderUseCase: RemoveMonitoredFolderUseCase,
-    getRelevantOsPermissionsUseCase: GetRelevantOsPermissionsUseCase,
-    private val refreshPermissionDisplayStatusUseCase: RefreshPermissionDisplayStatusUseCase
+    private val getMonitoredFoldersUseCase: IGetMonitoredFoldersUseCase,
+    private val addMonitoredFolderUseCase: IAddMonitoredFolderUseCase,
+    private val removeMonitoredFolderUseCase: IRemoveMonitoredFolderUseCase,
+    getRelevantOsPermissionsUseCase: IGetRelevantOsPermissionsUseCase,
+    private val refreshPermissionDisplayStatusUseCase: IRefreshPermissionDisplayStatusUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUIState(isLoading = true))

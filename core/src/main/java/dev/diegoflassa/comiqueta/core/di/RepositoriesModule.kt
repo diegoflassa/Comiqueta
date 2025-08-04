@@ -22,9 +22,9 @@ abstract class RepositoriesModule {
 
     @Binds
     @Singleton
-    abstract fun bindComicsFolderRepository(impl: ComicsFolderRepository): IComicsFolderRepository
+    abstract fun bindComicsFolderRepository(comicsFolderRepository: ComicsFolderRepository): IComicsFolderRepository
 
     @Binds
     @Singleton
-    abstract fun bindCategoryRepository(categoryRepositoryImpl: CategoryRepository): ICategoryRepository
+    abstract fun bindCategoryRepository(categoryRepository: CategoryRepository): ICategoryRepository
 }

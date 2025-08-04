@@ -6,9 +6,9 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetCategoriesUseCase @Inject constructor(
-    private val ICategoryRepository: ICategoryRepository
-) {
-    operator fun invoke(): Flow<List<CategoryEntity>> {
-        return ICategoryRepository.getEditableCategories()
+    private val categoryRepository: ICategoryRepository
+) : IGetCategoriesUseCase {
+    override operator fun invoke(): Flow<List<CategoryEntity>> {
+        return categoryRepository.getEditableCategories()
     }
 }

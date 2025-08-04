@@ -5,13 +5,13 @@ import dev.diegoflassa.comiqueta.core.domain.repository.ICategoryRepository
 import javax.inject.Inject
 
 class DeleteCategoryUseCase @Inject constructor(
-    private val ICategoryRepository: ICategoryRepository
-) {
-    suspend operator fun invoke(category: CategoryEntity) {
-        ICategoryRepository.deleteCategory(category)
+    private val categoryRepository: ICategoryRepository
+) : IDeleteCategoryUseCase {
+    override suspend operator fun invoke(category: CategoryEntity) {
+        categoryRepository.deleteCategory(category)
     }
 
-    suspend fun byId(categoryId: Long) {
-        ICategoryRepository.deleteCategoryById(categoryId)
+    override suspend fun byId(categoryId: Long) {
+        categoryRepository.deleteCategoryById(categoryId)
     }
 }

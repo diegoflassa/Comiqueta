@@ -64,7 +64,7 @@ class GetPaginatedComicsUseCaseTest {
         // Arrange
         val categoryId = 1L
         val flags = setOf(ComicFlags.FAVORITE)
-        val params = GetPaginatedComicsParams(categoryId = categoryId, flags = flags)
+        val params = PaginatedComicsParams(categoryId = categoryId, flags = flags)
         val comicInstance = Comic(
             filePath = "test/path1.cbz".toUri(),
             title = "Test Comic 1",
@@ -94,7 +94,7 @@ class GetPaginatedComicsUseCaseTest {
     fun `invoke with null categoryId and empty flags should call repository`() = runTest {
         // Arrange
         val params =
-            GetPaginatedComicsParams(categoryId = null, flags = emptySet()) 
+            PaginatedComicsParams(categoryId = null, flags = emptySet())
         val comicInstance = Comic(
             filePath = "test/path2.cbz".toUri(),
             title = "Test Comic 2",
@@ -124,7 +124,7 @@ class GetPaginatedComicsUseCaseTest {
     fun `invoke with only flags should call repository`() = runTest {
         // Arrange
         val flags = setOf(ComicFlags.NEW, ComicFlags.READ)
-        val params = GetPaginatedComicsParams(flags = flags)
+        val params = PaginatedComicsParams(flags = flags)
         val comicInstance = Comic(
             filePath = "test/path3.cbz".toUri(),
             title = "Test Comic 3",

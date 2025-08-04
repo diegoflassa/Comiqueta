@@ -28,7 +28,7 @@ import javax.inject.Inject
 
 class GetComicInfoUseCase @Inject constructor(
     private val application: Application
-) {
+) : IGetComicInfoUseCase {
 
     private val alphanumComparator = Comparator<String> { s1, s2 ->
         val regex = Regex("([0-9]+)|([^0-9]+)")
@@ -65,7 +65,7 @@ class GetComicInfoUseCase @Inject constructor(
                 lowerName.endsWith(".webp") || lowerName.endsWith(".bmp")
     }
 
-    suspend operator fun invoke(uri: Uri): ComicInfo {
+    override suspend operator fun invoke(uri: Uri): ComicInfo {
         return withContext(Dispatchers.IO) {
             val context = application.applicationContext
             val docFile = DocumentFile.fromSingleUri(context, uri)
@@ -76,7 +76,7 @@ class GetComicInfoUseCase @Inject constructor(
             var pfd: ParcelFileDescriptor? = null
             val pageIdentifiers = mutableListOf<String>()
             var pageCount = 0
-            var determinedFileType: ComicFileType? = null
+            var determinedFileType: ComicFileType?
 
             try {
                 val mimeType = context.contentResolver.getType(uri)
@@ -250,7 +250,7 @@ class GetComicInfoUseCase @Inject constructor(
                 title,
                 pageCount,
                 Collections.unmodifiableList(pageIdentifiers.toList()), // Ensure immutability
-                determinedFileType!! // Not null due to earlier check or exception
+                determinedFileType
             )
         }
     }

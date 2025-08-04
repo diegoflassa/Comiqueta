@@ -31,7 +31,7 @@ import javax.inject.Inject
 
 class DecodeComicPageUseCase @Inject constructor(
     private val application: Application
-) {
+) : IDecodeComicPageUseCase {
     private fun isImageFile(fileName: String?): Boolean {
         if (fileName == null) return false
         val lowerName = fileName.lowercase()
@@ -40,9 +40,9 @@ class DecodeComicPageUseCase @Inject constructor(
                 lowerName.endsWith(".webp") || lowerName.endsWith(".bmp")
     }
 
-    suspend operator fun invoke(
-        pageIndex: Int, // 0-based index of the page in the pageIdentifiers list
-        pageIdentifier: String, // Actual identifier (filename in archive, page number for PDF)
+    override suspend operator fun invoke(
+        pageIndex: Int,
+        pageIdentifier: String,
         comicUri: Uri,
         fileType: ComicFileType
     ): ImageBitmap? {

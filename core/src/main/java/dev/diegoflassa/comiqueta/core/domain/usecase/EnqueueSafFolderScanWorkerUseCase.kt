@@ -12,8 +12,8 @@ import javax.inject.Inject
  */
 class EnqueueSafFolderScanWorkerUseCase @Inject constructor(
     private val workManager: WorkManager
-) {
-    operator fun invoke() {
+) : IEnqueueSafFolderScanWorkerUseCase {
+    override operator fun invoke() {
         val scanWorkRequest = OneTimeWorkRequestBuilder<SafFolderScanWorker>()
             // You can add constraints here if needed, for example:
             // .setConstraints(Constraints.Builder().setRequiresBatteryNotLow(true).build())

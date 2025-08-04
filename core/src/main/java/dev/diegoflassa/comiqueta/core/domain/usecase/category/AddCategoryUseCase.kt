@@ -5,14 +5,13 @@ import dev.diegoflassa.comiqueta.core.domain.repository.ICategoryRepository // V
 import javax.inject.Inject
 
 class AddCategoryUseCase @Inject constructor(
-    private val ICategoryRepository: ICategoryRepository
-) {
-    suspend operator fun invoke(categoryName: String): Long { // Changed to return Long
-        // Basic validation, more complex validation can be added
+    private val categoryRepository: ICategoryRepository
+) : IAddCategoryUseCase {
+    override suspend operator fun invoke(categoryName: String): Long {
         if (categoryName.isBlank()) {
             throw IllegalArgumentException("Category name cannot be blank.")
         }
         val newCategory = CategoryEntity(name = categoryName)
-        return ICategoryRepository.insertCategory(newCategory)
+        return categoryRepository.insertCategory(newCategory)
     }
 }
