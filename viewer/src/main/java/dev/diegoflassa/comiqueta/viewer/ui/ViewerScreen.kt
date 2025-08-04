@@ -43,7 +43,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-// import androidx.compose.runtime.snapshotFlow // No longer needed for swipe detection
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -74,17 +73,15 @@ private const val tag = "ViewerScreen"
 @Composable
 fun ViewerScreen(
     modifier: Modifier = Modifier,
-    comicPath: Uri? = null, // This is the navigation argument
+    comicPath: Uri? = null,
     navigationViewModel: NavigationViewModel? = hiltActivityViewModel(),
     viewerViewModel: ViewerViewModel = hiltViewModel()
 ) {
     TimberLogger.logI(tag, "ViewerScreen composable")
     val context = LocalContext.current
 
-    // Observe UI state from ViewModel
     val viewerUIState: ViewerUIState by viewerViewModel.uiState.collectAsStateWithLifecycle()
 
-    // Effect for loading comic when comicPath changes (from navigation args)
     LaunchedEffect(comicPath) {
         if (comicPath != null) {
             TimberLogger.logI(tag, "New comicPath received: $comicPath")
@@ -94,14 +91,12 @@ fun ViewerScreen(
         }
     }
 
-    // Effect for handling one-time side effects from ViewModel
     LaunchedEffect(key1 = Unit) {
         viewerViewModel.effect.collect { effect ->
             when (effect) {
                 is ViewerEffect.ShowError -> {
                     TimberLogger.logI(tag, "Showing error toast: ${effect.message}")
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
-                    // Notify ViewModel that error has been shown, so it can clear it if needed
                     viewerViewModel.reduce(ViewerIntent.ErrorShown)
                 }
             }
@@ -126,13 +121,11 @@ fun ViewerScreenContent(
 ) {
     BackHandler { navigationViewModel?.goBack() }
 
-    // Pager state setup - currentPage is 0-indexed
     val pagerState = rememberPagerState(
         initialPage = uiState.currentPage,
         pageCount = { uiState.pageCount.coerceAtLeast(0) }
     )
 
-    // Effect to scroll pager when ViewModel's currentPage changes externally
     LaunchedEffect(uiState.currentPage, uiState.pageCount) {
         if (uiState.pageCount > 0) {
             val targetPage =
@@ -184,7 +177,6 @@ fun ViewerScreenContent(
                     containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
                 ) {
                     Text(
-                        // Display 1-indexed page number to user
                         text = "${uiState.currentPage + 1} / ${uiState.pageCount}",
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
@@ -200,7 +192,7 @@ fun ViewerScreenContent(
                 .padding(padding)
                 .fillMaxSize()
                 .clickable(
-                    enabled = !uiState.isLoading && uiState.error == null && uiState.pageCount > 0, // Enable only if not loading, no error, and comic loaded
+                    enabled = !uiState.isLoading && uiState.error == null && uiState.pageCount > 0,
                     onClick = { onIntent?.invoke(ViewerIntent.ToggleUiVisibility) }
                 ),
             contentAlignment = Alignment.Center
@@ -210,12 +202,10 @@ fun ViewerScreenContent(
             var offsetY by remember { mutableFloatStateOf(0f) }
             var isImageZoomed by remember { mutableStateOf(false) }
 
-            // Reset zoom/pan when the displayed page (via pagerState.currentPage -> now settledPage for consistency, though currentPage is fine here often)
-            // or if the underlying bitmap for the current page changes.
             LaunchedEffect(
                 pagerState.settledPage,
                 uiState.currentBitmap
-            ) { // Changed to settledPage for consistency
+            ) {
                 TimberLogger.logI(
                     tag,
                     "Resetting zoom/pan for pager settledPage: ${pagerState.settledPage}"
@@ -239,7 +229,7 @@ fun ViewerScreenContent(
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier
                             .padding(16.dp)
-                            .clickable { onIntent?.invoke(ViewerIntent.ErrorShown) }, // User acknowledges error
+                            .clickable { onIntent?.invoke(ViewerIntent.ErrorShown) },
                         textAlign = TextAlign.Center
                     )
                 }
@@ -251,9 +241,9 @@ fun ViewerScreenContent(
                     )
                     HorizontalPager(
                         state = pagerState,
-                        userScrollEnabled = !isImageZoomed, // Disable pager swipe when zoomed
+                        userScrollEnabled = !isImageZoomed,
                         modifier = Modifier.fillMaxSize()
-                    ) { pageIndexInPager -> // This is the index of the page the Pager wants to display
+                    ) { pageIndexInPager ->
 
                         val bitmapToDisplay =
                             if (pageIndexInPager == uiState.currentPage) uiState.currentBitmap else null
@@ -267,7 +257,7 @@ fun ViewerScreenContent(
                                 .pointerInput(
                                     bitmapToDisplay,
                                     pagerState.currentPage
-                                ) { // Key on bitmap and Pager's *current* page for immediate gesture input response
+                                ) {
                                     if (bitmapToDisplay != null) {
                                         awaitPointerEventScope {
                                             while (true) {
@@ -354,9 +344,9 @@ fun ViewerScreenContent(
                                                                 delta.y
                                                             )
                                                         ) {
-                                                            // Horizontal swipe at 1x scale, do nothing to let pager handle it.
+                                                            TimberLogger.logI(tag, "Do nothing")
                                                         } else if (abs(delta.y) > touchSlop) {
-                                                            firstChange.consume() // Consume vertical scroll at 1x
+                                                            firstChange.consume()
                                                         }
                                                     }
                                                 }
@@ -374,12 +364,11 @@ fun ViewerScreenContent(
                             if (bitmapToDisplay != null) {
                                 Image(
                                     bitmap = bitmapToDisplay,
-                                    contentDescription = "Page ${pageIndexInPager + 1}", // User-facing page number
+                                    contentDescription = "Page ${pageIndexInPager + 1}",
                                     contentScale = ContentScale.Fit,
                                     modifier = imageModifier.background(MaterialTheme.colorScheme.surfaceVariant)
                                 )
                             } else {
-                                // Placeholder for pages not currently loaded/visible or if it's not the active page
                                 Box(
                                     Modifier
                                         .fillMaxSize()
@@ -390,13 +379,11 @@ fun ViewerScreenContent(
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    // Show loading indicator only if this IS the current page being loaded
                                     if (pageIndexInPager == uiState.currentPage && uiState.isLoading) {
                                         CircularProgressIndicator()
-                                    } else if (pageIndexInPager == uiState.currentPage && uiState.error == null) {
-                                        // If it's the current page, but no bitmap and not loading, it might be an issue or post-error state
+                                    } else if (pageIndexInPager == uiState.currentPage) {
                                         Text(
-                                            "Page ${pageIndexInPager + 1}", // User-facing page number
+                                            "Page ${pageIndexInPager + 1}",
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             style = MaterialTheme.typography.labelMedium
                                         )
@@ -482,7 +469,7 @@ fun ViewerScreenPreviewLoading() {
                 isLoading = true,
                 comicTitle = "Loading Comic...",
                 pageCount = 5,
-                currentPage = 0, // 0-indexed
+                currentPage = 0,
                 error = null
             ),
             onIntent = {}
@@ -498,7 +485,7 @@ fun ViewerScreenPreviewWithComic() {
             uiState = ViewerUIState(
                 isLoading = false,
                 currentBitmap = createDummyBitmapForPreview(pageNumber = 1),
-                currentPage = 0, // 0-indexed, so page 1
+                currentPage = 0,
                 pageCount = 5,
                 comicTitle = "Sample Comic Title",
                 error = null

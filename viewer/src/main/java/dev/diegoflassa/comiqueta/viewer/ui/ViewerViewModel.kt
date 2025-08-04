@@ -44,7 +44,7 @@ open class ViewerViewModel @Inject constructor(
 
     private val pageBitmapCache = LruCache<Int, ImageBitmap>(5) 
     private var currentLoadingJob: Job? = null
-    private var preloadingPagesJob: Job? = null // Renamed for clarity
+    private var preloadingPagesJob: Job? = null
 
     open fun reduce(intent: ViewerIntent) {
         when (intent) {
@@ -57,16 +57,11 @@ open class ViewerViewModel @Inject constructor(
                     _uiState.update { it.copy(currentPage = 0, pageCount = 0, currentBitmap = null) }
 
                     currentLoadingJob?.cancel()
-                    preloadingPagesJob?.cancel() // Cancel renamed job
+                    preloadingPagesJob?.cancel()
 
                     try {
                         TimberLogger.logI("ViewerViewModel", "LoadComic: Starting for ${intent.uriString}")
                         val comicInfo = getComicInfoUseCase(currentComicUri!!)
-                        // CRITICAL LOG: Moved and emphasized
-                        TimberLogger.logI("ViewerViewModel", "LoadComic: ComicInfo received: Title='${comicInfo.title}', PageCount=${comicInfo.pageCount}, IdentifiersCount=${comicInfo.pageIdentifiers.size}")
-                        // For brevity in logs, only join first few identifiers if list is long
-                        val identifiersToLog = comicInfo.pageIdentifiers.take(5).joinToString()
-                        TimberLogger.logI("ViewerViewModel", "LoadComic: Identifiers (first 5): [$identifiersToLog]")
 
                         comicPageIdentifiers = comicInfo.pageIdentifiers
                         currentComicFileType = comicInfo.fileType
@@ -96,7 +91,6 @@ open class ViewerViewModel @Inject constructor(
 
             is ViewerIntent.GoToPage -> {
                 TimberLogger.logI("ViewerViewModel", "GoToPage intent: targetPage=${intent.pageNumber}, currentViewModelPage=${uiState.value.currentPage}, pageCount=${uiState.value.pageCount}, loadedIdentifiersCount=${comicPageIdentifiers.size}")
-                // Check against both uiState.pageCount (from ComicInfo) and actual loaded comicPageIdentifiers.size
                 if (intent.pageNumber >= 0 && intent.pageNumber < uiState.value.pageCount && intent.pageNumber < comicPageIdentifiers.size) {
                     _uiState.update { it.copy(currentPage = intent.pageNumber) }
                     loadPageBitmap(intent.pageNumber, isCurrentPage = true)
@@ -149,7 +143,7 @@ open class ViewerViewModel @Inject constructor(
             TimberLogger.logD("ViewerViewModel", "loadPageBitmap: Page $pageIndex found in cache.")
             if (isCurrentPage) {
                 _uiState.update { it.copy(currentBitmap = cachedBitmap, isLoading = false, error = null) }
-                preloadNextPages(pageIndex) // Preload next even if current is cached
+                preloadNextPages(pageIndex)
             }
             return
         }
@@ -186,8 +180,8 @@ open class ViewerViewModel @Inject constructor(
                     }
                 }
             }
-        } else { // Background preloading for a specific page
-            viewModelScope.launch { // This is a self-contained job for this specific page preload
+        } else {
+            viewModelScope.launch {
                 val pageIdentifier = comicPageIdentifiers[pageIndex] 
                 TimberLogger.logI("ViewerViewModel", "PreloadPage-Launch: pageIndex=$pageIndex, identifier='$pageIdentifier'")
                 try {
@@ -227,7 +221,7 @@ open class ViewerViewModel @Inject constructor(
                     if (pageBitmapCache.get(i) == null) { 
                         TimberLogger.logD("ViewerViewModel", "preloadNextPages: Requesting preload for page $i via loadPageBitmap.")
                         loadPageBitmap(i, isCurrentPage = false) 
-                        delay(150) // Delay to allow individual preload jobs to start and avoid system overload
+                        delay(150)
                     } else {
                         TimberLogger.logD("ViewerViewModel", "preloadNextPages: Page $i already in cache. Skipping.")
                     }
