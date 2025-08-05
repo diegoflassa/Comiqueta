@@ -1,5 +1,6 @@
 package dev.diegoflassa.comiqueta.core.domain.usecase
 
+import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -15,12 +16,15 @@ class EnqueueSafFolderScanWorkerUseCase @Inject constructor(
     private val workManager: WorkManager
 ) : IEnqueueSafFolderScanWorkerUseCase {
     override operator fun invoke(): UUID {
-        val scanWorkRequest = OneTimeWorkRequestBuilder<SafFolderScanWorker>()
-            // You can add constraints here if needed, for example:
-            // .setConstraints(Constraints.Builder().setRequiresBatteryNotLow(true).build())
+        val constraints = Constraints.Builder()
+            .setRequiresBatteryNotLow(true)
+            .setRequiresStorageNotLow(true)
             .build()
 
-        // Enqueue the work as unique work to prevent multiple instances if already scheduled
+        val scanWorkRequest = OneTimeWorkRequestBuilder<SafFolderScanWorker>()
+            .setConstraints(constraints)
+            .build()
+
         workManager.enqueueUniqueWork(
             SafFolderScanWorker::class.java.name,
             ExistingWorkPolicy.KEEP,

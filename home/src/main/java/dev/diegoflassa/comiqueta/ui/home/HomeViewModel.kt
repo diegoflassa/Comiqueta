@@ -12,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
@@ -22,6 +23,7 @@ import dev.diegoflassa.comiqueta.domain.usecase.PaginatedComicsParams
 import dev.diegoflassa.comiqueta.ui.enums.BottomNavItems
 import dev.diegoflassa.comiqueta.core.data.model.Comic
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
+import dev.diegoflassa.comiqueta.core.data.worker.SafFolderScanWorker
 import dev.diegoflassa.comiqueta.domain.usecase.ILoadCategoriesUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -404,27 +406,32 @@ class HomeViewModel @Inject constructor(
                                     "Folder scan SUCCEEDED. Refreshing comics."
                                 )
                                 _effect.send(HomeEffect.ShowToast("Scan complete. Refreshing..."))
-                                loadPaginatedComics()
                             }
 
                             WorkInfo.State.RUNNING -> {
-                                loadPaginatedComics()
+                                TimberLogger.logD(
+                                    "HomeViewModel",
+                                    "Folder scan RUNNING. Refreshing comics."
+                                )
                             }
 
                             WorkInfo.State.FAILED -> {
-                                TimberLogger.logW("HomeViewModel", "Folder scan FAILED.")
-                                _effect.send(HomeEffect.ShowToast("Scan failed."))
-                                // Optionally handle output data for error messages from worker
+                                val errorMessage = workInfo.outputData.getString(SafFolderScanWorker.KEY_ERROR_MESSAGE)
+                                TimberLogger.logW("HomeViewModel", "Folder scan FAILED. Worker message: $errorMessage")
+                                FirebaseCrashlytics.getInstance()
+                                    .recordException(Exception("Worker FAILED: ${errorMessage ?: "No specific message."} Raw output: ${workInfo.outputData.keyValueMap}"))
+                                _effect.send(HomeEffect.ShowToast(errorMessage ?: "Scan failed."))
                             }
 
                             WorkInfo.State.CANCELLED -> {
                                 TimberLogger.logI("HomeViewModel", "Folder scan CANCELLED.")
+                                FirebaseCrashlytics.getInstance()
+                                    .recordException(Exception(workInfo.outputData.keyValueMap.toString()))
                                 _effect.send(HomeEffect.ShowToast("Scan cancelled."))
                             }
 
                             else -> {
                                 // ENQUEUED, BLOCKED -
-                                // You might want to show a persistent "Scanning..." indicator in UI
                             }
                         }
                     }

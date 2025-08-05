@@ -12,6 +12,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.github.junrar.Archive as JunrarArchive
 import com.github.junrar.rarfile.FileHeader as JunrarFileHeader
@@ -48,21 +49,22 @@ class SafFolderScanWorker @AssistedInject constructor(
         private const val THUMBNAIL_HEIGHT = 450
         private const val COVERS_DIR_NAME = "covers"
         private val tag = SafFolderScanWorker::class.simpleName
+
+        const val KEY_ERROR_MESSAGE = "key_error_message"
     }
 
     override suspend fun doWork(): Result {
         TimberLogger.logD(tag, "Starting scheduled scan of persisted folders.")
+        var firstErrorMessage: String? = null
 
         val folderUrisToScan = try {
             comicsFolderRepository.getPersistedPermissions()
         } catch (e: Exception) {
             FirebaseCrashlytics.getInstance().recordException(e)
-            TimberLogger.logE(
-                tag,
-                "Error fetching persisted folders from repository.",
-                e
-            )
-            return Result.failure()
+            val errorMessage = "Error fetching persisted folders."
+            TimberLogger.logE(tag, "$errorMessage Repository error.", e)
+            val outputData = workDataOf(KEY_ERROR_MESSAGE to errorMessage)
+            return Result.failure(outputData)
         }
 
         if (folderUrisToScan.isEmpty()) {
@@ -79,48 +81,52 @@ class SafFolderScanWorker @AssistedInject constructor(
                 DocumentFile.fromTreeUri(appContext, folderUri)
             } catch (e: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(e)
-                TimberLogger.logE(
-                    tag,
-                    "Error creating DocumentFile from URI: $folderUri",
-                    e
-                )
+                val errorMessage = "Error accessing folder: $folderUri"
+                TimberLogger.logE(tag, errorMessage, e)
+                if (firstErrorMessage == null) firstErrorMessage =
+                    "Error accessing folder. Please check permissions."
                 anyFolderScanFailed = true
                 continue
             }
 
             if (rootDoc == null || !rootDoc.isDirectory) {
-                FirebaseCrashlytics.getInstance().recordException(Exception("Root document is null or not a directory. URI: $folderUri"))
-                TimberLogger.logW(
-                    tag,
-                    "Root document is null or not a directory. URI: $folderUri"
-                )
+                val errorMessage = "Folder not valid or not a directory: $folderUri"
+                FirebaseCrashlytics.getInstance().recordException(Exception(errorMessage))
+                TimberLogger.logW(tag, errorMessage)
+                if (firstErrorMessage == null) firstErrorMessage =
+                    "A configured folder is not valid. URI: $folderUri"
                 anyFolderScanFailed = true
                 continue
             }
 
             try {
                 TimberLogger.logD(
-                    tag,
-                    "Scanning document tree for: ${rootDoc.name} (URI: $folderUri)"
+                    tag, "Scanning document tree for: ${rootDoc.name} (URI: $folderUri)"
                 )
                 scanDocumentFileForComics(rootDoc)
                 TimberLogger.logD(tag, "Scan finished for URI: $folderUri")
             } catch (e: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(e)
-                TimberLogger.logE(
-                    tag,
-                    "Exception during scan of folder: ${rootDoc.name} (URI: $folderUri)",
-                    e
-                )
+                val scanErrorMessage = "Error scanning folder: ${rootDoc.name}"
+                TimberLogger.logE(tag, "$scanErrorMessage (URI: $folderUri)", e)
+                if (firstErrorMessage == null) firstErrorMessage = scanErrorMessage
                 anyFolderScanFailed = true
             }
         }
 
         TimberLogger.logI(
-            tag,
-            "Finished processing all folders. Any folder scan failed: $anyFolderScanFailed"
+            tag, "Finished processing all folders. Any folder scan failed: $anyFolderScanFailed"
         )
-        return if (anyFolderScanFailed) Result.retry() else Result.success()
+
+        return if (anyFolderScanFailed) {
+            val finalErrorMessage = firstErrorMessage ?: "One or more folders failed to scan."
+            TimberLogger.logW(tag, "Scan failed. Reporting message: $finalErrorMessage")
+            val outputData = workDataOf(KEY_ERROR_MESSAGE to finalErrorMessage)
+            Result.failure(outputData)
+        } else {
+            TimberLogger.logI(tag, "Scan completed successfully for all folders.")
+            Result.success()
+        }
     }
 
     private suspend fun scanDocumentFileForComics(dir: DocumentFile) {
@@ -134,8 +140,7 @@ class SafFolderScanWorker @AssistedInject constructor(
         for (file in dir.listFiles()) {
             if (file.isDirectory) {
                 TimberLogger.logD(
-                    tag,
-                    "Found subdirectory: ${file.name}, recursing..."
+                    tag, "Found subdirectory: ${file.name}, recursing..."
                 )
                 scanDocumentFileForComics(file)
             } else {
@@ -144,8 +149,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                 val fileExtension = fileName.substringAfterLast('.', "").lowercase(Locale.ROOT)
 
                 TimberLogger.logD(
-                    tag,
-                    "Checking file: $fileName, Ext: $fileExtension, URI: $fileUri"
+                    tag, "Checking file: $fileName, Ext: $fileExtension, URI: $fileUri"
                 )
 
                 if (supportedComicTypes.contains(fileExtension)) {
@@ -167,8 +171,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                             lastModified = file.lastModified()
                         )
                         TimberLogger.logD(
-                            tag,
-                            "Updating existing comic: ${comicToSave.title}"
+                            tag, "Updating existing comic: ${comicToSave.title}"
                         )
                     } else {
                         comicToSave = ComicEntity(
@@ -179,29 +182,24 @@ class SafFolderScanWorker @AssistedInject constructor(
                             lastModified = file.lastModified()
                         )
                         TimberLogger.logI(
-                            tag,
-                            "Found new comic: ${comicToSave.title}. Saving to DB."
+                            tag, "Found new comic: ${comicToSave.title}. Saving to DB."
                         )
                     }
 
                     try {
                         comicsDao.insertComic(comicToSave)
                         TimberLogger.logD(
-                            tag,
-                            "Successfully saved/updated comic: ${comicToSave.title}"
+                            tag, "Successfully saved/updated comic: ${comicToSave.title}"
                         )
                     } catch (e: Exception) {
                         FirebaseCrashlytics.getInstance().recordException(e)
                         TimberLogger.logE(
-                            tag,
-                            "Error saving/updating comic ${comicToSave.title}: ${e.message}",
-                            e
+                            tag, "Error saving/updating comic ${comicToSave.title}: ${e.message}", e
                         )
                     }
                 } else {
                     TimberLogger.logD(
-                        tag,
-                        "Skipping non-comic file: $fileName (ext: $fileExtension)"
+                        tag, "Skipping non-comic file: $fileName (ext: $fileExtension)"
                     )
                 }
             }
@@ -230,8 +228,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                                                 PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY
                                             )
                                             localScaledBitmap = originalBitmap.scale(
-                                                THUMBNAIL_WIDTH,
-                                                THUMBNAIL_HEIGHT
+                                                THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT
                                             )
                                             originalBitmap.recycle()
                                         }
@@ -250,8 +247,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                                     BufferedInputStream(inputStream).use { bufferedInputStream ->
                                         val archiveStreamForListing =
                                             ArchiveStreamFactory().createArchiveInputStream(
-                                                archiverNameString,
-                                                bufferedInputStream
+                                                archiverNameString, bufferedInputStream
                                             ) as ArchiveInputStream<out ArchiveEntry>
                                         archiveStreamForListing.use { ais ->
                                             var entry: ArchiveEntry? = ais.nextEntry
@@ -283,8 +279,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                                         BufferedInputStream(newInputStream).use { newBufferedStream ->
                                             val archiveStreamForExtraction =
                                                 ArchiveStreamFactory().createArchiveInputStream(
-                                                    archiverNameString,
-                                                    newBufferedStream
+                                                    archiverNameString, newBufferedStream
                                                 ) as ArchiveInputStream<out ArchiveEntry>
                                             archiveStreamForExtraction.use { ais ->
                                                 var currentEntry: ArchiveEntry? = ais.nextEntry
@@ -350,31 +345,24 @@ class SafFolderScanWorker @AssistedInject constructor(
                             val firstImageHeader = imageFileHeaders.first()
 
                             try {
-                                // Re-open stream for extraction if needed, or if junrar Archive allows re-access
-                                // For safety, re-opening is shown if the stream was consumed
                                 appContext.contentResolver.openInputStream(comicFile.uri)
                                     ?.use { extractionInputStream ->
                                         JunrarArchive(extractionInputStream).use { archiveForExtract ->
-                                            // Find the header again in this new archive instance, as header instances might not be reusable across Archive instances
                                             val headerToExtract =
                                                 archiveForExtract.fileHeaders.find { it.fileName == firstImageHeader.fileName }
                                             if (headerToExtract != null) {
                                                 ByteArrayOutputStream().use { baos ->
                                                     archiveForExtract.extractFile(
-                                                        headerToExtract,
-                                                        baos
+                                                        headerToExtract, baos
                                                     )
                                                     val imageBytes = baos.toByteArray()
                                                     val originalBitmap =
                                                         BitmapFactory.decodeByteArray(
-                                                            imageBytes,
-                                                            0,
-                                                            imageBytes.size
+                                                            imageBytes, 0, imageBytes.size
                                                         )
                                                     if (originalBitmap != null) {
                                                         localScaledBitmap = originalBitmap.scale(
-                                                            THUMBNAIL_WIDTH,
-                                                            THUMBNAIL_HEIGHT
+                                                            THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT
                                                         )
                                                         originalBitmap.recycle()
                                                     }
@@ -401,17 +389,14 @@ class SafFolderScanWorker @AssistedInject constructor(
 
                 localScaledBitmap?.let { bmp ->
                     coverFile = saveBitmapToCache(
-                        bmp,
-                        comicFile.name ?: "unknown_comic_${System.currentTimeMillis()}"
+                        bmp, comicFile.name ?: "unknown_comic_${System.currentTimeMillis()}"
                     )
                 }
 
             } catch (e: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(e)
                 TimberLogger.logE(
-                    tag,
-                    "General error extracting cover for ${comicFile.name}: ${e.message}",
-                    e
+                    tag, "General error extracting cover for ${comicFile.name}: ${e.message}", e
                 )
                 localScaledBitmap = null
                 coverFile = null
@@ -425,18 +410,16 @@ class SafFolderScanWorker @AssistedInject constructor(
     private fun isImageFile(fileName: String?): Boolean {
         if (fileName == null) return false
         val lowerName = fileName.lowercase(Locale.ROOT)
-        // Added .gif as it's sometimes used in comic archives
-        return lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg") ||
-                lowerName.endsWith(".png") || lowerName.endsWith(".webp") ||
-                lowerName.endsWith(".gif")
+        return lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg") || lowerName.endsWith(".png") || lowerName.endsWith(
+            ".webp"
+        ) || lowerName.endsWith(".gif")
     }
 
     private fun saveBitmapToCache(bitmap: Bitmap, originalFileName: String): File? {
         val coversDir = File(appContext.cacheDir, COVERS_DIR_NAME)
         if (!coversDir.exists() && !coversDir.mkdirs()) {
             TimberLogger.logE(
-                tag,
-                "Failed to create covers directory: ${coversDir.absolutePath}"
+                tag, "Failed to create covers directory: ${coversDir.absolutePath}"
             )
             return null
         }
@@ -452,9 +435,7 @@ class SafFolderScanWorker @AssistedInject constructor(
             return imageFile
         } catch (e: IOException) {
             TimberLogger.logE(
-                tag,
-                "Error saving bitmap to cache: ${e.message}",
-                e
+                tag, "Error saving bitmap to cache: ${e.message}", e
             )
         }
         return null
@@ -490,8 +471,8 @@ class SafFolderScanWorker @AssistedInject constructor(
 
         override fun compare(s1: String?, s2: String?): Int {
             if (s1 == null && s2 == null) return 0
-            if (s1 == null) return -1 // nulls first
-            if (s2 == null) return 1  // nulls first
+            if (s1 == null) return -1
+            if (s2 == null) return 1
 
             var thisMarker = 0
             var thatMarker = 0
@@ -507,22 +488,17 @@ class SafFolderScanWorker @AssistedInject constructor(
 
                 var result: Int
                 if (isDigit(thisChunk[0]) && isDigit(thatChunk[0])) {
-                    // Numerical comparison for digit chunks
                     try {
                         val thisNum = BigInteger(thisChunk)
                         val thatNum = BigInteger(thatChunk)
                         result = thisNum.compareTo(thatNum)
                     } catch (ex: NumberFormatException) {
                         TimberLogger.logE(
-                            tag,
-                            " Error comparing chunks : $thisChunk, $thatChunk",
-                            ex
+                            tag, " Error comparing chunks : $thisChunk, $thatChunk", ex
                         )
-                        // Fallback to string comparison if not a valid number (shouldn't happen with isDigit check)
                         result = thisChunk.compareTo(thatChunk)
                     }
                 } else {
-                    // Lexicographical comparison for non-digit chunks
                     result = thisChunk.compareTo(thatChunk)
                 }
 
