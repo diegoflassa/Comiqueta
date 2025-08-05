@@ -90,6 +90,7 @@ dependencies {
     implementation(libs.ax.room.runtime)
     ksp(libs.ax.room.compiler)
     implementation(libs.ax.room.ktx)
+    implementation(libs.ax.room.paging)
     //Room Testing
     androidTestImplementation(libs.ax.room.testing)
 

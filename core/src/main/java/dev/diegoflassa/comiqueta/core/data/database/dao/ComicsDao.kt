@@ -1,13 +1,13 @@
 package dev.diegoflassa.comiqueta.core.data.database.dao
 
 import android.net.Uri
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ComicsDao {
@@ -39,7 +39,7 @@ interface ComicsDao {
         LIMIT :limit OFFSET :offset
     """
     )
-    suspend fun getComicsPaginated(
+    suspend fun getComicsPaginatedManual(
         limit: Int,
         offset: Int,
         categoryId: Long?,
@@ -47,6 +47,28 @@ interface ComicsDao {
         filterByNew: Boolean?,
         filterByRead: Boolean?
     ): List<ComicEntity>
+
+    /**
+     * New method for Paging 3. Room will generate a PagingSource that
+     * automatically invalidates when the 'comics' table changes.
+     */
+    @Query(
+        """
+        SELECT * FROM comics
+        WHERE
+            (:categoryId IS NULL OR comic_category_id = :categoryId) 
+            AND (:filterByFavorite IS NULL OR is_favorite = :filterByFavorite)
+            AND (:filterByNew IS NULL OR is_new = :filterByNew)
+            AND (:filterByRead IS NULL OR was_read = :filterByRead) 
+        ORDER BY title ASC
+    """
+    )
+    fun getComicsPagingSource(
+        categoryId: Long?,
+        filterByFavorite: Boolean?,
+        filterByNew: Boolean?,
+        filterByRead: Boolean?
+    ): PagingSource<Int, ComicEntity>
 
     @Query("SELECT EXISTS(SELECT * FROM comics WHERE file_path = :filePath)")
     suspend fun comicExists(filePath: String): Boolean

@@ -69,6 +69,7 @@ ax-navigation3-viewmodel = "1.0.0-alpha04"
 room-runtime = "2.7.2"
 room-compiler = "2.7.2"
 room-ktx = "2.7.2"
+room-paging = "2.7.2"
 room-testing = "2.7.2"
 
 #Dagger & Hilt
@@ -246,6 +247,7 @@ ax-navigation3-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-na
 ax-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room-runtime" }
 ax-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room-compiler" }
 ax-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room-ktx" }
+ax-room-paging = { module = "androidx.room:room-paging", version.ref = "room-paging" }
 #Room Testing
 ax-room-testing = { module = "androidx.room:room-testing", version.ref = "room-testing" }
 

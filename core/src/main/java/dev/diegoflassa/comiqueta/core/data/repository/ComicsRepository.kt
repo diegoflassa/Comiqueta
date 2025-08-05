@@ -11,7 +11,6 @@ import dev.diegoflassa.comiqueta.core.data.database.entity.asEntity
 import dev.diegoflassa.comiqueta.core.data.database.entity.asExternalModel
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
 import dev.diegoflassa.comiqueta.core.data.model.Comic
-import dev.diegoflassa.comiqueta.core.data.paging.ComicPagingSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -34,8 +33,16 @@ class ComicsRepository @Inject constructor(
                 prefetchDistance = pageSize / 2,
                 initialLoadSize = pageSize * 3
             ), pagingSourceFactory = {
-                ComicPagingSource(
-                    comicsDao = comicsDao, categoryId = categoryId, flags = flags
+                val filterByFavorite: Boolean? =
+                    if (flags.contains(ComicFlags.FAVORITE)) true else null
+                val filterByNew: Boolean? = if (flags.contains(ComicFlags.NEW)) true else null
+                val filterByRead: Boolean? = if (flags.contains(ComicFlags.READ)) true else null
+
+                comicsDao.getComicsPagingSource(
+                    categoryId = categoryId,
+                    filterByFavorite = filterByFavorite,
+                    filterByNew = filterByNew,
+                    filterByRead = filterByRead
                 )
             }).flow
 

@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
@@ -17,8 +18,7 @@ import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
 import dev.diegoflassa.comiqueta.core.domain.usecase.EnqueueSafFolderScanWorkerUseCase
 import dev.diegoflassa.comiqueta.domain.usecase.IGetPaginatedComicsUseCase
-import dev.diegoflassa.comiqueta.domain.usecase.PaginatedComicsParams // Import the new top-level Params
-import dev.diegoflassa.comiqueta.domain.usecase.LoadCategoriesUseCase
+import dev.diegoflassa.comiqueta.domain.usecase.PaginatedComicsParams
 import dev.diegoflassa.comiqueta.ui.enums.BottomNavItems
 import dev.diegoflassa.comiqueta.core.data.model.Comic
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -73,7 +74,7 @@ class HomeViewModel @Inject constructor(
         flags: Set<ComicFlags> = _uiState.value.flags
     ) {
         viewModelScope.launch {
-            if (categoryId == null && flags.isEmpty()) { // Condition to show loading for main list only if no specific filters initially
+            if (categoryId == null && flags.isEmpty()) {
                 _uiState.update { it.copy(isLoading = true, error = null) }
             }
             try {
@@ -91,33 +92,29 @@ class HomeViewModel @Inject constructor(
                             categoryId = sanitizedCategory,
                             flags = flags
                         )
-                    )
-                        .catch { e ->
-                            TimberLogger.logE("HomeViewModel", "Error loading main comics", e)
-                            _effect.send(HomeEffect.ShowToast("Error loading comics: ${e.message}"))
-                            emit(PagingData.empty())
-                        }
-                        .collectLatest {
-                            _comicsFlow.value = it
-                        }
+                    ).catch { e ->
+                        TimberLogger.logE("HomeViewModel", "Error loading main comics", e)
+                        _effect.send(HomeEffect.ShowToast("Error loading comics: ${e.message}"))
+                        emit(PagingData.empty())
+                    }.collectLatest {
+                        _comicsFlow.value = it
+                    }
                 }
 
                 async {
                     getPaginatedComicsUseCase(
-                        PaginatedComicsParams( // Use the imported top-level Params
+                        PaginatedComicsParams(
                             flags = setOf(
                                 ComicFlags.NEW
                             )
                         )
-                    )
-                        .catch { e ->
-                            TimberLogger.logE("HomeViewModel", "Error loading latest comics", e)
-                            _effect.send(HomeEffect.ShowToast("Error loading latest comics: ${e.message}"))
-                            emit(PagingData.empty())
-                        }
-                        .collectLatest {
-                            _latestComicsFlow.value = it
-                        }
+                    ).catch { e ->
+                        TimberLogger.logE("HomeViewModel", "Error loading latest comics", e)
+                        _effect.send(HomeEffect.ShowToast("Error loading latest comics: ${e.message}"))
+                        emit(PagingData.empty())
+                    }.collectLatest {
+                        _latestComicsFlow.value = it
+                    }
                 }
 
                 async {
@@ -127,15 +124,13 @@ class HomeViewModel @Inject constructor(
                                 ComicFlags.FAVORITE
                             )
                         )
-                    )
-                        .catch { e ->
-                            TimberLogger.logE("HomeViewModel", "Error loading favorite comics", e)
-                            _effect.send(HomeEffect.ShowToast("Error loading favorite comics: ${e.message}"))
-                            emit(PagingData.empty())
-                        }
-                        .collectLatest {
-                            _favoriteComicsFlow.value = it
-                        }
+                    ).catch { e ->
+                        TimberLogger.logE("HomeViewModel", "Error loading favorite comics", e)
+                        _effect.send(HomeEffect.ShowToast("Error loading favorite comics: ${e.message}"))
+                        emit(PagingData.empty())
+                    }.collectLatest {
+                        _favoriteComicsFlow.value = it
+                    }
                 }
 
             } catch (e: CancellationException) {
@@ -382,12 +377,58 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // If EnqueueSafFolderScanWorkerUseCase can take a specific Uri, pass it.
-                EnqueueSafFolderScanWorkerUseCase(WorkManager.getInstance(applicationContext)).invoke()
+                val workRequestId =
+                    EnqueueSafFolderScanWorkerUseCase(WorkManager.getInstance(applicationContext)).invoke()
                 _effect.send(HomeEffect.ShowToast("Folder scan enqueued."))
+
+                // Observe the work
+                observeScanWorker(workRequestId)
             } catch (ex: Exception) {
                 TimberLogger.logE("HomeViewModel", "Failed to enqueue folder scan worker", ex)
                 _effect.send(HomeEffect.ShowToast("Error starting scan: ${ex.message}"))
             }
+        }
+    }
+
+    private fun observeScanWorker(workRequestId: UUID) {
+        viewModelScope.launch {
+            WorkManager.getInstance(applicationContext)
+                .getWorkInfoByIdFlow(workRequestId)
+                .collectLatest { workInfo ->
+                    if (workInfo != null) {
+                        TimberLogger.logD("HomeViewModel", "Scan Worker State: ${workInfo.state}")
+                        when (workInfo.state) {
+                            WorkInfo.State.SUCCEEDED -> {
+                                TimberLogger.logD(
+                                    "HomeViewModel",
+                                    "Folder scan SUCCEEDED. Refreshing comics."
+                                )
+                                _effect.send(HomeEffect.ShowToast("Scan complete. Refreshing..."))
+                                loadPaginatedComics()
+                            }
+
+                            WorkInfo.State.RUNNING -> {
+                                loadPaginatedComics()
+                            }
+
+                            WorkInfo.State.FAILED -> {
+                                TimberLogger.logW("HomeViewModel", "Folder scan FAILED.")
+                                _effect.send(HomeEffect.ShowToast("Scan failed."))
+                                // Optionally handle output data for error messages from worker
+                            }
+
+                            WorkInfo.State.CANCELLED -> {
+                                TimberLogger.logI("HomeViewModel", "Folder scan CANCELLED.")
+                                _effect.send(HomeEffect.ShowToast("Scan cancelled."))
+                            }
+
+                            else -> {
+                                // ENQUEUED, BLOCKED -
+                                // You might want to show a persistent "Scanning..." indicator in UI
+                            }
+                        }
+                    }
+                }
         }
     }
 }
