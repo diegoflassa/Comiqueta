@@ -1,6 +1,16 @@
-@file:Suppress("UnstableApiUsage")
-
+import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
 import org.gradle.kotlin.dsl.project
+import java.util.Properties
+
+val firebaseAppDistributionProps = Properties()
+val firebasePropsFile = project.file("./../firebase_app_distribution.properties")
+if (firebasePropsFile.exists() && firebasePropsFile.isFile) {
+    firebasePropsFile.inputStream().use {
+        firebaseAppDistributionProps.load(it)
+    }
+} else {
+    println("Warning: firebase_app_distribution.properties not found. App Distribution appId might be missing.")
+}
 
 plugins {
     id("android-application-convention")
@@ -10,13 +20,32 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.firebase.perf)
     alias(libs.plugins.compose.compiler)
-    //id("io.realm.kotlin")
+    alias(libs.plugins.hilt.android.gradle.plugin)
+    alias(libs.plugins.firebase.appdistribution.gradle)
+}
+
+if (firebasePropsFile.exists()) {
+    val configuredTesters =
+        firebaseAppDistributionProps.getProperty("firebase.appdistribution.testers") ?: ""
+    println("Setted testers to: $configuredTesters")
+    firebaseAppDistribution {
+        appId = firebaseAppDistributionProps.getProperty("firebase.appdistribution.appId") ?: ""
+        testers = configuredTesters
+        releaseNotes = "Debug test version"
+    }
+}
+
+kotlin {
+    jvmToolchain(JavaVersion.VERSION_21.toString().toInt())
 }
 
 dependencies {
     //Modules
     implementation(project(":core"))
-    implementation(project(":feature-settings"))
+    implementation(project(":home"))
+    implementation(project(":settings"))
+    implementation(project(":categories"))
+    implementation(project(":viewer"))
 
     // Common
     implementation(libs.ax.core.ktx)
@@ -54,24 +83,36 @@ dependencies {
     debugImplementation(libs.ax.compose.ui.test.manifest)
     debugImplementation(libs.ax.compose.ui.tooling)
 
+    //Compose Navigation 3
+    implementation(libs.ax.navigation3.runtime)
+    implementation(libs.ax.navigation3.ui)
+    implementation(libs.ax.navigation3.viewmodel)
+    //implementation(libs.ax.navigation3.adaptive)
+
     //Firebase
     implementation(platform(libs.com.google.firebase.bom))
-    implementation(libs.com.google.firebase.crashlytics.ktx)
-    implementation(libs.com.google.firebase.analytics.ktx)
-    implementation(libs.com.google.firebase.perf.ktx)
-    implementation(libs.com.google.firebase.config.ktx)
+    implementation(libs.com.google.firebase.crashlytics)
+    implementation(libs.com.google.firebase.analytics)
+    implementation(libs.com.google.firebase.perf)
+    implementation(libs.com.google.firebase.config)
+    implementation(libs.com.google.firebase.appcheck)
+    implementation(libs.com.google.firebase.appcheck.playintegrity)
 
     //Timber
     implementation(libs.com.jakewharton.timber)
 
-    //Realm
-    implementation(libs.io.realm.kotlin.library.base)
-
-    //Koin
-    implementation(platform(libs.io.insert.koin.bom))
-    implementation(libs.io.insert.koin.core)
-    implementation(libs.io.insert.koin.compose)
-    implementation(libs.io.insert.koin.android)
+    //Dagger & Hilt
+    implementation(libs.com.google.dagger.hilt.android)
+    ksp(libs.com.google.dagger.hilt.android.compiler)
+    implementation(libs.ax.hilt.common)
+    ksp(libs.ax.hilt.compiler)
+    implementation(libs.ax.hilt.navigation.compose)
+    implementation(libs.ax.hilt.work)
+    //Dagger & Hilt Testing
+    testImplementation(libs.com.google.dagger.hilt.android.testing)
+    kspTest(libs.com.google.dagger.hilt.android.compiler)
+    androidTestImplementation(libs.com.google.dagger.hilt.android.testing)
+    kspAndroidTest(libs.com.google.dagger.hilt.android.compiler)
 
     //OkHttp
     implementation(platform(libs.com.squareup.okhttp3.bom))
@@ -118,8 +159,11 @@ dependencies {
     //Splashscreen
     implementation(libs.ax.core.splashscreen)
 
-    //Play Core
+    //App Update
     implementation(libs.com.google.android.play.app.update)
+
+    //Ads
+    implementation(libs.play.services.ads.api)
 
     //Startup
     implementation(libs.ax.startup.runtime)
@@ -128,8 +172,6 @@ dependencies {
     implementation(libs.com.microsoft.clarity.compose)
 
     implementation(libs.com.google.auto.value)
-
-    implementation(libs.play.services.ads)
 
     implementation(libs.io.coil.kt.coil.compose)
 }

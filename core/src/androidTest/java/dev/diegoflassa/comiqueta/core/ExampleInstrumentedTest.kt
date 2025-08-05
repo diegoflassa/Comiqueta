@@ -11,7 +11,6 @@ import org.junit.Assert.*
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-@Suppress("unused")
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
 

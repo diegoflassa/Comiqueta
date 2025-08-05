@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">Comiqueta</string>
+
+    <!-- Top App Bar -->
+    <string name="top_bar_settings_icon_desc">Einstellungen</string>
+    <string name="search_comics_placeholder">Comics suchen…</string>
+    <!-- Corrected/Ensured Key from HomeScreen.kt -->
+    <string name="search_icon_description">Suchsymbol</string>
+    <string name="view_as_list_description">Zur Listenansicht wechseln</string>
+    <string name="view_as_grid_description">Zur Rasteransicht wechseln</string>
+
+    <!-- Categories -->
+    <string name="category_all">Alle</string>
+
+    <!-- Sections -->
+    <string name="section_title_favorites">Favoriten</string> <!-- Allgemeiner Abschnitt "Favoriten" -->
+    <string name="latest_comics_section_title">Neueste Comics</string>
+    <string name="favorite_comics_section_title">Deine Favoriten</string> <!-- Spezifisch für HomeScreen-Abschnitt -->
+    <string name="results_section_title">Ergebnisse</string>
+    <string name="all_comics_section_title">Alle Comics</string>
+
+    <!-- Comic Item States -->
+    <string name="missing_cover_for_comic">Fehlendes Cover für %s</string>
+    <string name="error_loading_cover_for_comic">Fehler beim Laden des Covers für %s</string>
+    <string name="comic_cover_image_description">Comic-Cover</string>
+    <string name="unknown_title">Unbekannter Titel</string>
+    <string name="favorite_icon_description">Favorit</string>
+
+    <!-- Loading & Error States -->
+    <string name="error_loading_comics_message">Fehler beim Laden der Comics: %s</string>
+    <string name="error_unknown">Unbekannter Fehler</string>
+    <string name="button_retry">Erneut versuchen</string>
+    <string name="error_loading_more_comics_message">Fehler beim Laden weiterer Comics: %s</string>
+    <string name="no_comics_found_for_search">Keine Comics entsprechen Ihrer Suche oder Ihrem Filter.</string>
+
+    <!-- Empty State (General) -->
+    <string name="empty_state_title_no_comics">Keine Comics gefunden.</string>
+    <string name="empty_state_message_add_folder">Fügen Sie einen Ordner hinzu, um Ihre Sammlung zu durchsuchen.</string>
+    <!-- <string name="button_add_folder">Ordner hinzufügen</string> -->
+
+    <!-- Empty State (from HomeScreen.kt EmptyStateContent directly) -->
+    <string name="empty_state_title">Noch nichts hier!</string>
+    <string name="empty_state_message">Beginnen Sie, indem Sie Ihre Comic-Ordner hinzufügen.</string>
+    <string name="add_folder_button">Ordner hinzufügen</string>
+
+    <!-- FAB (Main FAB in HomeBottomAppBar) -->
+    <string name="add_fab_description">Ordner hinzufügen</string>
+
+    <!-- Bottom Navigation -->
+    <string name="bottom_nav_home">Start</string>
+    <string name="bottom_nav_catalog">Katalog</string>
+    <string name="bottom_nav_bookmarks">Lesezeichen</string>
+    <string name="bottom_nav_favorites">Favoriten</string>
+    <string name="bottom_nav_library">Bibliothek</string>
+    <string name="home_section_collapse">Bereich einklappen</string>
+    <string name="home_section_expand">Bereich ausklappen</string>
+</resources>

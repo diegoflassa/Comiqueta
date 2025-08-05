@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">Comiqueta</string>
+
+    <!-- Top App Bar -->
+    <string name="top_bar_settings_icon_desc">Settings</string>
+    <string name="search_comics_placeholder">Search comics…</string>
+    <!-- Corrected/Ensured Key from HomeScreen.kt -->
+    <string name="search_icon_description">Search icon</string>
+    <string name="view_as_list_description">View as list</string>
+    <string name="view_as_grid_description">View as grid</string>
+
+    <!-- Categories -->
+    <string name="category_all">All</string>
+
+    <!-- Sections -->
+    <string name="section_title_favorites">Favorites</string> <!-- General "Favorites" section -->
+    <string name="latest_comics_section_title">Latest Comics</string>
+    <string name="favorite_comics_section_title">Your Favorites</string> <!-- Specific for HomeScreen section -->
+    <string name="results_section_title">Results</string>
+    <string name="all_comics_section_title">All Comics</string>
+
+    <!-- Comic Item States -->
+    <string name="missing_cover_for_comic">Missing cover for %s</string>
+    <string name="error_loading_cover_for_comic">Error loading cover for %s</string>
+    <string name="comic_cover_image_description">Comic cover</string>
+    <string name="unknown_title">Unknown Title</string>
+    <string name="favorite_icon_description">Favorite</string>
+
+    <!-- Loading & Error States -->
+    <string name="error_loading_comics_message">Error loading comics: %s</string>
+    <string name="error_unknown">Unknown error</string>
+    <string name="button_retry">Retry</string>
+    <string name="error_loading_more_comics_message">Error loading more: %s</string>
+    <string name="no_comics_found_for_search">No comics match your search or filter.</string>
+
+    <!-- Empty State (General - you had specific ones in HomeScreen.kt too) -->
+    <string name="empty_state_title_no_comics">No comics found.</string>
+    <string name="empty_state_message_add_folder">Add a folder to start browsing your collection.</string>
+    <!-- <string name="button_add_folder">Add Folder</string> --> <!-- This key is used differently in EmptyStateContent -->
+
+    <!-- Empty State (from HomeScreen.kt EmptyStateContent directly) -->
+    <string name="empty_state_title">Nothing here yet!</string>
+    <string name="empty_state_message">Start by adding your comic folders.</string>
+    <string name="add_folder_button">Add Folder</string> <!-- Used by EmptyStateContent's FAB and text -->
+
+
+    <!-- FAB (Main FAB in HomeBottomAppBar) -->
+    <string name="add_fab_description">Add Folder</string>
+
+    <!-- Bottom Navigation -->
+    <string name="bottom_nav_home">Home</string>
+    <string name="bottom_nav_catalog">Catalog</string>
+    <string name="bottom_nav_bookmarks">Bookmarks</string>
+    <string name="bottom_nav_favorites">Favorites</string>
+    <string name="bottom_nav_library">Library</string>
+    <string name="home_section_collapse">Collapse home</string>
+    <string name="home_section_expand">Expand home</string>
+</resources>

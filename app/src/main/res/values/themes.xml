@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.Comiqueta" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Comiqueta.Starting" parent="Theme.SplashScreen" tools:ignore="UnusedResources">
+        <item name="android:statusBarColor">@color/launcher_color</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowSplashScreenBackground">@color/launcher_color</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher
+        </item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/launcher_color</item>
+        <item name="postSplashScreenTheme">@style/Theme.Comiqueta</item>
+    </style>
 
-    <style name="Theme.MyApplication" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Comiqueta" parent="Theme.Material3.DayNight.NoActionBar" >
+        <item name="windowActionBar">false</item>
+    </style>
+
 </resources>

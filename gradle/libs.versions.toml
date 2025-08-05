@@ -1,65 +1,88 @@
 [versions]
 
 #Common
-gradle = "8.10.1"
+gradle = "8.12.0"
 kotlin = "2.2.0"
 
+#Project build.gradle
+hilt-android-gradle-plugin = "2.57"
+
 #App
-firebase-perf-gradle = "1.4.2"
+firebase-perf-gradle = "2.0.0"
+firebase-appdistribution-gradle = "5.1.1"
+androidx-room = "2.7.2"
 
 #Project build.gradle
 google-services = "4.4.3"
-firebase-crashlytics-gradle = "3.0.4"
-perf-plugin = "1.4.2"
-
-#Module build.gradle
-#ax-baselineprofile = "1.3.4"
+firebase-crashlytics-gradle = "3.0.5"
+perf-plugin = "2.0.0"
 
 #Common
 core-ktx = "1.16.0"
 material = "1.12.0"
+ui-text-google-fonts = "1.8.3"
 
 #Common Testing
 junit = "4.13.2"
-junit-ktx = "1.2.1"
-ax-test-rules = "1.6.1"
-ax-test-runner = "1.6.2"
+junit-ktx = "1.3.0"
+ax-test-rules = "1.7.0"
+ax-test-runner = "1.7.0"
 uiautomator = "2.3.0"
-benchmark-macro-junit4 = "1.3.4"
+benchmark-macro-junit4 = "1.4.0"
+
+#Unit Tests
+org-jetbrains-kotlinx-coroutines-test = "1.10.2"
+org-mockito-core = "5.18.0"
+org-mockito-inline = "5.2.0"
+org-mockito-kotlin = "6.0.0"
+app-cash-turbine = "1.2.1"
+androidx-paging-common = "3.3.6"
+com-google-truth = "1.4.4"
 
 #Firebase
-firebase-bom = "33.16.0"
+firebase-bom = "34.0.0"
 
 #Timber
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2025.06.01"
+compose-bom = "2025.07.00"
 ax-constraintlayout-compose = "1.1.1"
 ax-activity-compose = "1.10.1"
-lifecycle-viewmodel-compose = "2.9.1"
-ax-navigation-compose = "2.9.0"
+lifecycle-viewmodel-compose = "2.9.2"
+ax-navigation-compose = "2.9.3"
 kotlinx-serialization-json = "1.9.0"
+ax-paging-runtime-ktx = "3.3.6"
+ax-paging-compose = "3.3.6"
 
 #Compose Testing
 org-mockito-android = "5.18.0"
 #org-jetbrains-kotlinx-coroutines-test = "1.10.2"
 
-#Realm
-io-realm-kotlin-library-base = "3.0.0"
+#Compose Navigation 3
+ax-navigation3-runtime = "1.0.0-alpha06"
+ax-navigation3-ui = "1.0.0-alpha06"
+ax-navigation3-viewmodel = "1.0.0-alpha04"
+#ax-navigation3-adaptive = "1.0.0-SNAPSHOT"
 
 #Room
 room-runtime = "2.7.2"
 room-compiler = "2.7.2"
 room-ktx = "2.7.2"
+room-paging = "2.7.2"
 room-testing = "2.7.2"
 
-#Koin
-io-insert-koin-bom = "4.1.0"
-io-insert-koin-compose = "4.1.0"
+#Dagger & Hilt
+hilt-android = "2.57"
+hilt-android-compiler = "2.57"
+hilt-common = "1.2.0"
+hilt-compiler = "1.2.0"
+ax-hilt-navigation-compose = "1.2.0"
+hilt-work = "1.2.0"
+hilt-android-testing = "2.57"
 
 #OkHttp
-okhttp-bom = "4.12.0"
+okhttp-bom = "5.1.0"
 
 #Moshi
 moshi-kotlin = "1.15.2"
@@ -72,18 +95,18 @@ retrofit2-converter-moshi = "3.0.0"
 retrofit2-converter-gson = "3.0.0"
 
 #Lifecycle
-ax-lifecycle-runtime-ktx = "2.9.1"
-ax-lifecycle-common = "2.9.1"
-ax-lifecycle-common-java8 = "2.9.1"
-ax-lifecycle-viewmodel-savedstate = "2.9.1"
-ax-lifecycle-livedata-ktx = "2.9.1"
-ax-lifecycle-viewmodel-ktx = "2.9.1"
+ax-lifecycle-runtime-ktx = "2.9.2"
+ax-lifecycle-common = "2.9.2"
+ax-lifecycle-common-java8 = "2.9.2"
+ax-lifecycle-viewmodel-savedstate = "2.9.2"
+ax-lifecycle-livedata-ktx = "2.9.2"
+ax-lifecycle-viewmodel-ktx = "2.9.2"
 
 #Lifecycle Extensions
 ax-lifecycle-extensions = "2.2.0"
 
 #Work
-ax-work-runtime-ktx = "2.10.2"
+ax-work-runtime-ktx = "2.10.3"
 
 #Documenfile
 ax-documentfile = "1.1.0"
@@ -105,23 +128,31 @@ ax-splashscreen = "1.0.1"
 #ax-profileinstaller = "1.4.1"
 
 #App Search
-ax-appsearch = "1.1.0-rc01"
-ax-appsearch-compiler = "1.1.0-rc01"
-ax-appsearch-local-storage = "1.1.0-rc01"
+ax-appsearch = "1.1.0"
+ax-appsearch-compiler = "1.1.0"
+ax-appsearch-local-storage = "1.1.0"
 
 #Startup
 ax-startup-runtime = "1.2.0"
 
-#Play Services Auth
-play-services-auth = "21.3.0"
-play-services-auth-api-phone = "18.2.0"
+#Apache Commons Compress
+org-apache-commons-compress = "1.28.0"
 
+#Rar files
+org-github-junrar = "7.5.5"
+
+#App Update
 com-google-android-play-app-update = "2.1.0"
 
+#Ads
+play-services-ads-api = "24.5.0"
+
+#Messaging Platform
+com-google-android-ump-messaging-platform = "3.2.0"
+
 #Other
-clarity-compose = "3.4.0"
+clarity-compose = "3.4.3"
 com-google-auto-value = "1.11.0"
-play-services-ads = "24.4.0"
 io-coil-kt-coil-compose = "2.7.0"
 
 #Plugins
@@ -130,84 +161,109 @@ com-osacky-doctor = "0.11.0"
 org-jetbrains-kotlinx-kover = "0.9.1"
 
 #Common
-io-realm-kotlin = "3.0.0"
 com-google-devtools-ksp = "2.2.0-2.0.2"
-
 
 [libraries]
 
 #build-logic
-android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
-kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
-ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "com-google-devtools-ksp" }
+android-gradle-plugin-library = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+kotlin-gradle-plugin-library = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradle-plugin-library = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "com-google-devtools-ksp" }
 
 #Project build.gradle
-google-services = { module = "com.google.gms:google-services", version.ref = "google-services" }
-firebase-crashlytics-gradle = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "firebase-crashlytics-gradle" }
-perf-plugin = { module = "com.google.firebase:perf-plugin", version.ref = "perf-plugin" }
+google-services-library = { module = "com.google.gms:google-services", version.ref = "google-services" }
+firebase-crashlytics-gradle-library = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "firebase-crashlytics-gradle" }
+perf-plugin-library = { module = "com.google.firebase:perf-plugin", version.ref = "perf-plugin" }
+firebase-appdistribution-gradle-library = { module = "com.google.firebase:firebase-appdistribution-gradle", version.ref = "firebase-appdistribution-gradle" } # Added
 
 #Common
 ax-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 com-google-android-material = { module = "com.google.android.material:material", version.ref = "material" }
+ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "ui-text-google-fonts" }
 
 #Common Testing
 junit = { module = "junit:junit", version.ref = "junit" }
 ax-test-ext-junit-ktx = { module = "androidx.test.ext:junit-ktx", version.ref = "junit-ktx" }
 ax-test-rules = { module = "androidx.test:rules", version.ref = "ax-test-rules" }
 ax-test-runner = { module = "androidx.test:runner", version.ref = "ax-test-runner" }
-ax-test-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
-ax-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark-macro-junit4" }
+ax-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiautomator" }
+ax-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark-macro-junit4" }
+
+#Unit Tests
+org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "org-jetbrains-kotlinx-coroutines-test" }
+org-mockito-core = { module = "org.mockito:mockito-core", version.ref = "org-mockito-core" }
+org-mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "org-mockito-inline" }
+org-mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "org-mockito-kotlin" }
+app-cash-turbine = { module = "app.cash.turbine:turbine", version.ref = "app-cash-turbine" }
+androidx-paging-common = { module = "androidx.paging:paging-common-ktx", version.ref = "androidx-paging-common" }
+com-google-truth = { module = "com.google.truth:truth", version.ref = "com-google-truth" }
 
 #Firebase
 com-google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
-com-google-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx" }
-com-google-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx" }
-com-google-firebase-perf-ktx = { module = "com.google.firebase:firebase-perf-ktx" }
-com-google-firebase-config-ktx = { module = "com.google.firebase:firebase-config-ktx" }
+com-google-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
+com-google-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+com-google-firebase-perf = { module = "com.google.firebase:firebase-perf" }
+com-google-firebase-config = { module = "com.google.firebase:firebase-config" }
+com-google-firebase-appcheck = { module = "com.google.firebase:firebase-appcheck" }
+com-google-firebase-appcheck-playintegrity = { module = "com.google.firebase:firebase-appcheck-playintegrity" }
 
 #Timber
 com-jakewharton-timber = { module = "com.jakewharton.timber:timber", version.ref = "com-jakewharton-timber" }
 
 #Compose
-ax-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
-ax-compose-ui = { group = "androidx.compose.ui", name = "ui" }
-ax-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-ax-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-ax-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-ax-compose-ui-viewbinding = { group = "androidx.compose.ui", name = "ui-viewbinding" }
-ax-compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
-ax-compose-runtime-rxjava3 = { group = "androidx.compose.runtime", name = "runtime-rxjava3" }
-ax-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
-ax-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
-ax-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
-ax-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "ax-constraintlayout-compose" }
-ax-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "ax-activity-compose" }
-ax-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle-viewmodel-compose" }
-ax-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "ax-navigation-compose" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+ax-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+ax-compose-ui = { module = "androidx.compose.ui:ui" }
+ax-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
+ax-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+ax-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+ax-compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding" }
+ax-compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata" }
+ax-compose-runtime-rxjava3 = { module = "androidx.compose.runtime:runtime-rxjava3" }
+ax-compose-material3 = { module = "androidx.compose.material3:material3" }
+ax-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
+ax-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
+ax-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "ax-constraintlayout-compose" }
+ax-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "ax-activity-compose" }
+ax-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle-viewmodel-compose" }
+ax-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "ax-navigation-compose" }
+ax-paging-runtime-ktx = { module = "androidx.paging:paging-runtime-ktx", version.ref = "ax-paging-runtime-ktx" }
+ax-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "ax-paging-compose" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 
 #Compose Testing
 ax-compose-ui-test = { module = "androidx.compose.ui:ui-test" }
 ax-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 ax-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 org-mockito-android = { module = "org.mockito:mockito-android", version.ref = "org-mockito-android" }
-#org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "org-jetbrains-kotlinx-coroutines-test" }
+#org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "org-jetbrains-kotlinx-coroutines-test" } # This is an old commented one, we added a new one under #Unit Tests
 
-#Realm
-io-realm-kotlin-library-base = { module = "io.realm.kotlin:library-base", version.ref = "io-realm-kotlin-library-base" }
+#Compose Navigation 3
+##Core Navigation 3 libraries
+ax-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "ax-navigation3-runtime" }
+ax-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "ax-navigation3-ui" }
+
+##Optional add-on libraries for ViewModel integration and adaptive layouts
+ax-navigation3-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "ax-navigation3-viewmodel" }
+#ax-navigation3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive-navigation3", version.ref = "ax-navigation3-adaptive" }
 
 #Room
 ax-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room-runtime" }
 ax-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room-compiler" }
 ax-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room-ktx" }
+ax-room-paging = { module = "androidx.room:room-paging", version.ref = "room-paging" }
 #Room Testing
 ax-room-testing = { module = "androidx.room:room-testing", version.ref = "room-testing" }
 
-#Koin
-io-insert-koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "io-insert-koin-bom" }
-io-insert-koin-core = { module = "io.insert-koin:koin-core" }
-io-insert-koin-android = { module = "io.insert-koin:koin-android" }
-io-insert-koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "io-insert-koin-compose" }
+#Dagger & Hilt
+com-google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
+com-google-dagger-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt-android-compiler" }
+ax-hilt-common = { module = "androidx.hilt:hilt-common", version.ref = "hilt-common" }
+ax-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt-compiler" }
+ax-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "ax-hilt-navigation-compose" }
+ax-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hilt-work" }
+
+#Dagger & Hilt Testing
+com-google-dagger-hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt-android-testing" }
 
 #OkHttp
 com-squareup-okhttp3-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp-bom" }
@@ -238,7 +294,7 @@ ax-lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", 
 #Work
 ax-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "ax-work-runtime-ktx" }
 
-#Documentfile
+#Documenfile
 ax-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "ax-documentfile" }
 
 #RecyclerView
@@ -259,38 +315,41 @@ ax-appsearch-local-storage = { module = "androidx.appsearch:appsearch-local-stor
 #Splashscreen
 ax-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "ax-splashscreen" }
 
-#Profile Installer
-#ax-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "ax-profileinstaller" }
-
-#Play Services Auth
-com-google-android-gms-play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-auth" }
-
-#Play Services Auth APi Phone
-com-google-android-gms-play-services-auth-api-phone = { module = "com.google.android.gms:play-services-auth-api-phone", version.ref = "play-services-auth-api-phone" }
-
+#App Update
 com-google-android-play-app-update = { module = "com.google.android.play:app-update", version.ref = "com-google-android-play-app-update" }
+
+#Ads
+play-services-ads-api = { module = "com.google.android.gms:play-services-ads-api", version.ref = "play-services-ads-api" }
+
+#Messaging Platform
+com-google-android-ump-messaging-platform = { module = "com.google.android.ump:user-messaging-platform", version.ref = "com-google-android-ump-messaging-platform" }
 
 #Startup
 ax-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "ax-startup-runtime" }
+
+#Apache Commons Compress
+org-apache-commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "org-apache-commons-compress" }
+
+#Rar files
+org-github-junrar = { module = "com.github.junrar:junrar", version.ref = "org-github-junrar" }
 
 #Other
 com-microsoft-clarity-compose = { module = "com.microsoft.clarity:clarity-compose", version.ref = "clarity-compose" }
 
 com-google-auto-value = { module = "com.google.auto.value:auto-value", version.ref = "com-google-auto-value" }
 
-play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services-ads" }
-
 io-coil-kt-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "io-coil-kt-coil-compose" }
-
 
 [plugins]
 
 #Root build.gradle
 com-osacky-doctor = { id = "com.osacky.doctor", version.ref = "com-osacky-doctor" }
 org-jetbrains-kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "org-jetbrains-kotlinx-kover" }
+firebase-appdistribution-gradle = { id = "com.google.firebase.appdistribution", version.ref = "firebase-appdistribution-gradle" } # Added
 
 #Common
 com-android-application = { id = "com.android.application", version.ref = "gradle" }
+com-android-library = { id = "com.android.library", version.ref = "gradle" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
@@ -298,6 +357,9 @@ com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "com-g
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
 firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebase-perf-gradle" }
-io-realm-kotlin = { id = "io.realm.kotlin", version.ref = "io-realm-kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-#ax-baselineprofile = { id = "androidx.baselineprofile", version.ref = "ax-baselineprofile" }
+androidx-room = { id = "androidx.room", version.ref = "androidx-room" }
+
+#Project build.gradle
+hilt-android-gradle-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android-gradle-plugin" }
+

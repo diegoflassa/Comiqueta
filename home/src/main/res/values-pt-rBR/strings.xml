@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">Comiqueta</string>
+
+    <!-- Top App Bar -->
+    <string name="top_bar_settings_icon_desc">Configurações</string>
+    <string name="search_comics_placeholder">Buscar quadrinhos…</string>
+    <!-- Corrected/Ensured Key from HomeScreen.kt -->
+    <string name="search_icon_description">Ícone de busca</string>
+    <string name="view_as_list_description">Visualizar como lista</string>
+    <string name="view_as_grid_description">Visualizar como grid</string>
+
+    <!-- Categories -->
+    <string name="category_all">Todos</string>
+
+    <!-- Sections -->
+    <string name="section_title_favorites">Favoritos</string> <!-- Seção geral de "Favoritos" -->
+    <string name="latest_comics_section_title">Últimos Quadrinhos</string>
+    <string name="favorite_comics_section_title">Seus Favoritos</string> <!-- Específico para seção HomeScreen -->
+    <string name="results_section_title">Resultados</string>
+    <string name="all_comics_section_title">Todos os Quadrinhos</string>
+
+    <!-- Comic Item States -->
+    <string name="missing_cover_for_comic">Capa faltando para %s</string>
+    <string name="error_loading_cover_for_comic">Erro ao carregar capa para %s</string>
+    <string name="comic_cover_image_description">Capa do quadrinho</string>
+    <string name="unknown_title">Título Desconhecido</string>
+    <string name="favorite_icon_description">Favorito</string>
+
+    <!-- Loading & Error States -->
+    <string name="error_loading_comics_message">Erro ao carregar quadrinhos: %s</string>
+    <string name="error_unknown">Erro desconhecido</string><string name="button_retry">Tentar Novamente</string>
+    <string name="error_loading_more_comics_message">Erro ao carregar mais: %s</string>
+    <string name="no_comics_found_for_search">Nenhum quadrinho corresponde à sua busca ou filtro.</string>
+
+    <!-- Empty State (General) -->
+    <string name="empty_state_title_no_comics">Nenhum quadrinho encontrado.</string>
+    <string name="empty_state_message_add_folder">Adicione uma pasta para começar a navegar na sua coleção.</string>
+    <!-- <string name="button_add_folder">Adicionar Pasta</string> -->
+
+    <!-- Empty State (from HomeScreen.kt EmptyStateContent directly) -->
+    <string name="empty_state_title">Nada aqui ainda!</string>
+    <string name="empty_state_message">Comece adicionando suas pastas de quadrinhos.</string>
+    <string name="add_folder_button">Adicionar Pasta</string>
+
+    <!-- FAB (Main FAB in HomeBottomAppBar) -->
+    <string name="add_fab_description">Adicionar Pasta</string>
+
+    <!-- Bottom Navigation -->
+    <string name="bottom_nav_home">Início</string>
+    <string name="bottom_nav_catalog">Catálogo</string>
+    <string name="bottom_nav_bookmarks">Salvos</string>
+    <string name="bottom_nav_favorites">Favoritos</string>
+    <string name="bottom_nav_library">Biblioteca</string>
+    <string name="home_section_collapse">Recolher seção</string>
+    <string name="home_section_expand">Expandir seção</string>
+
+</resources>

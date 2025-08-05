@@ -2,10 +2,27 @@ import dev.diegoflassa.buildLogic.Configuracoes
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import java.io.FileInputStream
 import java.util.Properties
+import java.io.File // Ensure File is imported
+
+// Get the names of the tasks Gradle was requested to run
+val requestedTaskNames = gradle.startParameter.taskNames
+
+// Determine if an assembleDebug or assembleRelease task is among them
+val isAssembleTask = requestedTaskNames.any { taskName ->
+    // Check if the task name contains "assembleDebug" or "assembleRelease"
+    taskName.contains("assembleDebug", ignoreCase = true) ||
+            taskName.contains("assembleRelease", ignoreCase = true)
+}
+
+// Call the initialization method from Configuracoes.
+Configuracoes.incrementBuildCount(rootProject.rootDir, isAssembleTask)
 
 plugins {
+    //alias(libs.plugins.com.android.application)
     id("com.android.application")
+    //alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.android")
+    //alias(libs.plugins.com.google.devtools.ksp)
     id("com.google.devtools.ksp")
 }
 
@@ -22,6 +39,9 @@ android {
     compileSdk = Configuracoes.COMPILE_SDK
     buildToolsVersion = Configuracoes.BUILD_TOOLS_VERSION
 
+    println("Setted versionCode to: ${Configuracoes.VERSION_CODE}")
+    println("Setted versionName to: ${Configuracoes.VERSION_NAME}")
+
     defaultConfig {
         applicationId = Configuracoes.APPLICATION_ID
         minSdk = Configuracoes.MINIMUM_SDK
@@ -29,7 +49,6 @@ android {
         versionCode = Configuracoes.VERSION_CODE
         versionName = Configuracoes.VERSION_NAME
         multiDexEnabled = true
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -54,31 +73,22 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro" // This file should be in each module that uses this convention (e.g., app/proguard-rules.pro)
+                "proguard-rules.pro"
             )
-            // Apply signing config only if it's properly configured
             if (keystoreProperties.getProperty("KEYSTORE_FILE") != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+        debug {}
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_21.toString()
-    }
+
     buildFeatures {
         compose = true
-    }
-
-    testOptions {
-        @Suppress("UnstableApiUsage")
-        emulatorSnapshots {
-            compressSnapshots = true
-        }
     }
 
     ksp {
@@ -96,25 +106,20 @@ android {
         }
     }
 
-    val globalBuildCount = Configuracoes.buildCount(project.rootDir)
-    println("Calculated Global Build Count: $globalBuildCount")
     applicationVariants.all {
         val variant = this
 
-        // APK renaming logic
         variant.outputs.all {
             val output = this
             val apkName = Configuracoes.buildAppName(
                 variant.name,
-                variant.versionName,
-                globalBuildCount
+                variant.versionName
             ) + ".apk"
             println("Set APK file name to: $apkName")
             val outputImpl = output as BaseVariantOutputImpl
             outputImpl.setOutputFileName(apkName)
         }
 
-        // AAB renaming logic
         val capitalizedVariantName = variant.name.replaceFirstChar { it.uppercaseChar() }
         val bundleTaskName = "bundle${capitalizedVariantName}"
         tasks.named(bundleTaskName) {
@@ -123,13 +128,13 @@ android {
                     file("${rootProject.layout.buildDirectory.get().asFile}/apk/${variant.name}")
 
                 val generatedAab =
-                    outputBundleDir.listFiles { _, name -> name.endsWith(".aab") }?.firstOrNull()
+                    outputBundleDir.listFiles { _, name -> name.endsWith(".aab") }
+                        ?.firstOrNull()
 
                 if (generatedAab != null && generatedAab.exists()) {
                     val newAabName = Configuracoes.buildAppName(
                         variant.name,
-                        variant.versionName,
-                        globalBuildCount
+                        variant.versionName
                     ) + ".aab"
 
                     val renamedFile = File(generatedAab.parentFile, newAabName)

@@ -1,0 +1,21 @@
+<resources>
+    <string name="no_app_to_open_folder">Nenhum app encontrado para abrir a pasta.</string>
+    <string name="settings_title">Configurações</string>
+    <string name="action_back">Voltar</string>
+    <string name="settings_section_permissions_title">Permissões do Aplicativo</string>
+    <string name="settings_permissions_none_required">Nenhuma permissão especial desta lista é necessária para esta versão do Android.</string>
+    <string name="settings_permission_read_external_storage_rationale_extended">A permissão \'Ler Armazenamento Externo\' é necessária em versões mais antigas do Android para que o aplicativo selecione a pasta da sua biblioteca de quadrinhos e escaneie seu conteúdo. Se você negar a permissão, não poderá selecionar uma pasta. Você sempre pode gerenciar as permissões nas Configurações do Aplicativo.</string>
+    <string name="settings_section_monitored_folders_title">Pastas de Quadrinhos Monitoradas</string>
+    <string name="settings_monitored_folders_empty">Nenhuma pasta de quadrinhos está sendo monitorada no momento. Adicione pastas na tela principal.</string>
+    <string name="settings_permission_status_granted">Concedida</string>
+    <string name="settings_button_app_settings">Config. do App</string>
+    <string name="settings_button_grant_permission">Conceder</string>
+    <string name="settings_permission_denied_permanently_message">Permissão negada. Para habilitar este recurso, por favor, conceda a permissão nas Configurações do Aplicativo.</string>
+    <string name="settings_remove_folder_action_desc">Remover pasta</string>
+    <string name="settings_manage_categories_title">Gerenciar Categorias</string>
+    <string name="settings_manage_categories_description">Visualizar, criar, editar ou excluir categorias de quadrinhos</string>
+    <string name="settings_manage_categories_icon_desc">Ícone de gerenciar categorias</string>
+    <string name="settings_privacy_title">Configurações de Privacidade</string>
+    <string name="settings_privacy_description">Gerencie suas preferências de anúncios e consentimento de dados.</string>
+    <string name="settings_privacy_icon_desc">Ícone de configurações de privacidade</string>
+</resources>

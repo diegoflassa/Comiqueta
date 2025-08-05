@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="CLARITY_ID" translatable="false">YOUR_CLARITY_ID</string>
     <string name="ENABLE_ADS" translatable="false">true</string>
     <string name="APP_ADS_ID" translatable="false">YOUR_ADMOB_APP_ID</string>
     <string name="ADMOB_ID" translatable="false">YOUR_ADMOB_ID</string>
