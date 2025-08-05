@@ -89,7 +89,7 @@ import dev.diegoflassa.comiqueta.ui.widgets.ComicListItem
 import dev.diegoflassa.comiqueta.ui.widgets.EmptyStateContent
 import dev.diegoflassa.comiqueta.ui.widgets.HomeBottomAppBar
 import dev.diegoflassa.comiqueta.ui.widgets.HorizontalComicsRow
-import dev.diegoflassa.comiqueta.ui.widgets.HorizontalComicsRowPreview
+import dev.diegoflassa.comiqueta.ui.widgets.HorizontalComicsRowForPreview
 import dev.diegoflassa.comiqueta.ui.widgets.SectionHeader
 import kotlinx.coroutines.flow.flowOf
 
@@ -180,7 +180,7 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenContentPreview(
+fun HomeScreenContentForPreview(
     modifier: Modifier = Modifier,
     comics: List<Comic>,
     latestComics: List<Comic>,
@@ -257,7 +257,7 @@ fun HomeScreenContentPreview(
                 }
 
                 else -> {
-                    ComicsContentPreview(
+                    ComicsContentForPreview(
                         comics = comics,
                         latestComics = latestComics,
                         favoriteComics = favoriteComics,
@@ -412,7 +412,7 @@ fun HomeScreenContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ComicsContentPreview(
+fun ComicsContentForPreview(
     // For Previews with List<Comic>
     modifier: Modifier = Modifier,
     comics: List<Comic>,
@@ -495,7 +495,7 @@ fun ComicsContentPreview(
             }
             if (latestComicsExpanded) {
                 item {
-                    HorizontalComicsRowPreview(comics = latestComics, onIntent = onIntent)
+                    HorizontalComicsRowForPreview(comics = latestComics, onIntent = onIntent)
                     Spacer(modifier = Modifier.height(16.dp.scaled()))
                 }
             }
@@ -512,7 +512,7 @@ fun ComicsContentPreview(
             }
             if (favoriteComicsExpanded) {
                 item {
-                    HorizontalComicsRowPreview(comics = favoriteComics, onIntent = onIntent)
+                    HorizontalComicsRowForPreview(comics = favoriteComics, onIntent = onIntent)
                     Spacer(modifier = Modifier.height(16.dp.scaled()))
                 }
             }
@@ -943,7 +943,7 @@ private fun BottomAppBarPreviewTablet() {
 @Composable
 private fun HomeScreenContentWithComicsGridPreviewPhone() {
     ComiquetaThemeContent {
-        HomeScreenContentPreview(
+        HomeScreenContentForPreview(
             comics = sampleComics,
             latestComics = sampleComics.filter { it.isNew },
             favoriteComics = sampleComics.filter { it.isFavorite },
@@ -966,7 +966,7 @@ private fun HomeScreenContentWithComicsGridPreviewPhone() {
 @Composable
 private fun HomeScreenContentWithComicsListPreviewPhone() {
     ComiquetaThemeContent {
-        HomeScreenContentPreview(
+        HomeScreenContentForPreview(
             comics = sampleComics,
             latestComics = sampleComics.filter { it.isNew },
             favoriteComics = sampleComics.filter { it.isFavorite },
@@ -990,7 +990,7 @@ private fun HomeScreenContentWithComicsListPreviewPhone() {
 @Composable
 private fun HomeScreenContentWithComicsGridPreviewFoldable() {
     ComiquetaThemeContent {
-        HomeScreenContentPreview(
+        HomeScreenContentForPreview(
             comics = sampleComics,
             latestComics = sampleComics.filter { it.isNew },
             favoriteComics = sampleComics.filter { it.isFavorite },
@@ -1013,7 +1013,7 @@ private fun HomeScreenContentWithComicsGridPreviewFoldable() {
 @Composable
 private fun HomeScreenContentWithComicsListPreviewFoldable() {
     ComiquetaThemeContent {
-        HomeScreenContentPreview(
+        HomeScreenContentForPreview(
             comics = sampleComics,
             latestComics = sampleComics.filter { it.isNew },
             favoriteComics = sampleComics.filter { it.isFavorite },
@@ -1037,7 +1037,7 @@ private fun HomeScreenContentWithComicsListPreviewFoldable() {
 @Composable
 private fun HomeScreenContentWithComicsGridPreviewTablet() {
     ComiquetaThemeContent {
-        HomeScreenContentPreview(
+        HomeScreenContentForPreview(
             comics = sampleComics,
             latestComics = sampleComics.filter { it.isNew },
             favoriteComics = sampleComics.filter { it.isFavorite },
@@ -1060,7 +1060,7 @@ private fun HomeScreenContentWithComicsGridPreviewTablet() {
 @Composable
 private fun HomeScreenContentWithComicsListPreviewTablet() {
     ComiquetaThemeContent {
-        HomeScreenContentPreview(
+        HomeScreenContentForPreview(
             comics = sampleComics,
             latestComics = sampleComics.filter { it.isNew },
             favoriteComics = sampleComics.filter { it.isFavorite },
@@ -1085,7 +1085,7 @@ private fun HomeScreenContentWithComicsListPreviewTablet() {
 @Composable
 private fun HomeScreenContentLoadingPreview() {
     ComiquetaThemeContent {
-        HomeScreenContentPreview(
+        HomeScreenContentForPreview(
             comics = emptyList(),
             latestComics = emptyList(),
             favoriteComics = emptyList(),
@@ -1104,7 +1104,7 @@ private fun HomeScreenContentLoadingPreview() {
 @Composable
 private fun HomeScreenContentEmptyPreview() {
     ComiquetaThemeContent {
-        HomeScreenContentPreview(
+        HomeScreenContentForPreview(
             comics = emptyList(),
             latestComics = emptyList(),
             favoriteComics = emptyList(),
