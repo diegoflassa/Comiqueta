@@ -1,11 +1,13 @@
 package dev.diegoflassa.comiqueta.ui.widgets
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.PrimaryIndicator
@@ -23,12 +25,15 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.theme.tabSelectedText
 import dev.diegoflassa.comiqueta.core.theme.tabUnselectedText
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
@@ -117,5 +122,75 @@ fun CategoriesSection(
                 })
         }
 
+    }
+}
+
+// --- CategoriesSection Previews ---
+
+val sampleCategoriesForPreview = listOf(
+    CategoryEntity(id = 0, name = "All"),
+    CategoryEntity(id = 1, name = "Action"),
+    CategoryEntity(id = 2, name = "Comedy"),
+    CategoryEntity(id = 3, name = "Sci-Fi"),
+    CategoryEntity(id = 4, name = "Fantasy")
+)
+
+@PreviewScreenSizes
+@Preview(name = "CategoriesSection - All Selected - Dark", group = "CategoriesSection", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun CategoriesSectionAllSelectedPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            CategoriesSection(
+                categories = sampleCategoriesForPreview,
+                selectedCategory = sampleCategoriesForPreview.find { it.name == "All" },
+                onCategoryClicked = {}
+            )
+        }
+    }
+}
+
+@PreviewScreenSizes
+@Preview(name = "CategoriesSection - Comedy Selected - Dark", group = "CategoriesSection", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun CategoriesSectionComedySelectedPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            CategoriesSection(
+                categories = sampleCategoriesForPreview,
+                selectedCategory = sampleCategoriesForPreview.find { it.name == "Comedy" },
+                onCategoryClicked = {}
+            )
+        }
+    }
+}
+
+@PreviewScreenSizes
+@Preview(name = "CategoriesSection - No Selection (Defaults to First) - Dark", group = "CategoriesSection", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun CategoriesSectionNoSelectionPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            CategoriesSection(
+                categories = sampleCategoriesForPreview,
+                selectedCategory = null,
+                onCategoryClicked = {}
+            )
+        }
+    }
+}
+
+@PreviewScreenSizes
+@Preview(name = "CategoriesSection - Empty List - Dark", group = "CategoriesSection", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun CategoriesSectionEmptyPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            CategoriesSection(
+                categories = emptyList(),
+                selectedCategory = null,
+                onCategoryClicked = {}
+            )
+        }
     }
 }

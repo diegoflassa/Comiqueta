@@ -1,5 +1,6 @@
 package dev.diegoflassa.comiqueta.ui.widgets
 
+import android.content.res.Configuration
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,10 +28,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import dev.diegoflassa.comiqueta.core.data.model.Comic
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.home.R
 import dev.diegoflassa.comiqueta.ui.home.HomeIntent
@@ -88,6 +93,100 @@ fun ComicListItem(
                     modifier = Modifier.padding(start = 8.dp.scaled())
                 )
             }
+        }
+    }
+}
+
+// --- ComicCoverItem Previews ---
+private val sampleComicForCoverPreview = Comic(
+    filePath = Uri.EMPTY,
+    title = "The Amazing Adventures of Preview Man",
+    coverPath = Uri.EMPTY,
+    author = "AI Author",
+    categoryId = 1L,
+    isFavorite = false,
+    isNew = true,
+    hasBeenRead = false,
+    lastPageRead = 0,
+    lastModified = System.currentTimeMillis(),
+    created = System.currentTimeMillis() - 86400000L, // approx 1 day ago
+    pageCount = 22
+)
+
+// --- ComicListItem Previews ---
+private val sampleComicForListItemDefault = sampleComicForCoverPreview.copy(
+    title = "Journey to the Preview Zone",
+    author = "A. Writer",
+    isNew = false,
+    hasBeenRead = true,
+    lastPageRead = 10
+)
+
+private val sampleComicForListItemFavorite = sampleComicForCoverPreview.copy(
+    title = "The Favored One",
+    author = "B. Author",
+    isFavorite = true,
+    isNew = false
+)
+
+private val sampleComicForListItemLongTitleNoAuthor = sampleComicForCoverPreview.copy(
+    title = "The Incredibly Long and Winding Title of a Comic Book That Goes On And On And On",
+    author = null,
+    pageCount = 150
+)
+
+@PreviewScreenSizes
+@Preview(name = "ComicListItem - Default - Dark", group = "ComicListItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ComicListItemDefaultPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            ComicListItem(
+                comic = sampleComicForListItemDefault,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@PreviewScreenSizes
+@Preview(name = "ComicListItem - Favorite - Dark", group = "ComicListItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ComicListItemFavoritePreview() {
+    ComiquetaThemeContent {
+        Surface {
+            ComicListItem(
+                comic = sampleComicForListItemFavorite,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@PreviewScreenSizes
+@Preview(name = "ComicListItem - Long Title, No Author - Dark", group = "ComicListItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ComicListItemLongTitleNoAuthorPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            ComicListItem(
+                comic = sampleComicForListItemLongTitleNoAuthor,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@PreviewScreenSizes
+@Preview(name = "ComicListItem - Null Comic (Placeholder) - Dark", group = "ComicListItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ComicListItemNullPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            ComicListItem(
+                comic = null,
+                onIntent = {}
+            )
         }
     }
 }

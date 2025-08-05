@@ -227,7 +227,7 @@ val sampleCategoriesList = listOf(
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
-fun CategoriesScreenPreviewMainState() {
+private fun CategoriesScreenPreviewMainState() {
     ComiquetaThemeContent {
         CategoriesScreenContent(
             uiState = CategoriesUIState(categories = sampleCategoriesList.take(3)),
@@ -245,7 +245,7 @@ fun CategoriesScreenPreviewMainState() {
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
-fun CategoriesScreenPreviewWithDialog() {
+private fun CategoriesScreenPreviewWithDialog() {
     ComiquetaThemeContent {
         CategoriesScreenContent(
             uiState = CategoriesUIState(
@@ -267,7 +267,7 @@ fun CategoriesScreenPreviewWithDialog() {
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
-fun CategoriesContentPreviewWithData() {
+private fun CategoriesContentPreviewWithData() {
     ComiquetaThemeContent {
         CategoriesContent(
             categories = sampleCategoriesList,
@@ -288,7 +288,7 @@ fun CategoriesContentPreviewWithData() {
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
-fun CategoriesScreenPreviewEmptyState() {
+private fun CategoriesScreenPreviewEmptyState() {
     ComiquetaThemeContent {
         CategoriesScreenContent(
             uiState = CategoriesUIState(categories = emptyList()),
@@ -305,7 +305,7 @@ fun CategoriesScreenPreviewEmptyState() {
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
-fun CategoriesContentPreviewEmpty() {
+private fun CategoriesContentPreviewEmpty() {
     ComiquetaThemeContent {
         CategoriesContent(
             categories = emptyList(),
@@ -324,7 +324,7 @@ fun CategoriesContentPreviewEmpty() {
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
-fun CategoriesContentPreviewLoading() {
+private fun CategoriesContentPreviewLoading() {
     ComiquetaThemeContent {
         CategoriesContent(
             categories = emptyList(),
@@ -343,7 +343,7 @@ fun CategoriesContentPreviewLoading() {
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
-fun CategoriesContentPreviewError() {
+private fun CategoriesContentPreviewError() {
     ComiquetaThemeContent {
         CategoriesContent(
             categories = emptyList(),
@@ -363,7 +363,7 @@ fun CategoriesContentPreviewError() {
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
-fun CategoryEditDialogPreviewAdd() {
+private fun CategoryEditDialogPreviewAdd() {
     ComiquetaThemeContent {
         CategoryEditDialog(
             category = null,
@@ -383,7 +383,7 @@ fun CategoryEditDialogPreviewAdd() {
     device = "spec:width=1080px,height=2560px,dpi=440"
 )
 @Composable
-fun CategoryEditDialogPreviewEdit() {
+private fun CategoryEditDialogPreviewEdit() {
     ComiquetaThemeContent {
         CategoryEditDialog(
             category = sampleCategoriesList.first(),

@@ -1,5 +1,6 @@
 package dev.diegoflassa.comiqueta.ui.widgets
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -12,15 +13,19 @@ import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.theme.transparent
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.home.R
@@ -106,6 +111,48 @@ fun HomeBottomAppBar(
                 type = BottomNavItems.FAVORITES,
                 isSelected = uiState?.currentBottomNavItem == BottomNavItems.FAVORITES
             ) { onIntent?.invoke(HomeIntent.ShowFavoriteComics) }
+        }
+    }
+}
+
+// --- HomeBottomAppBar Previews ---
+@PreviewScreenSizes
+@Preview(name = "HomeBottomAppBar - Default - Dark", group = "HomeBottomAppBar", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HomeBottomAppBarDefaultPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            HomeBottomAppBar(
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@PreviewScreenSizes
+@Preview(name = "HomeBottomAppBar - Custom Height - Dark", group = "HomeBottomAppBar", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HomeBottomAppBarCustomHeightPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            HomeBottomAppBar(
+                bottomBarHeight = 72.dp,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+// --- EmptyStateContent Previews ---
+@PreviewScreenSizes
+@Preview(name = "EmptyStateContent - Dark", group = "EmptyStateContent", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun EmptyStateContentPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            EmptyStateContent(
+                onIntent = {}
+            )
         }
     }
 }

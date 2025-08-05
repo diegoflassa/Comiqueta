@@ -445,7 +445,7 @@ private fun createDummyBitmapForPreview(
 
 @PreviewScreenSizes
 @Composable
-fun ViewerScreenPreviewEmpty() {
+private fun ViewerScreenPreviewEmpty() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
@@ -462,7 +462,7 @@ fun ViewerScreenPreviewEmpty() {
 
 @PreviewScreenSizes
 @Composable
-fun ViewerScreenPreviewLoading() {
+private fun ViewerScreenPreviewLoading() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
@@ -479,7 +479,7 @@ fun ViewerScreenPreviewLoading() {
 
 @PreviewScreenSizes
 @Composable
-fun ViewerScreenPreviewWithComic() {
+private fun ViewerScreenPreviewWithComic() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
@@ -497,7 +497,7 @@ fun ViewerScreenPreviewWithComic() {
 
 @PreviewScreenSizes
 @Composable
-fun ViewerScreenPreviewWithError() {
+private fun ViewerScreenPreviewWithError() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(

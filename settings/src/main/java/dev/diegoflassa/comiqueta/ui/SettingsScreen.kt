@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.Settings
@@ -50,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -110,7 +112,11 @@ fun SettingsScreen(
             val permissionDisplayStatusMap = permissionsResultMapFromContract.mapValues { entry ->
                 val permission = entry.key
                 val isGranted = entry.value
-                val shouldShowRationale = !isGranted && ActivityCompat.shouldShowRequestPermissionRationale(currentActivity, permission)
+                val shouldShowRationale =
+                    !isGranted && ActivityCompat.shouldShowRequestPermissionRationale(
+                        currentActivity,
+                        permission
+                    )
                 PermissionDisplayStatus(
                     isGranted = isGranted,
                     shouldShowRationale = shouldShowRationale
@@ -460,7 +466,7 @@ private fun openAppSettings(context: Context) {
 
 @PreviewScreenSizes
 @Composable
-fun SettingsScreenPreview() {
+private fun SettingsScreenPreview() {
     ComiquetaThemeContent {
         SettingsScreenContent(
             uiState = SettingsUIState(
@@ -478,8 +484,15 @@ fun SettingsScreenPreview() {
 }
 
 @PreviewScreenSizes
+@Preview(
+    name = "Phone - Dark",
+    group = "Screen - With Data",
+    showBackground = true,
+    device = "spec:width=1080px,height=2560px,dpi=440",
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
-fun SettingsScreenPreviewDark() {
+private fun SettingsScreenPreviewDark() {
     ComiquetaThemeContent {
         SettingsScreenContent(
             uiState = SettingsUIState(
@@ -501,7 +514,7 @@ fun SettingsScreenPreviewDark() {
 
 @PreviewScreenSizes
 @Composable
-fun SettingsScreenPreviewEmpty() {
+private fun SettingsScreenPreviewEmpty() {
     ComiquetaThemeContent {
         SettingsScreenContent(
             uiState = SettingsUIState(
@@ -515,7 +528,7 @@ fun SettingsScreenPreviewEmpty() {
 
 @PreviewScreenSizes
 @Composable
-fun SettingsScreenPreviewLoading() {
+private fun SettingsScreenPreviewLoading() {
     ComiquetaThemeContent {
         SettingsScreenContent(
             uiState = SettingsUIState(

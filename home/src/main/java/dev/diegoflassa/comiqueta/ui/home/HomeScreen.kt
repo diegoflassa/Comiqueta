@@ -868,7 +868,7 @@ private val sampleCategories = listOf(
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun BottomAppBarPreviewPhone() {
+private fun BottomAppBarPreviewPhone() {
     ComiquetaThemeContent {
         Box(
             modifier = Modifier
@@ -892,7 +892,7 @@ fun BottomAppBarPreviewPhone() {
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun BottomAppBarPreviewFoldable() {
+private fun BottomAppBarPreviewFoldable() {
     ComiquetaThemeContent {
         Box(
             modifier = Modifier
@@ -916,7 +916,7 @@ fun BottomAppBarPreviewFoldable() {
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun BottomAppBarPreviewTablet() {
+private fun BottomAppBarPreviewTablet() {
     ComiquetaThemeContent {
         Box(
             modifier = Modifier
@@ -941,7 +941,7 @@ fun BottomAppBarPreviewTablet() {
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun HomeScreenContentWithComicsGridPreviewPhone() {
+private fun HomeScreenContentWithComicsGridPreviewPhone() {
     ComiquetaThemeContent {
         HomeScreenContentPreview(
             comics = sampleComics,
@@ -964,7 +964,7 @@ fun HomeScreenContentWithComicsGridPreviewPhone() {
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun HomeScreenContentWithComicsListPreviewPhone() {
+private fun HomeScreenContentWithComicsListPreviewPhone() {
     ComiquetaThemeContent {
         HomeScreenContentPreview(
             comics = sampleComics,
@@ -988,7 +988,7 @@ fun HomeScreenContentWithComicsListPreviewPhone() {
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun HomeScreenContentWithComicsGridPreviewFoldable() {
+private fun HomeScreenContentWithComicsGridPreviewFoldable() {
     ComiquetaThemeContent {
         HomeScreenContentPreview(
             comics = sampleComics,
@@ -1011,7 +1011,7 @@ fun HomeScreenContentWithComicsGridPreviewFoldable() {
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun HomeScreenContentWithComicsListPreviewFoldable() {
+private fun HomeScreenContentWithComicsListPreviewFoldable() {
     ComiquetaThemeContent {
         HomeScreenContentPreview(
             comics = sampleComics,
@@ -1035,7 +1035,7 @@ fun HomeScreenContentWithComicsListPreviewFoldable() {
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun HomeScreenContentWithComicsGridPreviewTablet() {
+private fun HomeScreenContentWithComicsGridPreviewTablet() {
     ComiquetaThemeContent {
         HomeScreenContentPreview(
             comics = sampleComics,
@@ -1058,7 +1058,7 @@ fun HomeScreenContentWithComicsGridPreviewTablet() {
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun HomeScreenContentWithComicsListPreviewTablet() {
+private fun HomeScreenContentWithComicsListPreviewTablet() {
     ComiquetaThemeContent {
         HomeScreenContentPreview(
             comics = sampleComics,
@@ -1083,7 +1083,7 @@ fun HomeScreenContentWithComicsListPreviewTablet() {
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun HomeScreenContentLoadingPreview() {
+private fun HomeScreenContentLoadingPreview() {
     ComiquetaThemeContent {
         HomeScreenContentPreview(
             comics = emptyList(),
@@ -1102,7 +1102,7 @@ fun HomeScreenContentLoadingPreview() {
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-fun HomeScreenContentEmptyPreview() {
+private fun HomeScreenContentEmptyPreview() {
     ComiquetaThemeContent {
         HomeScreenContentPreview(
             comics = emptyList(),
