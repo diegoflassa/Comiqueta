@@ -136,11 +136,14 @@ dependencies {
     implementation(libs.ax.appsearch.compiler)
     implementation(libs.ax.appsearch.local.storage)
 
+    //Apache Commons Compress
+    implementation(libs.org.apache.commons.compress)
+
     //Splashscreen
     implementation(libs.ax.core.splashscreen)
 
-    //Apache Commons Compress
-    implementation(libs.org.apache.commons.compress)
+    //Ads
+    implementation(libs.play.services.ads.api)
 
     //Rar File
     implementation(libs.org.github.junrar)

@@ -10,10 +10,12 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.diegoflassa.comiqueta.core.data.config.IConfig
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
@@ -42,6 +44,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val applicationContext: Application,
+    val config: IConfig,
     private val getPaginatedComicsUseCase: IGetPaginatedComicsUseCase,
     private val loadCategoriesUseCase: ILoadCategoriesUseCase,
     private val comicsFolderRepository: IComicsFolderRepository,
@@ -90,17 +93,19 @@ class HomeViewModel @Inject constructor(
                 // Launch fetching of all three lists concurrently
                 async {
                     getPaginatedComicsUseCase(
-                        PaginatedComicsParams( // Use the imported top-level Params
+                        PaginatedComicsParams(
                             categoryId = sanitizedCategory,
                             flags = flags
                         )
-                    ).catch { e ->
-                        TimberLogger.logE("HomeViewModel", "Error loading main comics", e)
-                        _effect.send(HomeEffect.ShowToast("Error loading comics: ${e.message}"))
-                        emit(PagingData.empty())
-                    }.collectLatest {
-                        _comicsFlow.value = it
-                    }
+                    )
+                        .cachedIn(viewModelScope)
+                        .catch { e ->
+                            TimberLogger.logE("HomeViewModel", "Error loading main comics", e)
+                            _effect.send(HomeEffect.ShowToast("Error loading comics: ${e.message}"))
+                            emit(PagingData.empty())
+                        }.collectLatest {
+                            _comicsFlow.value = it
+                        }
                 }
 
                 async {
@@ -110,13 +115,15 @@ class HomeViewModel @Inject constructor(
                                 ComicFlags.NEW
                             )
                         )
-                    ).catch { e ->
-                        TimberLogger.logE("HomeViewModel", "Error loading latest comics", e)
-                        _effect.send(HomeEffect.ShowToast("Error loading latest comics: ${e.message}"))
-                        emit(PagingData.empty())
-                    }.collectLatest {
-                        _latestComicsFlow.value = it
-                    }
+                    )
+                        .cachedIn(viewModelScope)
+                        .catch { e ->
+                            TimberLogger.logE("HomeViewModel", "Error loading latest comics", e)
+                            _effect.send(HomeEffect.ShowToast("Error loading latest comics: ${e.message}"))
+                            emit(PagingData.empty())
+                        }.collectLatest {
+                            _latestComicsFlow.value = it
+                        }
                 }
 
                 async {
@@ -126,13 +133,15 @@ class HomeViewModel @Inject constructor(
                                 ComicFlags.FAVORITE
                             )
                         )
-                    ).catch { e ->
-                        TimberLogger.logE("HomeViewModel", "Error loading favorite comics", e)
-                        _effect.send(HomeEffect.ShowToast("Error loading favorite comics: ${e.message}"))
-                        emit(PagingData.empty())
-                    }.collectLatest {
-                        _favoriteComicsFlow.value = it
-                    }
+                    )
+                        .cachedIn(viewModelScope)
+                        .catch { e ->
+                            TimberLogger.logE("HomeViewModel", "Error loading favorite comics", e)
+                            _effect.send(HomeEffect.ShowToast("Error loading favorite comics: ${e.message}"))
+                            emit(PagingData.empty())
+                        }.collectLatest {
+                            _favoriteComicsFlow.value = it
+                        }
                 }
 
             } catch (e: CancellationException) {
@@ -416,8 +425,12 @@ class HomeViewModel @Inject constructor(
                             }
 
                             WorkInfo.State.FAILED -> {
-                                val errorMessage = workInfo.outputData.getString(SafFolderScanWorker.KEY_ERROR_MESSAGE)
-                                TimberLogger.logW("HomeViewModel", "Folder scan FAILED. Worker message: $errorMessage")
+                                val errorMessage =
+                                    workInfo.outputData.getString(SafFolderScanWorker.KEY_ERROR_MESSAGE)
+                                TimberLogger.logW(
+                                    "HomeViewModel",
+                                    "Folder scan FAILED. Worker message: $errorMessage"
+                                )
                                 FirebaseCrashlytics.getInstance()
                                     .recordException(Exception("Worker FAILED: ${errorMessage ?: "No specific message."} Raw output: ${workInfo.outputData.keyValueMap}"))
                                 _effect.send(HomeEffect.ShowToast(errorMessage ?: "Scan failed."))

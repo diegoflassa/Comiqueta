@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -76,12 +77,14 @@ import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
+import dev.diegoflassa.comiqueta.core.data.config.IConfig
 import dev.diegoflassa.comiqueta.core.data.extensions.toDp
 import dev.diegoflassa.comiqueta.core.data.model.Comic
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.theme.getOutlinedTextFieldDefaultsColors
 import dev.diegoflassa.comiqueta.core.theme.settingIconTint
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
+import dev.diegoflassa.comiqueta.core.ui.widgets.BannerAdView
 import dev.diegoflassa.comiqueta.ui.enums.ViewMode
 import dev.diegoflassa.comiqueta.ui.widgets.CategoriesSection
 import dev.diegoflassa.comiqueta.ui.widgets.ComicCoverItem
@@ -94,6 +97,8 @@ import dev.diegoflassa.comiqueta.ui.widgets.SectionHeader
 import kotlinx.coroutines.flow.flowOf
 
 const val COMIC_COVER_ASPECT_RATIO = 2f / 3f
+
+private val bannerAdExpectedHeight = 50.dp
 
 private const val tag = "HomeScreen"
 
@@ -170,6 +175,7 @@ fun HomeScreen(
         TimberLogger.logD("Comics LoadState", "${favoriteComics.loadState}")
     }
     HomeScreenContent(
+        config = homeViewModel.config,
         comics = comics,
         latestComics = latestComics,
         favoriteComics = favoriteComics,
@@ -182,13 +188,14 @@ fun HomeScreen(
 @Composable
 fun HomeScreenContentForPreview(
     modifier: Modifier = Modifier,
+    config: IConfig? = null,
     comics: List<Comic>,
     latestComics: List<Comic>,
     favoriteComics: List<Comic>,
     uiState: HomeUIState,
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
-    val fabDiameter = ComiquetaTheme.dimen.fabDiameter
+    val fabDiameter = ComiquetaTheme.dimen.fabDiameter.scaled()
     val bottomBarHeight = ComiquetaTheme.dimen.bottomBarHeight.scaled()
     val isEmpty =
         (comics.isEmpty()) && uiState.searchQuery.isBlank() && uiState.selectedCategory == null && uiState.isLoading.not()
@@ -266,21 +273,32 @@ fun HomeScreenContentForPreview(
                     )
                 }
             }
-
-            HomeBottomAppBar(
+            var showAds by remember { mutableStateOf(true) }
+            Column(
                 modifier = Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth()
                     .align(Alignment.BottomCenter),
-                uiState = uiState,
-                bottomBarHeight = bottomBarHeight,
-                onIntent = onIntent
-            )
+            ) {
+                HomeBottomAppBar(
+
+                    uiState = uiState,
+                    bottomBarHeight = bottomBarHeight,
+                    onIntent = onIntent
+                )
+                if (showAds && config != null) {
+                    BannerAdView(
+                        adUnitId = config.addBannerId
+                    )
+                }
+            }
 
             ExtendedFloatingActionButton(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .zIndex(1F)
                     .size(fabDiameter)
-                    .offset(y = (-17).dp.scaled()),
+                    .offset(y = -17.dp.scaled()),
                 onClick = { onIntent?.invoke(HomeIntent.AddFolderClicked) },
                 shape = CircleShape,
             ) {
@@ -298,6 +316,7 @@ fun HomeScreenContentForPreview(
 @Composable
 fun HomeScreenContent(
     modifier: Modifier = Modifier,
+    config: IConfig? = null,
     comics: LazyPagingItems<Comic>,
     latestComics: LazyPagingItems<Comic>,
     favoriteComics: LazyPagingItems<Comic>,
@@ -383,20 +402,38 @@ fun HomeScreenContent(
                 }
             }
 
-            HomeBottomAppBar(
+            var showAds by remember { mutableStateOf(true) }
+            Column(
                 modifier = Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth()
                     .align(Alignment.BottomCenter),
-                uiState = uiState,
-                bottomBarHeight = bottomBarHeight,
-                onIntent = onIntent
-            )
+            ) {
+                HomeBottomAppBar(
+
+                    uiState = uiState,
+                    bottomBarHeight = bottomBarHeight,
+                    onIntent = onIntent
+                )
+                if (showAds && config != null) {
+                    BannerAdView(
+                        adUnitId = config.addBannerId
+                    )
+                }
+            }
+
+            val fabOffset = if (showAds) {
+                17.dp.scaled() + bannerAdExpectedHeight
+            } else {
+                17.dp.scaled()
+            }
 
             ExtendedFloatingActionButton(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .zIndex(1F)
                     .size(fabDiameter)
-                    .offset(y = (-17).dp.scaled()),
+                    .offset(y = -fabOffset),
                 onClick = { onIntent?.invoke(HomeIntent.AddFolderClicked) },
                 shape = CircleShape,
             ) {
@@ -413,7 +450,6 @@ fun HomeScreenContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ComicsContentForPreview(
-    // For Previews with List<Comic>
     modifier: Modifier = Modifier,
     comics: List<Comic>,
     latestComics: List<Comic>,
@@ -596,7 +632,7 @@ fun ComicsContentForPreview(
             }
         }
 
-        item { // Spacer for BottomAppBar and FAB
+        item {
             Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.bottomBarHeight.scaled() + ComiquetaTheme.dimen.fabDiameter.scaled() / 2))
         }
     }
@@ -792,7 +828,7 @@ fun ComicsContent(
             }
         }
 
-        item { // Spacer for BottomAppBar and FAB
+        item {
             Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.bottomBarHeight.scaled() + ComiquetaTheme.dimen.fabDiameter.scaled() / 2))
         }
     }
