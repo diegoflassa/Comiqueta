@@ -14,7 +14,7 @@ object Configuracoes {
     const val TARGET_SDK = 36
     const val BUILD_TOOLS_VERSION = "36.0.0"
 
-    private var buildCountValue: Int = -1
+    private var buildCountValue: Int = 0
     private var initialized = false
 
     /**
