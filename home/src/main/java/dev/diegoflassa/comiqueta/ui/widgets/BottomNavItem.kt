@@ -28,7 +28,6 @@ import dev.diegoflassa.comiqueta.core.theme.bottomAppBarUnselectedText
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.ui.enums.BottomNavItems
 
-
 @Composable
 fun BottomNavItem(
     modifier: Modifier = Modifier,

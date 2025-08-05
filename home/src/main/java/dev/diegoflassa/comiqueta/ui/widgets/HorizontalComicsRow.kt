@@ -17,6 +17,7 @@ import dev.diegoflassa.comiqueta.core.data.model.Comic
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.ui.home.HomeIntent
 import androidx.core.net.toUri
+import kotlin.random.Random
 
 
 @Composable
@@ -64,7 +65,7 @@ fun HorizontalComicsRowForPreview(
     ) {
         items(
             count = comics.size,
-            key = { index -> comics[index]?.filePath.toString() }
+            key = { index -> comics[index]?.filePath ?: Random.nextInt() }
         ) { index ->
             val comic = comics[index]
             if (comic != null) {
@@ -126,7 +127,11 @@ private val comicsWithNullsPreviewData: List<Comic?> =
 
 
 @PreviewScreenSizes
-@Preview(name = "HorizontalComicsRow - Light - Default", group = "HorizontalComicsRow", showBackground = true)
+@Preview(
+    name = "HorizontalComicsRow - Light - Default",
+    group = "HorizontalComicsRow",
+    showBackground = true
+)
 @Composable
 private fun HorizontalComicsRowPreviewLightDefault() {
     ComiquetaThemeContent(darkTheme = false) {
@@ -142,7 +147,12 @@ private fun HorizontalComicsRowPreviewLightDefault() {
 }
 
 @PreviewScreenSizes
-@Preview(name = "HorizontalComicsRow - Dark - Default", group = "HorizontalComicsRow", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "HorizontalComicsRow - Dark - Default",
+    group = "HorizontalComicsRow",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun HorizontalComicsRowPreviewDarkDefault() {
     ComiquetaThemeContent(darkTheme = true) {
@@ -156,7 +166,11 @@ private fun HorizontalComicsRowPreviewDarkDefault() {
 }
 
 @PreviewScreenSizes
-@Preview(name = "HorizontalComicsRow - Light - Few Items", group = "HorizontalComicsRow", showBackground = true)
+@Preview(
+    name = "HorizontalComicsRow - Light - Few Items",
+    group = "HorizontalComicsRow",
+    showBackground = true
+)
 @Composable
 private fun HorizontalComicsRowPreviewLightFewItems() {
     ComiquetaThemeContent(darkTheme = false) {
@@ -170,7 +184,12 @@ private fun HorizontalComicsRowPreviewLightFewItems() {
 }
 
 @PreviewScreenSizes
-@Preview(name = "HorizontalComicsRow - Dark - Many Items", group = "HorizontalComicsRow", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "HorizontalComicsRow - Dark - Many Items",
+    group = "HorizontalComicsRow",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun HorizontalComicsRowPreviewDarkManyItems() {
     ComiquetaThemeContent(darkTheme = true) {
@@ -184,7 +203,11 @@ private fun HorizontalComicsRowPreviewDarkManyItems() {
 }
 
 @PreviewScreenSizes
-@Preview(name = "HorizontalComicsRow - Light - Empty List", group = "HorizontalComicsRow", showBackground = true)
+@Preview(
+    name = "HorizontalComicsRow - Light - Empty List",
+    group = "HorizontalComicsRow",
+    showBackground = true
+)
 @Composable
 private fun HorizontalComicsRowPreviewLightEmpty() {
     ComiquetaThemeContent(darkTheme = false) {
@@ -198,7 +221,11 @@ private fun HorizontalComicsRowPreviewLightEmpty() {
 }
 
 @PreviewScreenSizes
-@Preview(name = "HorizontalComicsRow - Light - With Nulls (Loading)", group = "HorizontalComicsRow", showBackground = true)
+@Preview(
+    name = "HorizontalComicsRow - Light - With Nulls (Loading)",
+    group = "HorizontalComicsRow",
+    showBackground = true
+)
 @Composable
 private fun HorizontalComicsRowPreviewLightWithNulls() {
     ComiquetaThemeContent(darkTheme = false) {

@@ -104,7 +104,7 @@ object ComiquetaDarkColors {
     val bottomAppBarSelectedIconDark = Color(0xFFFFFFFF)
     val bottomAppBarUnselectedIconDark = Color(0xFFBCBCBC)
     val bottomAppBarSelectedTextDark = Color(0xFFFFFFFF)
-    val bottomAppBarUnselectedTextDark = Color(0xFF333333)
+    val bottomAppBarUnselectedTextDark = Color(0xFFBCBCBC)
     val headerSelectedIconDark = Color(0xFF333333)
     val headerUnselectedIconDark = Color(0xFFBCBCBC)
 }
