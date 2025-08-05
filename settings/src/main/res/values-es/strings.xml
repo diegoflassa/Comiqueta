@@ -16,4 +16,7 @@
     <string name="settings_manage_categories_title">Gestionar Categorías</string>
     <string name="settings_manage_categories_description">Ver, crear, editar o eliminar categorías de cómics</string>
     <string name="settings_manage_categories_icon_desc">Ícono de gestionar categorías</string>
+    <string name="settings_privacy_title">Configuración de privacidad</string>
+    <string name="settings_privacy_description">Gestiona tus preferencias de anuncios y tu consentimiento de datos.</string>
+    <string name="settings_privacy_icon_desc">Icono de configuración de privacidad</string>
 </resources>

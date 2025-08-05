@@ -98,6 +98,9 @@ dependencies {
     //Splashscreen
     implementation(libs.ax.core.splashscreen)
 
+    //Messaging Platform
+    implementation(libs.com.google.android.ump.messaging.platform)
+
     //Other
     implementation(libs.com.microsoft.clarity.compose)
 

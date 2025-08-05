@@ -15,4 +15,7 @@
     <string name="settings_manage_categories_title">Gerenciar Categorias</string>
     <string name="settings_manage_categories_description">Visualizar, criar, editar ou excluir categorias de quadrinhos</string>
     <string name="settings_manage_categories_icon_desc">Ícone de gerenciar categorias</string>
+    <string name="settings_privacy_title">Configurações de Privacidade</string>
+    <string name="settings_privacy_description">Gerencie suas preferências de anúncios e consentimento de dados.</string>
+    <string name="settings_privacy_icon_desc">Ícone de configurações de privacidade</string>
 </resources>

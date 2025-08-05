@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Policy // Added Icon
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -59,13 +60,14 @@ import androidx.core.app.ActivityCompat // Needed for shouldShowRequestPermissio
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.ump.UserMessagingPlatform
 import dev.diegoflassa.comiqueta.settings.R
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
-import dev.diegoflassa.comiqueta.data.model.PermissionDisplayStatus
+import dev.diegoflassa.comiqueta.data.model.PermissionDisplayStatus // Using the one in the provided file
 
 private const val tag = "SettingsScreen"
 
@@ -124,12 +126,10 @@ fun SettingsScreen(
             }
             settingsViewModel.processIntent(
                 SettingsIntent.PermissionResults(
-                    results = permissionDisplayStatusMap, // Pass the transformed map
+                    results = permissionDisplayStatusMap,
                     activity = currentActivity
                 )
             )
-            // The explicit call to SettingsIntent.RefreshPermissionStatuses(activity) is no longer needed here,
-            // as SettingsViewModel.handleOsPermissionResults now calls refreshPermissionDisplayStatusUseCase.
         }
     }
 
@@ -211,10 +211,9 @@ fun SettingsScreen(
     SettingsScreenContent(
         modifier = modifier,
         navigationViewModel = navigationViewModel,
-        uiState = settingsUIState
-    ) {
-        settingsViewModel.processIntent(it)
-    }
+        uiState = settingsUIState,
+        onIntent = { settingsViewModel.processIntent(it) }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -311,7 +310,7 @@ fun SettingsScreenContent(
                         textAlign = TextAlign.Center
                     )
                 } else {
-                    LazyColumn(modifier = Modifier.weight(1f)) {
+                    LazyColumn(modifier = Modifier.weight(1f)) { // Added weight(1f)
                         items(
                             uiState.comicsFolders.size,
                             key = { index -> uiState.comicsFolders[index].toString() }
@@ -340,6 +339,56 @@ fun SettingsScreenContent(
                             Icon(
                                 Icons.AutoMirrored.Filled.ListAlt,
                                 contentDescription = stringResource(R.string.settings_manage_categories_icon_desc)
+                            )
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp.scaled()))
+
+                // New Privacy Settings / Ad Consent Section
+                val context = LocalContext.current
+                val activity = context as? Activity
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            activity?.let { currentActivity ->
+                                TimberLogger.logD(tag, "Showing privacy options form.")
+                                UserMessagingPlatform.showPrivacyOptionsForm(currentActivity) { formError ->
+                                    if (formError != null) {
+                                        TimberLogger.logE(
+                                            tag,
+                                            "Error showing privacy options form: ${formError.message}",
+                                            Exception("${formError.errorCode}-${formError.message}")
+                                        )
+                                        Toast.makeText(
+                                            currentActivity,
+                                            "Error loading privacy settings: ${formError.errorCode} - ${formError.message}",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            } ?: run {
+                                TimberLogger.logW(
+                                    tag,
+                                    "Activity context not available for showing privacy options form."
+                                )
+                                Toast.makeText(
+                                    context,
+                                    "Could not open privacy settings.",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+                        },
+                ) {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.settings_privacy_title)) },
+                        supportingContent = { Text(stringResource(R.string.settings_privacy_description)) },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.Policy,
+                                contentDescription = stringResource(R.string.settings_privacy_icon_desc)
                             )
                         }
                     )

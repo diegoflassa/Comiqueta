@@ -16,4 +16,7 @@
     <string name="settings_manage_categories_title">Manage Categories</string>
     <string name="settings_manage_categories_description">View, create, edit, or delete comic categories</string>
     <string name="settings_manage_categories_icon_desc">Manage categories icon</string>
+    <string name="settings_privacy_title">Privacy Settings</string>
+    <string name="settings_privacy_description">Manage your ad preferences and data consent.</string>
+    <string name="settings_privacy_icon_desc">Privacy settings icon</string>
 </resources>

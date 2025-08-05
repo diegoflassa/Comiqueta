@@ -15,4 +15,7 @@
     <string name="settings_manage_categories_title">Kategorien verwalten</string>
     <string name="settings_manage_categories_description">Comic-Kategorien anzeigen, erstellen, bearbeiten oder löschen</string>
     <string name="settings_manage_categories_icon_desc">Symbol für Kategorien verwalten</string>
+    <string name="settings_privacy_title">Datenschutzeinstellungen</string>
+    <string name="settings_privacy_description">Verwalten Sie Ihre Anzeigenpräferenzen und Dateneinwilligung.</string>
+    <string name="settings_privacy_icon_desc">Symbol für Datenschutzeinstellungen</string>
 </resources>

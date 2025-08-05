@@ -147,6 +147,9 @@ com-google-android-play-app-update = "2.1.0"
 #Ads
 play-services-ads-api = "24.5.0"
 
+#Messaging Platform
+com-google-android-ump-messaging-platform = "3.2.0"
+
 #Other
 clarity-compose = "3.4.3"
 com-google-auto-value = "1.11.0"
@@ -312,14 +315,14 @@ ax-appsearch-local-storage = { module = "androidx.appsearch:appsearch-local-stor
 #Splashscreen
 ax-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "ax-splashscreen" }
 
-#Profile Installer
-#ax-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "ax-profileinstaller" }
-
 #App Update
 com-google-android-play-app-update = { module = "com.google.android.play:app-update", version.ref = "com-google-android-play-app-update" }
 
 #Ads
-play-services-ads-api = { group = "com.google.android.gms", name = "play-services-ads-api", version.ref = "play-services-ads-api" }
+play-services-ads-api = { module = "com.google.android.gms:play-services-ads-api", version.ref = "play-services-ads-api" }
+
+#Messaging Platform
+com-google-android-ump-messaging-platform = { module = "com.google.android.ump:user-messaging-platform", version.ref = "com-google-android-ump-messaging-platform" }
 
 #Startup
 ax-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "ax-startup-runtime" }
