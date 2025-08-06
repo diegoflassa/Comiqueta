@@ -33,3 +33,24 @@
 -keepclassmembers class dev.diegoflassa.comiqueta.core.data.worker.SafFolderScanWorker {
     public <init>(android.content.Context, androidx.work.WorkerParameters);
 }
+
+-dontwarn com.github.luben.zstd.ZstdInputStream
+-dontwarn javax.lang.model.SourceVersion
+-dontwarn javax.lang.model.element.Element
+-dontwarn javax.lang.model.element.ElementKind
+-dontwarn javax.lang.model.element.Modifier
+-dontwarn javax.lang.model.type.TypeMirror
+-dontwarn javax.lang.model.type.TypeVisitor
+-dontwarn javax.lang.model.util.SimpleTypeVisitor8
+-dontwarn org.slf4j.impl.StaticLoggerBinder
+-dontwarn org.tukaani.xz.ARMOptions
+-dontwarn org.tukaani.xz.ARMThumbOptions
+-dontwarn org.tukaani.xz.DeltaOptions
+-dontwarn org.tukaani.xz.FilterOptions
+-dontwarn org.tukaani.xz.IA64Options
+-dontwarn org.tukaani.xz.LZMA2InputStream
+-dontwarn org.tukaani.xz.LZMA2Options
+-dontwarn org.tukaani.xz.LZMAInputStream
+-dontwarn org.tukaani.xz.PowerPCOptions
+-dontwarn org.tukaani.xz.SPARCOptions
+-dontwarn org.tukaani.xz.X86Options
