@@ -44,9 +44,13 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8"
         run: ./gradlew build
 
       - name: Run unit tests
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8"
         run: ./gradlew testDebugUnitTest
         # (e.g., testReleaseUnitTest, test)
 
