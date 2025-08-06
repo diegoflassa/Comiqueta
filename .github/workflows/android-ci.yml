@@ -37,8 +37,8 @@ jobs:
 
       # Combined build and test step for debug variant
       - name: Build and run unit tests for Debug
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -XX:+UseParallelGC -Dfile.encoding=UTF-8"
+        #env:
+        #  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -XX:+UseParallelGC -Dfile.encoding=UTF-8"
         run: ./gradlew :app:assembleDebug :app:testDebugUnitTest
 
     # Optional: Upload build artifacts (e.g., APK)
