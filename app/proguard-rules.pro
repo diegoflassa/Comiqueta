@@ -19,3 +19,17 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Remove all Log statements in release builds
+-assumenosideeffects class android.util.Log {
+    public static int d(...);
+    public static int i(...);
+    public static int w(...);
+    public static int e(...);
+    public static int v(...);
+    public static int println(...);
+}
+
+-keepclassmembers class dev.diegoflassa.comiqueta.core.data.worker.SafFolderScanWorker {
+    public <init>(android.content.Context, androidx.work.WorkerParameters);
+}
