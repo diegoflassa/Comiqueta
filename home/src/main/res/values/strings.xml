@@ -25,6 +25,7 @@
     <string name="comic_cover_image_description">Comic cover</string>
     <string name="unknown_title">Unknown Title</string>
     <string name="favorite_icon_description">Favorite</string>
+    <string name="more_options">More options</string>
 
     <!-- Loading & Error States -->
     <string name="error_loading_comics_message">Error loading comics: %s</string>

@@ -9,12 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -24,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import dev.diegoflassa.comiqueta.core.data.model.Comic
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.home.R
@@ -54,7 +55,8 @@ fun ComicListItem(
         shape = RoundedCornerShape(8.dp.scaled())
     ) {
         Row(
-            modifier = Modifier.padding(8.dp.scaled()),
+            modifier = Modifier
+                .padding(8.dp.scaled()),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
@@ -68,31 +70,36 @@ fun ComicListItem(
                     ?: stringResource(id = R.string.comic_cover_image_description),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .height(90.dp.scaled())
+                    .width(40.dp.scaled())
                     .aspectRatio(aspectRatio)
                     .clip(RoundedCornerShape(4.dp.scaled()))
             )
-            Spacer(modifier = Modifier.width(16.dp.scaled()))
-            Column(modifier = Modifier.weight(1f)) {
+
+            Spacer(modifier = Modifier.width(8.dp.scaled()))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     text = comic?.title ?: stringResource(id = R.string.unknown_title),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
+                    fontSize = 14.sp
                 )
-                comic?.author?.let {
-                    Text(
-                        text = it,
-                        fontSize = 14.sp,
-                    )
-                }
-            }
-            if (comic?.isFavorite == true) {
-                Icon(
-                    Icons.Filled.Favorite,
-                    contentDescription = stringResource(R.string.favorite_icon_description),
-                    modifier = Modifier.padding(start = 8.dp.scaled())
+                Text(
+                    text = "Chapter ${comic?.chapter ?: "?"} - Page ${comic?.page ?: "?"}",
+                    fontSize = 12.sp,
+                    color = ComiquetaTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
+
+            Icon(
+                painter = rememberVectorPainter(Icons.Default.ChevronRight),
+                contentDescription = stringResource(id = R.string.more_options),
+                tint = ComiquetaTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier
+                    .width(25.dp.scaled())
+                    .aspectRatio(0.5f)
+            )
         }
     }
 }
@@ -136,7 +143,12 @@ private val sampleComicForListItemLongTitleNoAuthor = sampleComicForCoverPreview
 )
 
 @PreviewScreenSizes
-@Preview(name = "ComicListItem - Default - Dark", group = "ComicListItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "ComicListItem - Default - Dark",
+    group = "ComicListItem",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun ComicListItemDefaultPreview() {
     ComiquetaThemeContent {
@@ -150,7 +162,12 @@ private fun ComicListItemDefaultPreview() {
 }
 
 @PreviewScreenSizes
-@Preview(name = "ComicListItem - Favorite - Dark", group = "ComicListItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "ComicListItem - Favorite - Dark",
+    group = "ComicListItem",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun ComicListItemFavoritePreview() {
     ComiquetaThemeContent {
@@ -164,7 +181,12 @@ private fun ComicListItemFavoritePreview() {
 }
 
 @PreviewScreenSizes
-@Preview(name = "ComicListItem - Long Title, No Author - Dark", group = "ComicListItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "ComicListItem - Long Title, No Author - Dark",
+    group = "ComicListItem",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun ComicListItemLongTitleNoAuthorPreview() {
     ComiquetaThemeContent {
@@ -178,7 +200,12 @@ private fun ComicListItemLongTitleNoAuthorPreview() {
 }
 
 @PreviewScreenSizes
-@Preview(name = "ComicListItem - Null Comic (Placeholder) - Dark", group = "ComicListItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "ComicListItem - Null Comic (Placeholder) - Dark",
+    group = "ComicListItem",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun ComicListItemNullPreview() {
     ComiquetaThemeContent {

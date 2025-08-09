@@ -14,6 +14,8 @@ data class Comic(
     val lastPageRead: Int = 0,
     val lastModified: Long = 0,
     val created: Long = 0,
-    val pageCount: Int = 0
+    val pageCount: Int = 0,
+    val chapter: Int = 0,
+    val page: Int = 0
 )
 
