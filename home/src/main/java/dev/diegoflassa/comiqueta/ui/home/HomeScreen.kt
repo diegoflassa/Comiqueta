@@ -866,13 +866,11 @@ private val sampleComics = listOf(
         title = "Comic Adventure 1",
         // author = "Author A", // ComicEntity doesn't have author, removed for consistency
         isFavorite = true,
-        isNew = true,
         coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+1".toUri() // Using a placeholder URL
     ).asExternalModel(), ComicEntity(
         filePath = "file:///comic2".toUri(),
         title = "Mystery of the Void",
         // author = "Author B",
-        isNew = true,
         coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+2".toUri()
     ).asExternalModel(), ComicEntity(
         filePath = "file:///comic3".toUri(),

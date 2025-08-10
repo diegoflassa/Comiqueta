@@ -11,8 +11,10 @@ import dev.diegoflassa.comiqueta.core.data.database.entity.asEntity
 import dev.diegoflassa.comiqueta.core.data.database.entity.asExternalModel
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
 import dev.diegoflassa.comiqueta.core.data.model.Comic
+import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,6 +22,11 @@ import javax.inject.Singleton
 class ComicsRepository @Inject constructor(
     private val comicsDao: ComicsDao
 ) : IComicsRepository {
+
+    companion object {
+        private val tag = ComicsRepository::class.simpleName
+        private const val DAYS_CONSIDERED_NEW = 70
+    }
 
     override fun getComicsPaginated(
         categoryId: Long?,
@@ -35,19 +42,29 @@ class ComicsRepository @Inject constructor(
             ), pagingSourceFactory = {
                 val filterByFavorite: Boolean? =
                     if (flags.contains(ComicFlags.FAVORITE)) true else null
-                val filterByNew: Boolean? = if (flags.contains(ComicFlags.NEW)) true else null
                 val filterByRead: Boolean? = if (flags.contains(ComicFlags.READ)) true else null
+
+                val createdAfterTimestamp: Long? = if (flags.contains(ComicFlags.NEW)) {
+                    System.currentTimeMillis() - TimeUnit.DAYS.toMillis(DAYS_CONSIDERED_NEW.toLong())
+                } else {
+                    null
+                }
+                TimberLogger.logI(
+                    tag,
+                    "CategoryId: $categoryId, Favorite: $filterByFavorite, CreatedAfter: $createdAfterTimestamp, Flags: $flags"
+                )
 
                 comicsDao.getComicsPagingSource(
                     categoryId = categoryId,
                     filterByFavorite = filterByFavorite,
-                    filterByNew = filterByNew,
+                    createdAfterTimestamp = createdAfterTimestamp,
                     filterByRead = filterByRead
                 )
             }).flow
 
         return pagerFlow.map { pagingData: PagingData<ComicEntity> ->
             pagingData.map { comicEntity: ComicEntity ->
+                // The asExternalModel() already uses the isNew(daysConsideredNew) logic for the Comic model's isNew property
                 comicEntity.asExternalModel()
             }
         }

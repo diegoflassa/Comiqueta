@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "7c3ae6a8a0569048d2da5e281da5974a",
+    "identityHash": "879c6d898a497aef4c1312a1db63efe9",
     "entities": [
       {
         "tableName": "comics",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`file_path` TEXT NOT NULL, `folder_path` TEXT NOT NULL, `file_name` TEXT, `comic_category_id` INTEGER, `cover_path` TEXT, `title` TEXT, `author` TEXT, `is_favorite` INTEGER NOT NULL, `is_new` INTEGER NOT NULL, `was_read` INTEGER NOT NULL, `last_page` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL, `created` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`file_path`), FOREIGN KEY(`comic_category_id`) REFERENCES `categories`(`id`) ON UPDATE CASCADE ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`file_path` TEXT NOT NULL, `folder_path` TEXT NOT NULL, `file_name` TEXT, `comic_category_id` INTEGER, `cover_path` TEXT, `title` TEXT, `author` TEXT, `is_favorite` INTEGER NOT NULL, `was_read` INTEGER NOT NULL, `last_page` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL, `created` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`file_path`), FOREIGN KEY(`comic_category_id`) REFERENCES `categories`(`id`) ON UPDATE CASCADE ON DELETE SET NULL )",
         "fields": [
           {
             "fieldPath": "filePath",
@@ -48,12 +48,6 @@
           {
             "fieldPath": "isFavorite",
             "columnName": "is_favorite",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "isNew",
-            "columnName": "is_new",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -148,7 +142,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7c3ae6a8a0569048d2da5e281da5974a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '879c6d898a497aef4c1312a1db63efe9')"
     ]
   }
 }

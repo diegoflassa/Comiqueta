@@ -128,7 +128,7 @@ class HomeViewModel @Inject constructor(
 
                 async {
                     getPaginatedComicsUseCase(
-                        PaginatedComicsParams( // Use the imported top-level Params
+                        PaginatedComicsParams(
                             flags = setOf(
                                 ComicFlags.FAVORITE
                             )

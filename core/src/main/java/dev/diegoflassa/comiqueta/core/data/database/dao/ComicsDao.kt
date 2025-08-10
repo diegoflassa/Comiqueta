@@ -33,7 +33,7 @@ interface ComicsDao {
         WHERE
             (:categoryId IS NULL OR comic_category_id = :categoryId) 
             AND (:filterByFavorite IS NULL OR is_favorite = :filterByFavorite)
-            AND (:filterByNew IS NULL OR is_new = :filterByNew)
+            AND (:createdAfterTimestamp IS NULL OR created >= :createdAfterTimestamp) /* Replaced is_new check */
             AND (:filterByRead IS NULL OR was_read = :filterByRead) 
         ORDER BY title ASC
         LIMIT :limit OFFSET :offset
@@ -44,7 +44,7 @@ interface ComicsDao {
         offset: Int,
         categoryId: Long?,
         filterByFavorite: Boolean?,
-        filterByNew: Boolean?,
+        createdAfterTimestamp: Long?, // Changed from filterByNew: Boolean?
         filterByRead: Boolean?
     ): List<ComicEntity>
 
@@ -58,7 +58,7 @@ interface ComicsDao {
         WHERE
             (:categoryId IS NULL OR comic_category_id = :categoryId) 
             AND (:filterByFavorite IS NULL OR is_favorite = :filterByFavorite)
-            AND (:filterByNew IS NULL OR is_new = :filterByNew)
+            AND (:createdAfterTimestamp IS NULL OR created >= :createdAfterTimestamp) /* Replaced is_new check */
             AND (:filterByRead IS NULL OR was_read = :filterByRead) 
         ORDER BY title ASC
     """
@@ -66,9 +66,29 @@ interface ComicsDao {
     fun getComicsPagingSource(
         categoryId: Long?,
         filterByFavorite: Boolean?,
-        filterByNew: Boolean?,
+        createdAfterTimestamp: Long?, // Changed from filterByNew: Boolean?
         filterByRead: Boolean?
     ): PagingSource<Int, ComicEntity>
+
+    /**
+     * Returns the total count of comics matching the given criteria.
+     */
+    @Query(
+        """
+        SELECT COUNT(*) FROM comics
+        WHERE
+            (:categoryId IS NULL OR comic_category_id = :categoryId) 
+            AND (:filterByFavorite IS NULL OR is_favorite = :filterByFavorite)
+            AND (:createdAfterTimestamp IS NULL OR created >= :createdAfterTimestamp)
+            AND (:filterByRead IS NULL OR was_read = :filterByRead) 
+    """
+    )
+    fun getComicsCountByCriteria(
+        categoryId: Long?,
+        filterByFavorite: Boolean?,
+        createdAfterTimestamp: Long?,
+        filterByRead: Boolean?
+    ): Int
 
     @Query("SELECT EXISTS(SELECT * FROM comics WHERE file_path = :filePath)")
     suspend fun comicExists(filePath: String): Boolean

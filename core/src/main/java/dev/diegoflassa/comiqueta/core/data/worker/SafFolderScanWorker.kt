@@ -167,7 +167,6 @@ class SafFolderScanWorker @AssistedInject constructor(
                         comicToSave = existingComic.copy(
                             title = comicTitle,
                             coverPath = coverImageUri ?: existingComic.coverPath,
-                            isNew = if (coverImageUri != null && existingComic.coverPath != coverImageUri) true else existingComic.isNew,
                             lastModified = file.lastModified()
                         )
                         TimberLogger.logD(
@@ -178,7 +177,6 @@ class SafFolderScanWorker @AssistedInject constructor(
                             filePath = fileUri,
                             title = comicTitle,
                             coverPath = coverImageUri,
-                            isNew = true,
                             lastModified = file.lastModified()
                         )
                         TimberLogger.logI(

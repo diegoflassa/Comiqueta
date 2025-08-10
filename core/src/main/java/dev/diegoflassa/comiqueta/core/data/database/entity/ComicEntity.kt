@@ -47,9 +47,6 @@ data class ComicEntity(
     @ColumnInfo(name = "is_favorite")
     val isFavorite: Boolean = false,
 
-    @ColumnInfo(name = "is_new")
-    val isNew: Boolean = true,
-
     @ColumnInfo(name = "was_read")
     val read: Boolean = false,
 
@@ -61,7 +58,20 @@ data class ComicEntity(
 
     @ColumnInfo(name = "created", defaultValue = "0")
     val created: Long = System.currentTimeMillis()
-)
+) {
+    /**
+     * Checks if the comic is considered new based on its creation date.
+     * @param daysConsideredNew The number of days within which a comic is considered new. Defaults to 7 days.
+     * @return True if the comic was created within the specified number of days, false otherwise.
+     */
+    fun isNew(daysConsideredNew: Int = 7): Boolean {
+        val currentTimeMillis = System.currentTimeMillis()
+        // Convert days to milliseconds: days * hours/day * minutes/hour * seconds/minute * milliseconds/second
+        val daysInMillis = daysConsideredNew * 24 * 60 * 60 * 1000L
+        val thresholdMillis = currentTimeMillis - daysInMillis
+        return this.created >= thresholdMillis
+    }
+}
 
 /**
  * Converts a database [ComicEntity] to a domain [Comic] model.
@@ -73,7 +83,7 @@ fun ComicEntity.asExternalModel(): Comic = Comic(
     title = this.title ?: "Untitled",
     author = this.author,
     isFavorite = this.isFavorite,
-    isNew = this.isNew,
+    isNew = isNew(daysConsideredNew = 7), // Example: comic is new if created in the last 7 days
     hasBeenRead = this.read,
     lastPageRead = this.lastPage,
     lastModified = this.lastModified,
@@ -91,7 +101,6 @@ fun Comic.asEntity(): ComicEntity = ComicEntity(
     title = this.title?.ifEmpty { null }, // Store as null in DB if UI sends empty string
     author = this.author,
     isFavorite = this.isFavorite,
-    isNew = this.isNew,
     read = this.hasBeenRead,
     lastPage = this.lastPageRead, // Map 'lastPageRead' from model to 'lastPage' in entity
     lastModified = this.lastModified,
