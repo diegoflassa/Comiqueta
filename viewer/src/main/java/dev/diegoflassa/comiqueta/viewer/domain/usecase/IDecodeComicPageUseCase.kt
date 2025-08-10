@@ -18,7 +18,7 @@ interface IDecodeComicPageUseCase {
      * @param comicUri The URI of the comic file.
      * @param fileType The determined [ComicFileType] of the comic.
      * @return An [ImageBitmap] representing the decoded page, or null if decoding fails.
-     * @throws IOException if there's an error accessing the file or decoding.
+     * @throws java.io.IOException if there's an error accessing the file or decoding.
      */
     suspend operator fun invoke(
         pageIndex: Int,

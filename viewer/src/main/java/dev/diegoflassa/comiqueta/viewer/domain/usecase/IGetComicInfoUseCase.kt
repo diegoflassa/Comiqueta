@@ -13,7 +13,7 @@ interface IGetComicInfoUseCase {
      *
      * @param uri A URI do arquivo do quadrinho.
      * @return Um objeto [ComicInfo] contendo os detalhes do quadrinho.
-     * @throws IOException se o arquivo não puder ser acessado ou o tipo de arquivo não for suportado.
+     * @throws java.io.IOException se o arquivo não puder ser acessado ou o tipo de arquivo não for suportado.
      */
     suspend operator fun invoke(uri: Uri): ComicInfo
 }
