@@ -61,7 +61,7 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import dev.diegoflassa.comiqueta.core.data.database.entity.asExternalModel
+import dev.diegoflassa.comiqueta.core.data.mappers.asExternalModel
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
@@ -79,7 +79,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import dev.diegoflassa.comiqueta.core.data.config.IConfig
 import dev.diegoflassa.comiqueta.core.data.extensions.toDp
-import dev.diegoflassa.comiqueta.core.data.model.Comic
+import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.theme.getOutlinedTextFieldDefaultsColors
 import dev.diegoflassa.comiqueta.core.theme.settingIconTint

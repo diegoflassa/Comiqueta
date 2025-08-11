@@ -2,7 +2,7 @@ package dev.diegoflassa.comiqueta.domain.usecase
 
 import androidx.paging.PagingData
 // ComicFlags import was here, but GetPaginatedComicsParams now handles its own import for it.
-import dev.diegoflassa.comiqueta.core.data.model.Comic
+import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

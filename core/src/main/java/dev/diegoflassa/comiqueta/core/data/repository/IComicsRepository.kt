@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.paging.PagingData
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
-import dev.diegoflassa.comiqueta.core.data.model.Comic
+import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import kotlinx.coroutines.flow.Flow
 
 interface IComicsRepository {

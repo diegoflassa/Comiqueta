@@ -6,7 +6,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import androidx.paging.PagingData
 import com.google.common.truth.Truth
-import dev.diegoflassa.comiqueta.core.data.model.Comic
+import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsRepository
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
 import kotlinx.coroutines.ExperimentalCoroutinesApi

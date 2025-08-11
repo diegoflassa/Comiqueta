@@ -3,7 +3,7 @@ package dev.diegoflassa.comiqueta.ui.home
 import android.net.Uri
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
-import dev.diegoflassa.comiqueta.core.data.model.Comic
+import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.navigation.Screen
 import dev.diegoflassa.comiqueta.ui.enums.ViewMode
 

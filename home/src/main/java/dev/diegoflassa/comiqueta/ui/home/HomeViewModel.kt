@@ -23,7 +23,7 @@ import dev.diegoflassa.comiqueta.core.domain.usecase.EnqueueSafFolderScanWorkerU
 import dev.diegoflassa.comiqueta.domain.usecase.IGetPaginatedComicsUseCase
 import dev.diegoflassa.comiqueta.domain.usecase.PaginatedComicsParams
 import dev.diegoflassa.comiqueta.ui.enums.BottomNavItems
-import dev.diegoflassa.comiqueta.core.data.model.Comic
+import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.data.worker.SafFolderScanWorker
 import dev.diegoflassa.comiqueta.domain.usecase.ILoadCategoriesUseCase

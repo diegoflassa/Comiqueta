@@ -7,10 +7,10 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
-import dev.diegoflassa.comiqueta.core.data.database.entity.asEntity
-import dev.diegoflassa.comiqueta.core.data.database.entity.asExternalModel
+import dev.diegoflassa.comiqueta.core.data.mappers.asEntity
+import dev.diegoflassa.comiqueta.core.data.mappers.asExternalModel
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
-import dev.diegoflassa.comiqueta.core.data.model.Comic
+import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

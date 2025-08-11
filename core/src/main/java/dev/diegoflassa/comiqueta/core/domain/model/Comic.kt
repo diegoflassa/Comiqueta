@@ -1,4 +1,4 @@
-package dev.diegoflassa.comiqueta.core.data.model
+package dev.diegoflassa.comiqueta.core.domain.model
 
 import android.net.Uri
 
