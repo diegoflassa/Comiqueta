@@ -6,7 +6,7 @@ import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import kotlin.text.ifEmpty
 
 /**
- * Converts a database [dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity] to a domain [Comic] model.
+ * Converts a database [ComicEntity] to a domain [Comic] model.
  */
 fun ComicEntity.asExternalModel(): Comic = Comic(
     filePath = this.filePath,
