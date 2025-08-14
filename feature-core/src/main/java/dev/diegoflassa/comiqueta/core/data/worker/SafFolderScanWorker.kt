@@ -13,9 +13,9 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.github.junrar.Archive as JunrarArchive
 import com.github.junrar.rarfile.FileHeader as JunrarFileHeader
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
@@ -48,43 +48,57 @@ class SafFolderScanWorker @AssistedInject constructor(
         private const val THUMBNAIL_WIDTH = 300
         private const val THUMBNAIL_HEIGHT = 450
         private const val COVERS_DIR_NAME = "covers"
-        private val tag = SafFolderScanWorker::class.simpleName
-
+        const val TAG = "SafFolderScanWorker"
         const val KEY_ERROR_MESSAGE = "key_error_message"
+        const val KEY_FOLDER_URI = "key_folder_uri"
     }
 
     override suspend fun doWork(): Result {
-        TimberLogger.logD(tag, "Starting scheduled scan of persisted folders.")
         var firstErrorMessage: String? = null
+        val specificFolderUriString = inputData.getString(KEY_FOLDER_URI)
 
-        val folderUrisToScan = try {
-            comicsFolderRepository.getPersistedPermissions()
-        } catch (e: Exception) {
-            FirebaseCrashlytics.getInstance().recordException(e)
-            val errorMessage = "Error fetching persisted folders."
-            TimberLogger.logE(tag, "$errorMessage Repository error.", e)
-            val outputData = workDataOf(KEY_ERROR_MESSAGE to errorMessage)
-            return Result.failure(outputData)
+        val folderUrisToScan: List<Uri> = if (specificFolderUriString != null) {
+            TimberLogger.logD(TAG, "Starting specific scan for folder URI: $specificFolderUriString")
+            try {
+                listOf(specificFolderUriString.toUri())
+            } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(e)
+                val errorMessage = "Invalid specific folder URI provided: $specificFolderUriString"
+                TimberLogger.logE(TAG, errorMessage, e)
+                val outputData = workDataOf(KEY_ERROR_MESSAGE to errorMessage)
+                return Result.failure(outputData)
+            }
+        } else {
+            TimberLogger.logD(TAG, "Starting general scan of all persisted folders.")
+            try {
+                comicsFolderRepository.getPersistedPermissions()
+            } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(e)
+                val errorMessage = "Error fetching persisted folders for general scan."
+                TimberLogger.logE(TAG, "$errorMessage Repository error.", e)
+                val outputData = workDataOf(KEY_ERROR_MESSAGE to errorMessage)
+                return Result.failure(outputData)
+            }
         }
 
         if (folderUrisToScan.isEmpty()) {
-            TimberLogger.logI(tag, "No persisted folders found to scan.")
+            TimberLogger.logI(TAG, "No folders found to scan.")
             return Result.success()
         }
 
-        TimberLogger.logI(tag, "Found ${folderUrisToScan.size} folders to scan.")
+        TimberLogger.logI(TAG, "Found ${folderUrisToScan.size} folder(s) to scan.")
         var anyFolderScanFailed = false
 
         for (folderUri in folderUrisToScan) {
-            TimberLogger.logD(tag, "Starting scan for folder URI: $folderUri")
+            TimberLogger.logD(TAG, "Processing folder URI: $folderUri")
             val rootDoc = try {
                 DocumentFile.fromTreeUri(appContext, folderUri)
             } catch (e: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(e)
                 val errorMessage = "Error accessing folder: $folderUri"
-                TimberLogger.logE(tag, errorMessage, e)
+                TimberLogger.logE(TAG, errorMessage, e)
                 if (firstErrorMessage == null) firstErrorMessage =
-                    "Error accessing folder. Please check permissions."
+                    "Error accessing folder. Please check permissions for $folderUri."
                 anyFolderScanFailed = true
                 continue
             }
@@ -92,7 +106,7 @@ class SafFolderScanWorker @AssistedInject constructor(
             if (rootDoc == null || !rootDoc.isDirectory) {
                 val errorMessage = "Folder not valid or not a directory: $folderUri"
                 FirebaseCrashlytics.getInstance().recordException(Exception(errorMessage))
-                TimberLogger.logW(tag, errorMessage)
+                TimberLogger.logW(TAG, errorMessage)
                 if (firstErrorMessage == null) firstErrorMessage =
                     "A configured folder is not valid. URI: $folderUri"
                 anyFolderScanFailed = true
@@ -101,36 +115,36 @@ class SafFolderScanWorker @AssistedInject constructor(
 
             try {
                 TimberLogger.logD(
-                    tag, "Scanning document tree for: ${rootDoc.name} (URI: $folderUri)"
+                    TAG, "Scanning document tree for: ${rootDoc.name} (URI: $folderUri)"
                 )
                 scanDocumentFileForComics(rootDoc)
-                TimberLogger.logD(tag, "Scan finished for URI: $folderUri")
+                TimberLogger.logD(TAG, "Scan finished for URI: $folderUri")
             } catch (e: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(e)
                 val scanErrorMessage = "Error scanning folder: ${rootDoc.name}"
-                TimberLogger.logE(tag, "$scanErrorMessage (URI: $folderUri)", e)
+                TimberLogger.logE(TAG, "$scanErrorMessage (URI: $folderUri)", e)
                 if (firstErrorMessage == null) firstErrorMessage = scanErrorMessage
                 anyFolderScanFailed = true
             }
         }
 
         TimberLogger.logI(
-            tag, "Finished processing all folders. Any folder scan failed: $anyFolderScanFailed"
+            TAG, "Finished processing all folder(s). Any folder scan failed: $anyFolderScanFailed"
         )
 
         return if (anyFolderScanFailed) {
             val finalErrorMessage = firstErrorMessage ?: "One or more folders failed to scan."
-            TimberLogger.logW(tag, "Scan failed. Reporting message: $finalErrorMessage")
+            TimberLogger.logW(TAG, "Scan failed. Reporting message: $finalErrorMessage")
             val outputData = workDataOf(KEY_ERROR_MESSAGE to finalErrorMessage)
             Result.failure(outputData)
         } else {
-            TimberLogger.logI(tag, "Scan completed successfully for all folders.")
+            TimberLogger.logI(TAG, "Scan completed successfully for all processed folder(s).${if (specificFolderUriString != null) " URI: $specificFolderUriString" else ""}")
             Result.success()
         }
     }
 
     private suspend fun scanDocumentFileForComics(dir: DocumentFile) {
-        TimberLogger.logD(tag, "Scanning directory: ${dir.name}")
+        TimberLogger.logD(TAG, "Scanning directory: ${dir.name} (URI: ${dir.uri})")
         val supportedComicTypes = listOf(
             ComicFileType.PDF.extension.lowercase(Locale.ROOT),
             ComicFileType.CBZ.extension.lowercase(Locale.ROOT),
@@ -140,7 +154,7 @@ class SafFolderScanWorker @AssistedInject constructor(
         for (file in dir.listFiles()) {
             if (file.isDirectory) {
                 TimberLogger.logD(
-                    tag, "Found subdirectory: ${file.name}, recursing..."
+                    TAG, "Found subdirectory: ${file.name}, recursing..."
                 )
                 scanDocumentFileForComics(file)
             } else {
@@ -149,7 +163,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                 val fileExtension = fileName.substringAfterLast('.', "").lowercase(Locale.ROOT)
 
                 TimberLogger.logD(
-                    tag, "Checking file: $fileName, Ext: $fileExtension, URI: $fileUri"
+                    TAG, "Checking file: $fileName, Ext: $fileExtension, URI: $fileUri"
                 )
 
                 if (supportedComicTypes.contains(fileExtension)) {
@@ -170,7 +184,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                             lastModified = file.lastModified()
                         )
                         TimberLogger.logD(
-                            tag, "Updating existing comic: ${comicToSave.title}"
+                            TAG, "Updating existing comic: ${comicToSave.title} (URI: ${comicToSave.filePath})"
                         )
                     } else {
                         comicToSave = ComicEntity(
@@ -180,24 +194,24 @@ class SafFolderScanWorker @AssistedInject constructor(
                             lastModified = file.lastModified()
                         )
                         TimberLogger.logI(
-                            tag, "Found new comic: ${comicToSave.title}. Saving to DB."
+                            TAG, "Found new comic: ${comicToSave.title} (URI: ${comicToSave.filePath}). Saving to DB."
                         )
                     }
 
                     try {
                         comicsDao.insertComic(comicToSave)
                         TimberLogger.logD(
-                            tag, "Successfully saved/updated comic: ${comicToSave.title}"
+                            TAG, "Successfully saved/updated comic: ${comicToSave.title}"
                         )
                     } catch (e: Exception) {
                         FirebaseCrashlytics.getInstance().recordException(e)
                         TimberLogger.logE(
-                            tag, "Error saving/updating comic ${comicToSave.title}: ${e.message}", e
+                            TAG, "Error saving/updating comic ${comicToSave.title}: ${e.message}", e
                         )
                     }
                 } else {
                     TimberLogger.logD(
-                        tag, "Skipping non-comic file: $fileName (ext: $fileExtension)"
+                        TAG, "Skipping non-comic file: $fileName (ext: $fileExtension)"
                     )
                 }
             }
@@ -261,7 +275,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                         } catch (e: Exception) {
                             FirebaseCrashlytics.getInstance().recordException(e)
                             TimberLogger.logE(
-                                tag,
+                                TAG,
                                 "Error listing entries in archive ${comicFile.name} (ext: $extension): ${e.message}",
                                 e
                             )
@@ -303,7 +317,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                             } catch (e: Exception) {
                                 FirebaseCrashlytics.getInstance().recordException(e)
                                 TimberLogger.logE(
-                                    tag,
+                                    TAG,
                                     "Error extracting first image from archive ${comicFile.name} (ext: $extension): ${e.message}",
                                     e
                                 )
@@ -329,7 +343,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                         } catch (e: Exception) {
                             FirebaseCrashlytics.getInstance().recordException(e)
                             TimberLogger.logE(
-                                tag,
+                                TAG,
                                 "Error listing entries in CBR (junrar) ${comicFile.name}: ${e.message}",
                                 e
                             )
@@ -367,7 +381,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                                                 }
                                             } else {
                                                 TimberLogger.logW(
-                                                    tag,
+                                                    TAG,
                                                     "Could not find header '${firstImageHeader.fileName}' again in CBR for extraction."
                                                 )
                                             }
@@ -376,7 +390,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                             } catch (e: Exception) {
                                 FirebaseCrashlytics.getInstance().recordException(e)
                                 TimberLogger.logE(
-                                    tag,
+                                    TAG,
                                     "Error extracting first image from CBR (junrar) ${comicFile.name}: ${e.message}",
                                     e
                                 )
@@ -394,12 +408,12 @@ class SafFolderScanWorker @AssistedInject constructor(
             } catch (e: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(e)
                 TimberLogger.logE(
-                    tag, "General error extracting cover for ${comicFile.name}: ${e.message}", e
+                    TAG, "General error extracting cover for ${comicFile.name}: ${e.message}", e
                 )
-                localScaledBitmap = null
+                localScaledBitmap = null // Ensure reset on error
                 coverFile = null
             } finally {
-                localScaledBitmap?.recycle()
+                localScaledBitmap?.recycle() // Recycle in finally block
             }
             return@withContext coverFile?.toUri()
         }
@@ -417,7 +431,7 @@ class SafFolderScanWorker @AssistedInject constructor(
         val coversDir = File(appContext.cacheDir, COVERS_DIR_NAME)
         if (!coversDir.exists() && !coversDir.mkdirs()) {
             TimberLogger.logE(
-                tag, "Failed to create covers directory: ${coversDir.absolutePath}"
+                TAG, "Failed to create covers directory: ${coversDir.absolutePath}"
             )
             return null
         }
@@ -429,11 +443,11 @@ class SafFolderScanWorker @AssistedInject constructor(
             FileOutputStream(imageFile).use { fos ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fos)
             }
-            TimberLogger.logD(tag, "Saved cover to: ${imageFile.absolutePath}")
+            TimberLogger.logD(TAG, "Saved cover to: ${imageFile.absolutePath}")
             return imageFile
         } catch (e: IOException) {
             TimberLogger.logE(
-                tag, "Error saving bitmap to cache: ${e.message}", e
+                TAG, "Error saving bitmap to cache: ${e.message}", e
             )
         }
         return null
@@ -492,7 +506,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                         result = thisNum.compareTo(thatNum)
                     } catch (ex: NumberFormatException) {
                         TimberLogger.logE(
-                            tag, " Error comparing chunks : $thisChunk, $thatChunk", ex
+                            TAG, " Error comparing chunks : $thisChunk, $thatChunk", ex
                         )
                         result = thisChunk.compareTo(thatChunk)
                     }

@@ -1,7 +1,9 @@
 package dev.diegoflassa.comiqueta.ui.home
 
+import android.Manifest // Added
 import android.content.res.Configuration
 import android.net.Uri
+import android.os.Build // Added
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,31 +62,31 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.hilt.navigation.compose.hiltViewModel
-import dev.diegoflassa.comiqueta.core.data.mappers.asExternalModel
-import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
-import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
-import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
-import dev.diegoflassa.comiqueta.core.navigation.Screen
-import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
-import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
-import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
-import dev.diegoflassa.comiqueta.home.R
-import kotlinx.coroutines.flow.collectLatest
 import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import dev.diegoflassa.comiqueta.core.data.config.IConfig
+import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
+import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.data.extensions.toDp
-import dev.diegoflassa.comiqueta.core.domain.model.Comic
+import dev.diegoflassa.comiqueta.core.data.mappers.asExternalModel
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
+import dev.diegoflassa.comiqueta.core.domain.model.Comic
+import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
+import dev.diegoflassa.comiqueta.core.navigation.Screen
+import dev.diegoflassa.comiqueta.core.navigation.Screen.Viewer
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.theme.getOutlinedTextFieldDefaultsColors
 import dev.diegoflassa.comiqueta.core.theme.settingIconTint
+import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.core.ui.widgets.BannerAdView
+import dev.diegoflassa.comiqueta.home.R
 import dev.diegoflassa.comiqueta.ui.enums.ViewMode
 import dev.diegoflassa.comiqueta.ui.widgets.CategoriesSection
 import dev.diegoflassa.comiqueta.ui.widgets.ComicCoverItem
@@ -94,6 +96,7 @@ import dev.diegoflassa.comiqueta.ui.widgets.HomeBottomAppBar
 import dev.diegoflassa.comiqueta.ui.widgets.HorizontalComicsRow
 import dev.diegoflassa.comiqueta.ui.widgets.HorizontalComicsRowForPreview
 import dev.diegoflassa.comiqueta.ui.widgets.SectionHeader
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOf
 
 const val COMIC_COVER_ASPECT_RATIO = 2f / 3f
@@ -110,9 +113,9 @@ fun HomeScreen(
     TimberLogger.logI(tag, "HomeScreen")
     val test = rememberPreviewLazyPagingItems(sampleComics)
     if (test.itemCount > 0) {
-        TimberLogger.logD(tag, "")
+        TimberLogger.logD(tag, "Test items found: ${test.itemCount}")
     } else {
-        TimberLogger.logD(tag, "")
+        TimberLogger.logD(tag, "No test items found")
     }
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -137,24 +140,35 @@ fun HomeScreen(
     LaunchedEffect(key1 = homeViewModel.effect) {
         homeViewModel.effect.collectLatest { effect ->
             when (effect) {
-                is HomeEffect.LaunchFolderPicker -> {
-                    folderPickerLauncher.launch(null)
-                }
-
                 is HomeEffect.NavigateTo -> {
                     navigationViewModel.navigateTo(effect.screen)
                 }
 
                 is HomeEffect.NavigateToComicDetail -> {
-                    navigationViewModel.navigateTo(Screen.Viewer(effect.comicPath ?: Uri.EMPTY))
+                    navigationViewModel.navigateTo(Viewer(effect.comicPath ?: Uri.EMPTY))
                 }
 
                 is HomeEffect.RequestStoragePermission -> {
+                    // This specific effect with a parameter is still here as per HomeEffect.kt
+                    // If it's not used, it can be removed from HomeEffect.kt
                     requestPermissionLauncher.launch(effect.permission)
                 }
 
                 is HomeEffect.ShowToast -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                }
+
+                HomeEffect.OpenFolderPicker -> {
+                    folderPickerLauncher.launch(null)
+                }
+
+                HomeEffect.RequestGeneralStoragePermission -> {
+                    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        Manifest.permission.READ_MEDIA_IMAGES
+                    } else {
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    }
+                    requestPermissionLauncher.launch(permission)
                 }
             }
         }
@@ -169,10 +183,10 @@ fun HomeScreen(
         TimberLogger.logD("Comics LoadState", "${comics.loadState}")
     }
     LaunchedEffect(latestComics.loadState) {
-        TimberLogger.logD("Comics LoadState", "${latestComics.loadState}")
+        TimberLogger.logD("Latest Comics LoadState", "${latestComics.loadState}")
     }
     LaunchedEffect(favoriteComics.loadState) {
-        TimberLogger.logD("Comics LoadState", "${favoriteComics.loadState}")
+        TimberLogger.logD("Favorite Comics LoadState", "${favoriteComics.loadState}")
     }
     HomeScreenContent(
         config = homeViewModel.config,
@@ -866,7 +880,7 @@ private val sampleComics = listOf(
         title = "Comic Adventure 1",
         // author = "Author A", // ComicEntity doesn't have author, removed for consistency
         isFavorite = true,
-        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+1".toUri() // Using a placeholder URL
+        coverPath = "https://placehold.co/100x150/cccccc/333333?text=Comic+1".toUri()
     ).asExternalModel(), ComicEntity(
         filePath = "file:///comic2".toUri(),
         title = "Mystery of the Void",

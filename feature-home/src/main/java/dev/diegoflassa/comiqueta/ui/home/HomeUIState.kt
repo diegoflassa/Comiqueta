@@ -13,7 +13,8 @@ data class HomeUIState(
     val viewMode: ViewMode = ViewMode.GRID,
     val flags: Set<ComicFlags> = emptySet(),
     val categories: List<CategoryEntity> = emptyList(),
-    val isLegacyPermissionGranted: Boolean = false,
+    val generalStoragePermissionGranted: Boolean = false, // Renamed from isLegacyPermissionGranted
     val currentBottomNavItem: BottomNavItems = BottomNavItems.HOME,
+    val isScanningFolders: Boolean = false // Added
 )
 

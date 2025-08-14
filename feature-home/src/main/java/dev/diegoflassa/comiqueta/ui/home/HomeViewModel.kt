@@ -19,14 +19,14 @@ import dev.diegoflassa.comiqueta.core.data.config.IConfig
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
-import dev.diegoflassa.comiqueta.core.domain.usecase.EnqueueSafFolderScanWorkerUseCase
-import dev.diegoflassa.comiqueta.domain.usecase.IGetPaginatedComicsUseCase
-import dev.diegoflassa.comiqueta.domain.usecase.PaginatedComicsParams
-import dev.diegoflassa.comiqueta.ui.enums.BottomNavItems
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.data.worker.SafFolderScanWorker
+import dev.diegoflassa.comiqueta.core.domain.usecase.EnqueueSafFolderScanWorkerUseCase
+import dev.diegoflassa.comiqueta.domain.usecase.IGetPaginatedComicsUseCase
 import dev.diegoflassa.comiqueta.domain.usecase.ILoadCategoriesUseCase
+import dev.diegoflassa.comiqueta.domain.usecase.PaginatedComicsParams
+import dev.diegoflassa.comiqueta.ui.enums.BottomNavItems
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -48,7 +48,12 @@ class HomeViewModel @Inject constructor(
     private val getPaginatedComicsUseCase: IGetPaginatedComicsUseCase,
     private val loadCategoriesUseCase: ILoadCategoriesUseCase,
     private val comicsFolderRepository: IComicsFolderRepository,
+    private val enqueueSafFolderScanWorkerUseCase: EnqueueSafFolderScanWorkerUseCase
 ) : ViewModel() {
+
+    companion object {
+        private val tag = HomeViewModel::class.simpleName
+    }
 
     private val _uiState = MutableStateFlow(HomeUIState())
     val uiState = _uiState.asStateFlow()
@@ -67,140 +72,20 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadCategories()
-        // Initial load of comics can also consider the initial empty search query
         loadPaginatedComics()
+        reduce(HomeIntent.CheckInitialFolderPermission)
     }
 
-    /**
-     * Loads or reloads paginated comics based on current filters,
-     * and also refreshes latest and favorite comics lists.
-     * Manages a global isLoading state for the entire operation.
-     */
-    private fun loadPaginatedComics(
-        categoryId: Long? = _uiState.value.selectedCategory?.id,
-        flags: Set<ComicFlags> = _uiState.value.flags,
-        searchQuery: String? = _uiState.value.searchQuery
-    ) {
-        viewModelScope.launch {
-            // Update isLoading only if it's a "full" load (no specific category, flags, or search)
-            if (categoryId == null && flags.isEmpty() && searchQuery.isNullOrEmpty()) {
-                _uiState.update { it.copy(isLoading = true, error = null) }
-            }
-            try {
-                val sanitizedCategory =
-                    if (categoryId == UserPreferencesKeys.DEFAULT_CATEGORY_ID_ALL) {
-                        null
-                    } else {
-                        categoryId
-                    }
-
-                // Launch fetching of all three lists concurrently
-                async {
-                    getPaginatedComicsUseCase(
-                        PaginatedComicsParams(
-                            categoryId = sanitizedCategory,
-                            flags = flags,
-                            searchQuery = searchQuery // Pass the search query
-                        )
-                    )
-                        .cachedIn(viewModelScope)
-                        .catch { e ->
-                            TimberLogger.logE("HomeViewModel", "Error loading main comics", e)
-                            _effect.send(HomeEffect.ShowToast("Error loading comics: ${e.message}"))
-                            emit(PagingData.empty())
-                        }.collectLatest {
-                            _comicsFlow.value = it
-                        }
-                }
-
-                // Search query typically does not apply to "Latest" or "Favorite" sections
-                async {
-                    getPaginatedComicsUseCase(
-                        PaginatedComicsParams(
-                            flags = setOf(
-                                ComicFlags.NEW
-                            )
-                            // searchQuery is not passed here, uses default null from PaginatedComicsParams if defined
-                        )
-                    )
-                        .cachedIn(viewModelScope)
-                        .catch { e ->
-                            TimberLogger.logE("HomeViewModel", "Error loading latest comics", e)
-                            _effect.send(HomeEffect.ShowToast("Error loading latest comics: ${e.message}"))
-                            emit(PagingData.empty())
-                        }.collectLatest {
-                            _latestComicsFlow.value = it
-                        }
-                }
-
-                async {
-                    getPaginatedComicsUseCase(
-                        PaginatedComicsParams(
-                            flags = setOf(
-                                ComicFlags.FAVORITE
-                            )
-                            // searchQuery is not passed here, uses default null from PaginatedComicsParams if defined
-                        )
-                    )
-                        .cachedIn(viewModelScope)
-                        .catch { e ->
-                            TimberLogger.logE("HomeViewModel", "Error loading favorite comics", e)
-                            _effect.send(HomeEffect.ShowToast("Error loading favorite comics: ${e.message}"))
-                            emit(PagingData.empty())
-                        }.collectLatest {
-                            _favoriteComicsFlow.value = it
-                        }
-                }
-
-            } catch (e: CancellationException) {
-                TimberLogger.logD("HomeViewModel", "Comics loading cancelled", e)
-            } catch (e: Exception) {
-                TimberLogger.logE(
-                    "HomeViewModel",
-                    "Unexpected error during combined comics loading",
-                    e
-                )
-                _effect.send(HomeEffect.ShowToast("An unexpected error occurred: ${e.message}"))
-                _uiState.update { it.copy(error = e.message) }
-                _comicsFlow.value = PagingData.empty()
-                _latestComicsFlow.value = PagingData.empty()
-                _favoriteComicsFlow.value = PagingData.empty()
-            } finally {
-                // Delay slightly to allow PagingData to propagate before hiding shimmer
-                delay(250)
-                _uiState.update { it.copy(isLoading = false) }
-            }
+    private fun hasGeneralStoragePermission(): Boolean {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES // Or READ_MEDIA_VIDEO / READ_MEDIA_AUDIO as needed
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
         }
-    }
-
-    private fun loadCategories() {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoading = true, // Consider a more specific loading state for categories if needed
-                    error = null
-                )
-            }
-            loadCategoriesUseCase()
-                .catch { e ->
-                    TimberLogger.logE("HomeViewModel", "Error loading categories", e)
-                    _effect.send(HomeEffect.ShowToast("Error loading categories: ${e.message}"))
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false, // Reset global loading if categories fail
-                            error = "Failed to load categories: ${e.message}"
-                        )
-                    }
-                }
-                .collectLatest { fetchedCategories ->
-                    _uiState.update {
-                        it.copy(
-                            categories = fetchedCategories,
-                            isLoading = false // Reset global loading after categories are loaded
-                        )
-                    }
-                }
-        }
+        return ContextCompat.checkSelfPermission(
+            applicationContext,
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     fun reduce(intent: HomeIntent) {
@@ -214,9 +99,8 @@ class HomeViewModel @Inject constructor(
 
                 is HomeIntent.SearchComics -> {
                     val currentQuery = _uiState.value.searchQuery
-                    if (currentQuery != intent.query) { // Only reload if query changed
+                    if (currentQuery != intent.query) {
                         _uiState.update { it.copy(searchQuery = intent.query) }
-                        // The loadPaginatedComics call will use the updated searchQuery from _uiState by default
                         loadPaginatedComics(
                             categoryId = _uiState.value.selectedCategory?.id,
                             flags = _uiState.value.flags
@@ -259,9 +143,9 @@ class HomeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             flags = emptySet(),
-                            selectedCategory = null, // Clear selected category
+                            selectedCategory = null,
                             currentBottomNavItem = BottomNavItems.HOME,
-                            searchQuery = "" // Clear search query
+                            searchQuery = ""
                         )
                     }
                     loadPaginatedComics(flags = emptySet(), categoryId = null, searchQuery = "")
@@ -271,36 +155,48 @@ class HomeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             flags = setOf(ComicFlags.FAVORITE),
-                            selectedCategory = null, 
+                            selectedCategory = null,
                             currentBottomNavItem = BottomNavItems.FAVORITES,
-                            searchQuery = "" // Clear search query when changing main tabs
+                            searchQuery = ""
                         )
                     }
-                    loadPaginatedComics(flags = setOf(ComicFlags.FAVORITE), categoryId = null, searchQuery = "")
+                    loadPaginatedComics(
+                        flags = setOf(ComicFlags.FAVORITE),
+                        categoryId = null,
+                        searchQuery = ""
+                    )
                 }
 
                 is HomeIntent.ShowNewComics -> {
                     _uiState.update {
                         it.copy(
                             flags = setOf(ComicFlags.NEW),
-                            selectedCategory = null, 
-                            currentBottomNavItem = BottomNavItems.BOOKMARKS, // Assuming 'New' maps to Bookmarks for now
-                            searchQuery = "" // Clear search query
+                            selectedCategory = null,
+                            currentBottomNavItem = BottomNavItems.BOOKMARKS,
+                            searchQuery = ""
                         )
                     }
-                    loadPaginatedComics(flags = setOf(ComicFlags.NEW), categoryId = null, searchQuery = "")
+                    loadPaginatedComics(
+                        flags = setOf(ComicFlags.NEW),
+                        categoryId = null,
+                        searchQuery = ""
+                    )
                 }
 
                 is HomeIntent.ShowReadComics -> {
                     _uiState.update {
                         it.copy(
                             flags = setOf(ComicFlags.READ),
-                            selectedCategory = null, 
-                            currentBottomNavItem = BottomNavItems.CATALOG, // Assuming 'Read' maps to Catalog for now
-                            searchQuery = "" // Clear search query
+                            selectedCategory = null,
+                            currentBottomNavItem = BottomNavItems.CATALOG,
+                            searchQuery = ""
                         )
                     }
-                    loadPaginatedComics(flags = setOf(ComicFlags.READ), categoryId = null, searchQuery = "")
+                    loadPaginatedComics(
+                        flags = setOf(ComicFlags.READ),
+                        categoryId = null,
+                        searchQuery = ""
+                    )
                 }
 
                 is HomeIntent.ViewModeChanged -> {
@@ -311,32 +207,260 @@ class HomeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             selectedCategory = intent.category,
-                            flags = emptySet(), // Optionally clear flags when a category is selected
-                            searchQuery = "" // Optionally clear search when category changes
+                            flags = emptySet(),
+                            searchQuery = ""
                         )
                     }
-                    loadPaginatedComics(categoryId = intent.category?.id, flags = _uiState.value.flags, searchQuery = _uiState.value.searchQuery)
+                    loadPaginatedComics(
+                        categoryId = intent.category?.id,
+                        flags = _uiState.value.flags,
+                        searchQuery = _uiState.value.searchQuery
+                    )
                 }
 
                 is HomeIntent.ComicSelected -> {
-                    // Handled by navigation effect or other logic, no reload needed here
+                    _effect.send(HomeEffect.NavigateToComicDetail(intent.comic?.filePath))
                 }
 
                 is HomeIntent.ClearSearch -> {
                     if (_uiState.value.searchQuery.isNotEmpty()) {
                         _uiState.update { it.copy(searchQuery = "") }
-                        loadPaginatedComics() // Reload with cleared search query
+                        loadPaginatedComics()
                     }
                 }
 
                 is HomeIntent.RequestStoragePermission -> {
-                    // TODO: Implement permission request logic if needed here or in View
+                    TimberLogger.logD(tag, "Intent: RequestStoragePermission received.")
+                    _effect.send(HomeEffect.RequestGeneralStoragePermission)
                 }
 
                 is HomeIntent.ScanComicsFolders -> {
-                    // TODO: Trigger comics folder scanning
+                    triggerGeneralScan()
+                }
+
+                is HomeIntent.AddFolderClicked -> {
+                    TimberLogger.logD(tag, "Intent: AddFolderClicked received.")
+                    if (!hasGeneralStoragePermission()) {
+                        _effect.send(HomeEffect.ShowToast("Storage permission needed to add folders."))
+                        _effect.send(HomeEffect.RequestGeneralStoragePermission)
+                        return@launch
+                    }
+                    _effect.send(HomeEffect.OpenFolderPicker)
+                }
+
+                is HomeIntent.CheckInitialFolderPermission -> {
+                    TimberLogger.logD(tag, "Intent: CheckInitialFolderPermission received.")
+                    val isGranted = hasGeneralStoragePermission()
+                    _uiState.update { it.copy(generalStoragePermissionGranted = isGranted) }
+                    if (!isGranted) {
+                        TimberLogger.logI(tag, "Initial storage permission check: NOT granted.")
+                        _effect.send(HomeEffect.ShowToast("Storage permission is recommended for full functionality."))
+                        // Optionally, prompt for permission immediately:
+                        // _effect.send(HomeEffect.RequestGeneralStoragePermission)
+                    } else {
+                        TimberLogger.logI(tag, "Initial storage permission check: GRANTED.")
+                    }
+                }
+
+                is HomeIntent.FlagSelected -> {
+                    TimberLogger.logD(
+                        tag,
+                        "Intent: FlagSelected received with flag: ${intent.flag}"
+                    )
+                    _uiState.update { currentState ->
+                        currentState.copy(flags = setOf(intent.flag))
+                    }
+                    loadPaginatedComics(flags = _uiState.value.flags)
+                }
+
+                is HomeIntent.FolderPermissionResult -> {
+                    TimberLogger.logD(
+                        tag,
+                        "Intent: FolderPermissionResult received. Granted: ${intent.isGranted}"
+                    )
+                    _uiState.update { it.copy(generalStoragePermissionGranted = intent.isGranted) }
+                    if (intent.isGranted) {
+                        _effect.send(HomeEffect.ShowToast("Storage permission granted!"))
+                        // Optionally trigger a scan or other actions, e.g., if a blocked action can now proceed
+                        // reduce(HomeIntent.ScanComicsFolders) // Example: Trigger scan if this was the purpose
+                    } else {
+                        _effect.send(HomeEffect.ShowToast("Storage permission denied. Some features might be limited."))
+                    }
+                }
+
+                is HomeIntent.FolderSelected -> {
+                    handleFolderSelected(intent.uri)
                 }
             }
+        }
+    }
+
+    private fun loadPaginatedComics(
+        categoryId: Long? = _uiState.value.selectedCategory?.id,
+        flags: Set<ComicFlags> = _uiState.value.flags,
+        searchQuery: String? = _uiState.value.searchQuery
+    ) {
+        viewModelScope.launch {
+            if (categoryId == null && flags.isEmpty() && searchQuery.isNullOrEmpty()) {
+                _uiState.update { it.copy(isLoading = true, error = null) }
+            }
+            try {
+                val sanitizedCategory =
+                    if (categoryId == UserPreferencesKeys.DEFAULT_CATEGORY_ID_ALL) {
+                        null
+                    } else {
+                        categoryId
+                    }
+
+                async {
+                    getPaginatedComicsUseCase(
+                        PaginatedComicsParams(
+                            categoryId = sanitizedCategory,
+                            flags = flags,
+                            searchQuery = searchQuery
+                        )
+                    )
+                        .cachedIn(viewModelScope)
+                        .catch { e ->
+                            TimberLogger.logE(tag, "Error loading main comics", e)
+                            _effect.send(HomeEffect.ShowToast("Error loading comics: ${e.message}"))
+                            emit(PagingData.empty())
+                        }.collectLatest { _comicsFlow.value = it }
+                }
+
+                async {
+                    getPaginatedComicsUseCase(
+                        PaginatedComicsParams(flags = setOf(ComicFlags.NEW))
+                    )
+                        .cachedIn(viewModelScope)
+                        .catch { e ->
+                            TimberLogger.logE(tag, "Error loading latest comics", e)
+                            _effect.send(HomeEffect.ShowToast("Error loading latest comics: ${e.message}"))
+                            emit(PagingData.empty())
+                        }.collectLatest { _latestComicsFlow.value = it }
+                }
+
+                async {
+                    getPaginatedComicsUseCase(
+                        PaginatedComicsParams(flags = setOf(ComicFlags.FAVORITE))
+                    )
+                        .cachedIn(viewModelScope)
+                        .catch { e ->
+                            TimberLogger.logE(tag, "Error loading favorite comics", e)
+                            _effect.send(HomeEffect.ShowToast("Error loading favorite comics: ${e.message}"))
+                            emit(PagingData.empty())
+                        }.collectLatest { _favoriteComicsFlow.value = it }
+                }
+
+            } catch (e: CancellationException) {
+                TimberLogger.logD(tag, "Comics loading cancelled", e)
+                _uiState.update { it.copy(isLoading = false) }
+            } catch (e: Exception) {
+                TimberLogger.logE(tag, "Unexpected error during combined comics loading", e)
+                _effect.send(HomeEffect.ShowToast("An unexpected error occurred: ${e.message}"))
+                _uiState.update { it.copy(error = e.message, isLoading = false) }
+                _comicsFlow.value = PagingData.empty()
+                _latestComicsFlow.value = PagingData.empty()
+                _favoriteComicsFlow.value = PagingData.empty()
+            } finally {
+                if (_uiState.value.isLoading) {
+                    delay(250)
+                    _uiState.update { it.copy(isLoading = false) }
+                }
+            }
+        }
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            //isLoading for categories is handled within loadPaginatedComics or a separate state variable
+            loadCategoriesUseCase()
+                .catch { e ->
+                    TimberLogger.logE(tag, "Error loading categories", e)
+                    _effect.send(HomeEffect.ShowToast("Error loading categories: ${e.message}"))
+                    _uiState.update { it.copy(error = "Failed to load categories: ${e.message}") }
+                }
+                .collectLatest { fetchedCategories ->
+                    _uiState.update { it.copy(categories = fetchedCategories) }
+                }
+        }
+    }
+
+    private suspend fun handleFolderSelected(uri: Uri) {
+        TimberLogger.logD(
+            "HomeViewModel",
+            "Folder selected and permission should be taken by UI: $uri"
+        )
+        val success = comicsFolderRepository.takePersistablePermission(
+            uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION
+        )
+        if (success) {
+            _effect.send(HomeEffect.ShowToast("Background scan for folder $uri started."))
+            triggerGeneralScan()
+        } else {
+            _effect.send(HomeEffect.ShowToast("Failed to secure access to folder."))
+        }
+    }
+
+    private fun triggerGeneralScan() {
+        viewModelScope.launch {
+            try {
+                val workRequestId =
+                    enqueueSafFolderScanWorkerUseCase.invoke(null)
+                _effect.send(HomeEffect.ShowToast("General folder scan enqueued."))
+                observeScanWorker(workRequestId)
+            } catch (ex: Exception) {
+                TimberLogger.logE(tag, "Failed to enqueue general folder scan worker", ex)
+                _effect.send(HomeEffect.ShowToast("Error starting general scan: ${ex.message}"))
+            }
+        }
+    }
+
+    private fun observeScanWorker(workRequestId: UUID) {
+        viewModelScope.launch {
+            WorkManager.getInstance(applicationContext)
+                .getWorkInfoByIdFlow(workRequestId)
+                .collectLatest { workInfo ->
+                    _uiState.update { it.copy(isScanningFolders = workInfo?.state == WorkInfo.State.RUNNING) }
+                    if (workInfo != null) {
+                        TimberLogger.logD(
+                            tag,
+                            "Scan Worker ($workRequestId) State: ${workInfo.state}"
+                        )
+                        when (workInfo.state) {
+                            WorkInfo.State.SUCCEEDED -> {
+                                TimberLogger.logD(
+                                    tag,
+                                    "Folder scan SUCCEEDED for $workRequestId. Refreshing comics."
+                                )
+                                _effect.send(HomeEffect.ShowToast("Scan complete. Refreshing..."))
+                                loadPaginatedComics()
+                            }
+
+                            WorkInfo.State.FAILED -> {
+                                val errorMessage =
+                                    workInfo.outputData.getString(SafFolderScanWorker.KEY_ERROR_MESSAGE)
+                                TimberLogger.logW(
+                                    tag,
+                                    "Folder scan FAILED for $workRequestId. Worker message: $errorMessage"
+                                )
+                                FirebaseCrashlytics.getInstance()
+                                    .recordException(Exception("Worker FAILED ($workRequestId): ${errorMessage ?: "No message"}"))
+                                _effect.send(HomeEffect.ShowToast(errorMessage ?: "Scan failed."))
+                            }
+
+                            WorkInfo.State.CANCELLED -> {
+                                TimberLogger.logI(tag, "Folder scan CANCELLED for $workRequestId.")
+                                _effect.send(HomeEffect.ShowToast("Scan cancelled."))
+                            }
+
+                            else -> {
+                                /* ENQUEUED, RUNNING (handled by uiState update), BLOCKED */
+                            }
+                        }
+                    }
+                }
         }
     }
 }

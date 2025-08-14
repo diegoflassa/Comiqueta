@@ -9,6 +9,7 @@ import java.util.UUID
 interface IEnqueueSafFolderScanWorkerUseCase {
     /**
      * Enfileira uma requisição de trabalho única para o SafFolderScanWorker.
+     * @param uriString O URI da pasta específica a ser escaneada, ou null para um escaneamento geral (se aplicável).
      */
-    operator fun invoke(): UUID
+    operator fun invoke(uriString: String?): UUID
 }
