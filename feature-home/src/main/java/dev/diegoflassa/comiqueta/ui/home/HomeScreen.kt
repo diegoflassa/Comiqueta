@@ -164,7 +164,7 @@ fun HomeScreen(
         homeViewModel.latestComicsFlow.collectAsLazyPagingItems()
     val favoriteComics: LazyPagingItems<Comic> =
         homeViewModel.favoriteComicsFlow.collectAsLazyPagingItems()
-    // In HomeScreen or where you pass these to HomeScreenContent
+
     LaunchedEffect(comics.loadState) {
         TimberLogger.logD("Comics LoadState", "${comics.loadState}")
     }

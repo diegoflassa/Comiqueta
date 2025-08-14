@@ -5,5 +5,5 @@ import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import kotlinx.coroutines.flow.Flow
 
 interface IGetPaginatedComicsUseCase {
-    operator fun invoke(params: PaginatedComicsParams): Flow<PagingData<Comic>> // Changed here
+    operator fun invoke(params: PaginatedComicsParams): Flow<PagingData<Comic>>
 }

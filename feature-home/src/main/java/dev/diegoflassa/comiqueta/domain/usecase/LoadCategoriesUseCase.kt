@@ -1,7 +1,7 @@
 package dev.diegoflassa.comiqueta.domain.usecase
 
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
-import dev.diegoflassa.comiqueta.core.domain.repository.ICategoryRepository // Corrected import
+import dev.diegoflassa.comiqueta.core.domain.repository.ICategoryRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -10,8 +10,8 @@ import javax.inject.Inject
  */
 class LoadCategoriesUseCase @Inject constructor(
     private val categoryRepository: ICategoryRepository
-) : ILoadCategoriesUseCase { // Implement the interface
-    override operator fun invoke(): Flow<List<CategoryEntity>> { // Add override
+) : ILoadCategoriesUseCase {
+    override operator fun invoke(): Flow<List<CategoryEntity>> {
         return categoryRepository.getAllCategories()
     }
 }

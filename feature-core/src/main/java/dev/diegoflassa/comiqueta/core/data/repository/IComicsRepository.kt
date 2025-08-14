@@ -15,7 +15,8 @@ interface IComicsRepository {
     fun getComicsPaginated(
         categoryId: Long? = 0,
         flags: Set<ComicFlags> = emptySet(),
-        pageSize: Int = DEFAULT_PAGE_SIZE
+        pageSize: Int = DEFAULT_PAGE_SIZE,
+        searchQuery: String? = null
     ): Flow<PagingData<Comic>>
 
     suspend fun getComicByFilePath(filePath: Uri): Comic?

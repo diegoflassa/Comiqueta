@@ -51,10 +51,10 @@ fun SectionHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onHeaderClick) // Make entire row clickable to toggle expansion
+            .clickable(onClick = onHeaderClick)
             .padding(
                 start = 16.dp.scaled(),
-                end = 8.dp.scaled(), // Adjusted end padding for icons
+                end = 8.dp.scaled(),
                 top = 16.dp.scaled(),
                 bottom = 8.dp.scaled()
             )
@@ -74,13 +74,13 @@ fun SectionHeader(
         ) {
             Icon(
                 imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                contentDescription = stringResource(if (isExpanded) R.string.home_section_collapse else R.string.home_section_expand) // Placeholder strings
+                contentDescription = stringResource(if (isExpanded) R.string.home_section_collapse else R.string.home_section_expand)
             )
         }
 
         if (showGridListOption) {
 
-            Spacer(modifier = Modifier.width(8.dp.scaled())) // Spacer before view mode icons
+            Spacer(modifier = Modifier.width(8.dp.scaled()))
 
             IconButton(onClick = {
                 if (currentViewMode != ViewMode.LIST) {

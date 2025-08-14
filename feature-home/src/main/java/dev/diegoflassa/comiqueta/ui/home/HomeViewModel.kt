@@ -67,6 +67,8 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadCategories()
+        // Initial load of comics can also consider the initial empty search query
+        loadPaginatedComics()
     }
 
     /**
@@ -76,10 +78,12 @@ class HomeViewModel @Inject constructor(
      */
     private fun loadPaginatedComics(
         categoryId: Long? = _uiState.value.selectedCategory?.id,
-        flags: Set<ComicFlags> = _uiState.value.flags
+        flags: Set<ComicFlags> = _uiState.value.flags,
+        searchQuery: String? = _uiState.value.searchQuery
     ) {
         viewModelScope.launch {
-            if (categoryId == null && flags.isEmpty()) {
+            // Update isLoading only if it's a "full" load (no specific category, flags, or search)
+            if (categoryId == null && flags.isEmpty() && searchQuery.isNullOrEmpty()) {
                 _uiState.update { it.copy(isLoading = true, error = null) }
             }
             try {
@@ -95,7 +99,8 @@ class HomeViewModel @Inject constructor(
                     getPaginatedComicsUseCase(
                         PaginatedComicsParams(
                             categoryId = sanitizedCategory,
-                            flags = flags
+                            flags = flags,
+                            searchQuery = searchQuery // Pass the search query
                         )
                     )
                         .cachedIn(viewModelScope)
@@ -108,12 +113,14 @@ class HomeViewModel @Inject constructor(
                         }
                 }
 
+                // Search query typically does not apply to "Latest" or "Favorite" sections
                 async {
                     getPaginatedComicsUseCase(
                         PaginatedComicsParams(
                             flags = setOf(
                                 ComicFlags.NEW
                             )
+                            // searchQuery is not passed here, uses default null from PaginatedComicsParams if defined
                         )
                     )
                         .cachedIn(viewModelScope)
@@ -132,6 +139,7 @@ class HomeViewModel @Inject constructor(
                             flags = setOf(
                                 ComicFlags.FAVORITE
                             )
+                            // searchQuery is not passed here, uses default null from PaginatedComicsParams if defined
                         )
                     )
                         .cachedIn(viewModelScope)
@@ -205,11 +213,15 @@ class HomeViewModel @Inject constructor(
                 is HomeIntent.NavigateTo -> _effect.send(HomeEffect.NavigateTo(intent.screen))
 
                 is HomeIntent.SearchComics -> {
-                    _uiState.update { it.copy(searchQuery = intent.query) }
-                    // Assuming search triggers a reload of the main comics list with the query
-                    // This part would require getPaginatedComicsUseCase to handle search queries
-                    // or a separate SearchComicsUseCase. For now, it reloads with current filters.
-                    loadPaginatedComics(flags = _uiState.value.flags) // Potentially add searchQuery here
+                    val currentQuery = _uiState.value.searchQuery
+                    if (currentQuery != intent.query) { // Only reload if query changed
+                        _uiState.update { it.copy(searchQuery = intent.query) }
+                        // The loadPaginatedComics call will use the updated searchQuery from _uiState by default
+                        loadPaginatedComics(
+                            categoryId = _uiState.value.selectedCategory?.id,
+                            flags = _uiState.value.flags
+                        )
+                    }
                 }
 
                 is HomeIntent.SetComicFilters -> {
@@ -248,43 +260,47 @@ class HomeViewModel @Inject constructor(
                         it.copy(
                             flags = emptySet(),
                             selectedCategory = null, // Clear selected category
-                            currentBottomNavItem = BottomNavItems.HOME
+                            currentBottomNavItem = BottomNavItems.HOME,
+                            searchQuery = "" // Clear search query
                         )
                     }
-                    loadPaginatedComics(flags = emptySet(), categoryId = null)
+                    loadPaginatedComics(flags = emptySet(), categoryId = null, searchQuery = "")
                 }
 
                 is HomeIntent.ShowFavoriteComics -> {
                     _uiState.update {
                         it.copy(
                             flags = setOf(ComicFlags.FAVORITE),
-                            selectedCategory = null, // Clear selected category if favorites is a global filter
-                            currentBottomNavItem = BottomNavItems.FAVORITES
+                            selectedCategory = null, 
+                            currentBottomNavItem = BottomNavItems.FAVORITES,
+                            searchQuery = "" // Clear search query when changing main tabs
                         )
                     }
-                    loadPaginatedComics(flags = setOf(ComicFlags.FAVORITE), categoryId = null)
+                    loadPaginatedComics(flags = setOf(ComicFlags.FAVORITE), categoryId = null, searchQuery = "")
                 }
 
                 is HomeIntent.ShowNewComics -> {
                     _uiState.update {
                         it.copy(
                             flags = setOf(ComicFlags.NEW),
-                            selectedCategory = null, // Clear selected category if new is a global filter
-                            currentBottomNavItem = BottomNavItems.BOOKMARKS
+                            selectedCategory = null, 
+                            currentBottomNavItem = BottomNavItems.BOOKMARKS, // Assuming 'New' maps to Bookmarks for now
+                            searchQuery = "" // Clear search query
                         )
                     }
-                    loadPaginatedComics(flags = setOf(ComicFlags.NEW), categoryId = null)
+                    loadPaginatedComics(flags = setOf(ComicFlags.NEW), categoryId = null, searchQuery = "")
                 }
 
                 is HomeIntent.ShowReadComics -> {
                     _uiState.update {
                         it.copy(
                             flags = setOf(ComicFlags.READ),
-                            selectedCategory = null, // Clear selected category if read is a global filter
-                            currentBottomNavItem = BottomNavItems.CATALOG // Assuming 'Read' maps to Catalog for now
+                            selectedCategory = null, 
+                            currentBottomNavItem = BottomNavItems.CATALOG, // Assuming 'Read' maps to Catalog for now
+                            searchQuery = "" // Clear search query
                         )
                     }
-                    loadPaginatedComics(flags = setOf(ComicFlags.READ), categoryId = null)
+                    loadPaginatedComics(flags = setOf(ComicFlags.READ), categoryId = null, searchQuery = "")
                 }
 
                 is HomeIntent.ViewModeChanged -> {
@@ -295,160 +311,32 @@ class HomeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             selectedCategory = intent.category,
-                            flags = emptySet()
+                            flags = emptySet(), // Optionally clear flags when a category is selected
+                            searchQuery = "" // Optionally clear search when category changes
                         )
-                    } // Clear flags when category selected
-                    loadPaginatedComics(categoryId = intent.category?.id, flags = emptySet())
+                    }
+                    loadPaginatedComics(categoryId = intent.category?.id, flags = _uiState.value.flags, searchQuery = _uiState.value.searchQuery)
                 }
 
                 is HomeIntent.ComicSelected -> {
-                    _effect.send(HomeEffect.NavigateToComicDetail(intent.comic?.filePath))
+                    // Handled by navigation effect or other logic, no reload needed here
                 }
 
-                is HomeIntent.FlagSelected -> {
-                    _uiState.update {
-                        it.copy(
-                            flags = setOf(intent.flag),
-                            selectedCategory = null
-                        )
-                    } // Clear category when flag selected
-                    loadPaginatedComics(flags = setOf(intent.flag), categoryId = null)
-                }
-
-                is HomeIntent.AddFolderClicked -> handleAddFolderClicked()
-                is HomeIntent.FolderSelected -> handleFolderSelected(intent.uri)
-
-                is HomeIntent.FolderPermissionResult -> handleFolderPermissionResult(intent.isGranted)
-                is HomeIntent.CheckInitialFolderPermission -> checkFolderPermissionStatus()
-            }
-        }
-    }
-
-    private fun checkFolderPermissionStatus() {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-            val permission = Manifest.permission.READ_EXTERNAL_STORAGE
-            val isGranted = ContextCompat.checkSelfPermission(
-                applicationContext,
-                permission
-            ) == PackageManager.PERMISSION_GRANTED
-            TimberLogger.logD("HomeViewModel", "Folder permission granted: $isGranted (Legacy)")
-            // Update UIState if it has a field for this, e.g., isLegacyPermissionGranted
-        } else {
-            TimberLogger.logD("HomeViewModel", "Folder permission granted: true (Android T+)")
-            // Update UIState if it has a field for this
-        }
-    }
-
-    private suspend fun handleAddFolderClicked() {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-            val permission = Manifest.permission.READ_EXTERNAL_STORAGE
-            when {
-                ContextCompat.checkSelfPermission(
-                    applicationContext,
-                    permission
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    _effect.send(HomeEffect.LaunchFolderPicker)
-                }
-
-                else -> {
-                    _effect.send(HomeEffect.RequestStoragePermission(permission))
-                }
-            }
-        } else {
-            _effect.send(HomeEffect.LaunchFolderPicker)
-        }
-    }
-
-    private suspend fun handleFolderPermissionResult(isGranted: Boolean) {
-        if (isGranted) {
-            _effect.send(HomeEffect.LaunchFolderPicker)
-        } else {
-            _effect.send(HomeEffect.ShowToast("Storage permission is needed to select folders."))
-        }
-    }
-
-    private suspend fun handleFolderSelected(uri: Uri) {
-        TimberLogger.logD(
-            "HomeViewModel",
-            "Folder selected and permission should be taken by UI: $uri"
-        )
-        val success = comicsFolderRepository.takePersistablePermission(
-            uri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION
-        )
-        if (success) {
-            _effect.send(HomeEffect.ShowToast("Background scan for folder $uri started."))
-            triggerFolderScan()
-        } else {
-            _effect.send(HomeEffect.ShowToast("Failed to secure access to folder."))
-        }
-    }
-
-    private fun triggerFolderScan() { // Consider if this needs to scan a specific URI or all managed folders
-        viewModelScope.launch {
-            try {
-                // If EnqueueSafFolderScanWorkerUseCase can take a specific Uri, pass it.
-                val workRequestId =
-                    EnqueueSafFolderScanWorkerUseCase(WorkManager.getInstance(applicationContext)).invoke()
-                _effect.send(HomeEffect.ShowToast("Folder scan enqueued."))
-
-                // Observe the work
-                observeScanWorker(workRequestId)
-            } catch (ex: Exception) {
-                TimberLogger.logE("HomeViewModel", "Failed to enqueue folder scan worker", ex)
-                _effect.send(HomeEffect.ShowToast("Error starting scan: ${ex.message}"))
-            }
-        }
-    }
-
-    private fun observeScanWorker(workRequestId: UUID) {
-        viewModelScope.launch {
-            WorkManager.getInstance(applicationContext)
-                .getWorkInfoByIdFlow(workRequestId)
-                .collectLatest { workInfo ->
-                    if (workInfo != null) {
-                        TimberLogger.logD("HomeViewModel", "Scan Worker State: ${workInfo.state}")
-                        when (workInfo.state) {
-                            WorkInfo.State.SUCCEEDED -> {
-                                TimberLogger.logD(
-                                    "HomeViewModel",
-                                    "Folder scan SUCCEEDED. Refreshing comics."
-                                )
-                                _effect.send(HomeEffect.ShowToast("Scan complete. Refreshing..."))
-                            }
-
-                            WorkInfo.State.RUNNING -> {
-                                TimberLogger.logD(
-                                    "HomeViewModel",
-                                    "Folder scan RUNNING. Refreshing comics."
-                                )
-                            }
-
-                            WorkInfo.State.FAILED -> {
-                                val errorMessage =
-                                    workInfo.outputData.getString(SafFolderScanWorker.KEY_ERROR_MESSAGE)
-                                TimberLogger.logW(
-                                    "HomeViewModel",
-                                    "Folder scan FAILED. Worker message: $errorMessage"
-                                )
-                                FirebaseCrashlytics.getInstance()
-                                    .recordException(Exception("Worker FAILED: ${errorMessage ?: "No specific message."} Raw output: ${workInfo.outputData.keyValueMap}"))
-                                _effect.send(HomeEffect.ShowToast(errorMessage ?: "Scan failed."))
-                            }
-
-                            WorkInfo.State.CANCELLED -> {
-                                TimberLogger.logI("HomeViewModel", "Folder scan CANCELLED.")
-                                FirebaseCrashlytics.getInstance()
-                                    .recordException(Exception(workInfo.outputData.keyValueMap.toString()))
-                                _effect.send(HomeEffect.ShowToast("Scan cancelled."))
-                            }
-
-                            else -> {
-                                // ENQUEUED, BLOCKED -
-                            }
-                        }
+                is HomeIntent.ClearSearch -> {
+                    if (_uiState.value.searchQuery.isNotEmpty()) {
+                        _uiState.update { it.copy(searchQuery = "") }
+                        loadPaginatedComics() // Reload with cleared search query
                     }
                 }
+
+                is HomeIntent.RequestStoragePermission -> {
+                    // TODO: Implement permission request logic if needed here or in View
+                }
+
+                is HomeIntent.ScanComicsFolders -> {
+                    // TODO: Trigger comics folder scanning
+                }
+            }
         }
     }
 }

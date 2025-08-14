@@ -33,8 +33,9 @@ interface ComicsDao {
         WHERE
             (:categoryId IS NULL OR comic_category_id = :categoryId) 
             AND (:filterByFavorite IS NULL OR is_favorite = :filterByFavorite)
-            AND (:createdAfterTimestamp IS NULL OR created >= :createdAfterTimestamp) /* Replaced is_new check */
-            AND (:filterByRead IS NULL OR was_read = :filterByRead) 
+            AND (:createdAfterTimestamp IS NULL OR created >= :createdAfterTimestamp)
+            AND (:filterByRead IS NULL OR was_read = :filterByRead)
+            AND (:searchQuery IS NULL OR title LIKE :searchQuery)  /* Added search query */
         ORDER BY title ASC
         LIMIT :limit OFFSET :offset
     """
@@ -44,8 +45,9 @@ interface ComicsDao {
         offset: Int,
         categoryId: Long?,
         filterByFavorite: Boolean?,
-        createdAfterTimestamp: Long?, // Changed from filterByNew: Boolean?
-        filterByRead: Boolean?
+        createdAfterTimestamp: Long?,
+        filterByRead: Boolean?,
+        searchQuery: String? // Added search query
     ): List<ComicEntity>
 
     /**
@@ -58,16 +60,21 @@ interface ComicsDao {
         WHERE
             (:categoryId IS NULL OR comic_category_id = :categoryId) 
             AND (:filterByFavorite IS NULL OR is_favorite = :filterByFavorite)
-            AND (:createdAfterTimestamp IS NULL OR created >= :createdAfterTimestamp) /* Replaced is_new check */
-            AND (:filterByRead IS NULL OR was_read = :filterByRead) 
+            AND (:createdAfterTimestamp IS NULL OR created >= :createdAfterTimestamp)
+            AND (:filterByRead IS NULL OR was_read = :filterByRead)
+            AND (   (:searchQuery IS NULL OR title LIKE :searchQuery) OR
+                    (:searchQuery IS NULL OR author LIKE :searchQuery) OR
+                    (:searchQuery IS NULL OR file_name LIKE :searchQuery)
+            )
         ORDER BY title ASC
     """
     )
     fun getComicsPagingSource(
         categoryId: Long?,
         filterByFavorite: Boolean?,
-        createdAfterTimestamp: Long?, // Changed from filterByNew: Boolean?
-        filterByRead: Boolean?
+        createdAfterTimestamp: Long?,
+        filterByRead: Boolean?,
+        searchQuery: String? // Added search query
     ): PagingSource<Int, ComicEntity>
 
     /**
@@ -80,14 +87,19 @@ interface ComicsDao {
             (:categoryId IS NULL OR comic_category_id = :categoryId) 
             AND (:filterByFavorite IS NULL OR is_favorite = :filterByFavorite)
             AND (:createdAfterTimestamp IS NULL OR created >= :createdAfterTimestamp)
-            AND (:filterByRead IS NULL OR was_read = :filterByRead) 
+            AND (:filterByRead IS NULL OR was_read = :filterByRead)
+            AND (   (:searchQuery IS NULL OR title LIKE :searchQuery) OR
+                    (:searchQuery IS NULL OR author LIKE :searchQuery) OR
+                    (:searchQuery IS NULL OR file_name LIKE :searchQuery)
+            )
     """
     )
-    fun getComicsCountByCriteria(
+    suspend fun getComicsCountByCriteria(
         categoryId: Long?,
         filterByFavorite: Boolean?,
         createdAfterTimestamp: Long?,
-        filterByRead: Boolean?
+        filterByRead: Boolean?,
+        searchQuery: String? // Added search query
     ): Int
 
     @Query("SELECT EXISTS(SELECT * FROM comics WHERE file_path = :filePath)")
