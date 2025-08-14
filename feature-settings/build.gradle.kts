@@ -9,12 +9,12 @@ plugins {
 }
 
 android {
-    namespace = "dev.diegoflassa.comiqueta.viewer"
+    namespace = "dev.diegoflassa.comiqueta.settings"
 }
 
 dependencies {
     //Módulos
-    implementation(project(":core"))
+    implementation(project(":feature-core"))
 
     //Common Testing
     testImplementation(libs.junit)
@@ -92,20 +92,14 @@ dependencies {
     implementation(libs.com.squareup.retrofit2.converter.moshi)
     implementation(libs.com.squareup.retrofit2.converter.gson)
 
-    //Documentfile
-    implementation(libs.ax.documentfile)
-
     //DataStore
     implementation(libs.ax.datastore.preferences)
 
     //Splashscreen
     implementation(libs.ax.core.splashscreen)
 
-    //Apache Commons Compress
-    implementation(libs.org.apache.commons.compress)
-
-    //Rar File
-    implementation(libs.org.github.junrar)
+    //Messaging Platform
+    implementation(libs.com.google.android.ump.messaging.platform)
 
     //Other
     implementation(libs.com.microsoft.clarity.compose)

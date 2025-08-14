@@ -41,11 +41,11 @@ kotlin {
 
 dependencies {
     //Modules
-    implementation(project(":core"))
-    implementation(project(":home"))
-    implementation(project(":settings"))
-    implementation(project(":categories"))
-    implementation(project(":viewer"))
+    implementation(project(":feature-core"))
+    implementation(project(":feature-home"))
+    implementation(project(":feature-settings"))
+    implementation(project(":feature-categories"))
+    implementation(project(":feature-viewer"))
 
     // Common
     implementation(libs.ax.core.ktx)

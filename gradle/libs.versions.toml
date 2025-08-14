@@ -2,7 +2,7 @@
 
 #Common
 gradle = "8.12.0"
-kotlin = "2.2.0"
+kotlin = "2.2.10-RC2"
 
 #Project build.gradle
 hilt-android-gradle-plugin = "2.57"
@@ -18,9 +18,9 @@ firebase-crashlytics-gradle = "3.0.6"
 perf-plugin = "2.0.1"
 
 #Common
-core-ktx = "1.16.0"
+core-ktx = "1.17.0"
 material = "1.12.0"
-ui-text-google-fonts = "1.8.3"
+ui-text-google-fonts = "1.9.0"
 
 #Common Testing
 junit = "4.13.2"
@@ -46,7 +46,7 @@ firebase-bom = "34.1.0"
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2025.07.00"
+compose-bom = "2025.08.00"
 ax-constraintlayout-compose = "1.1.1"
 ax-activity-compose = "1.10.1"
 lifecycle-viewmodel-compose = "2.9.2"
@@ -60,8 +60,8 @@ org-mockito-android = "5.18.0"
 #org-jetbrains-kotlinx-coroutines-test = "1.10.2"
 
 #Compose Navigation 3
-ax-navigation3-runtime = "1.0.0-alpha06"
-ax-navigation3-ui = "1.0.0-alpha06"
+ax-navigation3-runtime = "1.0.0-alpha07"
+ax-navigation3-ui = "1.0.0-alpha07"
 ax-navigation3-viewmodel = "1.0.0-alpha04"
 #ax-navigation3-adaptive = "1.0.0-SNAPSHOT"
 
@@ -161,7 +161,7 @@ com-osacky-doctor = "0.11.0"
 org-jetbrains-kotlinx-kover = "0.9.1"
 
 #Common
-com-google-devtools-ksp = "2.2.0-2.0.2"
+com-google-devtools-ksp = "2.2.10-RC2-2.0.2"
 
 [libraries]
 

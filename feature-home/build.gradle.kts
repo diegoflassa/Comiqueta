@@ -9,22 +9,32 @@ plugins {
 }
 
 android {
-    namespace = "dev.diegoflassa.comiqueta.settings"
+    namespace = "dev.diegoflassa.comiqueta.home"
 }
 
 dependencies {
     //Módulos
-    implementation(project(":core"))
+    implementation(project(":feature-core"))
 
     //Common Testing
     testImplementation(libs.junit)
     testImplementation(libs.ax.test.ext.junit.ktx)
+    testImplementation(libs.org.jetbrains.kotlinx.coroutines.test)
+    testImplementation(libs.org.mockito.core)
+    testImplementation(libs.org.mockito.inline)
+    testImplementation(libs.org.mockito.kotlin)
+    testImplementation(libs.app.cash.turbine)
+    testImplementation(libs.androidx.paging.common)
+    testImplementation(libs.com.google.truth)
+
+    // AndroidTest specific common dependencies
     androidTestImplementation(libs.ax.test.runner)
     androidTestImplementation(libs.ax.test.uiautomator)
     androidTestImplementation(libs.ax.benchmark.macro.junit4)
     androidTestImplementation(libs.ax.test.rules)
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.ax.test.ext.junit.ktx)
+    androidTestImplementation(libs.org.mockito.android)
 
     //Compose
     implementation(platform(libs.ax.compose.bom))
@@ -42,16 +52,24 @@ dependencies {
     implementation(libs.ax.activity.compose)
     implementation(libs.ax.lifecycle.viewmodel.compose)
     implementation(libs.ax.navigation.compose)
+    implementation(libs.ax.paging.runtime.ktx)
+    implementation(libs.ax.paging.compose)
     implementation(libs.kotlinx.serialization.json)
 
     //Compose Testing
     androidTestImplementation(platform(libs.ax.compose.bom))
     androidTestImplementation(libs.ax.compose.ui.test)
     androidTestImplementation(libs.ax.compose.ui.test.junit4)
-    androidTestImplementation(libs.org.mockito.android)
+    androidTestImplementation(libs.org.mockito.android) // Note: also listed under Common Testing for androidTest
     //androidTestImplementation(libs.org.jetbrains.kotlinx.coroutines.test)
     debugImplementation(libs.ax.compose.ui.test.manifest)
     debugImplementation(libs.ax.compose.ui.tooling)
+
+    //Compose Navigation 3
+    implementation(libs.ax.navigation3.runtime)
+    implementation(libs.ax.navigation3.ui)
+    implementation(libs.ax.navigation3.viewmodel)
+    //implementation(libs.ax.navigation3.adaptive)
 
     //Firebase
     implementation(platform(libs.com.google.firebase.bom))
@@ -92,14 +110,20 @@ dependencies {
     implementation(libs.com.squareup.retrofit2.converter.moshi)
     implementation(libs.com.squareup.retrofit2.converter.gson)
 
+    //Documentfile
+    implementation(libs.ax.documentfile)
+
     //DataStore
     implementation(libs.ax.datastore.preferences)
 
     //Splashscreen
     implementation(libs.ax.core.splashscreen)
 
-    //Messaging Platform
-    implementation(libs.com.google.android.ump.messaging.platform)
+    //Apache Commons Compress
+    implementation(libs.org.apache.commons.compress)
+
+    //Rar File
+    implementation(libs.org.github.junrar)
 
     //Other
     implementation(libs.com.microsoft.clarity.compose)

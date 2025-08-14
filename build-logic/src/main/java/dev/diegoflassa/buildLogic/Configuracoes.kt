@@ -60,7 +60,7 @@ object Configuracoes {
             if (!initialized) {
                 println("Configuracoes: WARNING: VERSION_CODE accessed before initializeBuildCount was called! Returning a default.")
             }
-            return (2) + buildCountValue// * 1000) + buildCountValue
+            return (2 * 1000) + buildCountValue
         }
 
     val VERSION_NAME: String

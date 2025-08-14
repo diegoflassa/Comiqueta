@@ -20,8 +20,8 @@ dependencyResolutionManagement {
 rootProject.name = "Comiqueta"
 includeBuild("build-logic")
 include(":app")
-include(":core")
-include(":settings")
-include(":home")
-include(":categories")
-include(":viewer")
+include(":feature-core")
+include(":feature-settings")
+include(":feature-home")
+include(":feature-categories")
+include(":feature-viewer")
