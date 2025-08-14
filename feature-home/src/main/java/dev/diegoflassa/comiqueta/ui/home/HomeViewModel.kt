@@ -22,7 +22,7 @@ import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.data.worker.SafFolderScanWorker
-import dev.diegoflassa.comiqueta.core.domain.usecase.EnqueueSafFolderScanWorkerUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.IEnqueueSafFolderScanWorkerUseCase
 import dev.diegoflassa.comiqueta.domain.usecase.IGetPaginatedComicsUseCase
 import dev.diegoflassa.comiqueta.domain.usecase.ILoadCategoriesUseCase
 import dev.diegoflassa.comiqueta.domain.usecase.PaginatedComicsParams
@@ -48,7 +48,7 @@ class HomeViewModel @Inject constructor(
     private val getPaginatedComicsUseCase: IGetPaginatedComicsUseCase,
     private val loadCategoriesUseCase: ILoadCategoriesUseCase,
     private val comicsFolderRepository: IComicsFolderRepository,
-    private val enqueueSafFolderScanWorkerUseCase: EnqueueSafFolderScanWorkerUseCase
+    private val enqueueSafFolderScanWorkerUseCase: IEnqueueSafFolderScanWorkerUseCase
 ) : ViewModel() {
 
     companion object {
