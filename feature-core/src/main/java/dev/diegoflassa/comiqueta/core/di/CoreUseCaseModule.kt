@@ -1,9 +1,13 @@
 package dev.diegoflassa.comiqueta.core.di
 
+import android.content.Context
+import androidx.work.WorkManager
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ViewModelScoped
 import dev.diegoflassa.comiqueta.core.domain.usecase.EnqueueSafFolderScanWorkerUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.IEnqueueSafFolderScanWorkerUseCase
@@ -49,4 +53,12 @@ abstract class CoreUseCaseModule {
     abstract fun bindEnqueueSafFolderScanWorkerUseCase(
         enqueueSafFolderScanWorkerUseCase: EnqueueSafFolderScanWorkerUseCase
     ): IEnqueueSafFolderScanWorkerUseCase
+
+    companion object {
+        @Provides
+        @ViewModelScoped
+        fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+            return WorkManager.getInstance(context)
+        }
+    }
 }
