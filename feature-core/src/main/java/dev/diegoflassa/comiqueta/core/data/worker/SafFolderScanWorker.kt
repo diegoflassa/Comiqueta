@@ -58,7 +58,10 @@ class SafFolderScanWorker @AssistedInject constructor(
         val specificFolderUriString = inputData.getString(KEY_FOLDER_URI)
 
         val folderUrisToScan: List<Uri> = if (specificFolderUriString != null) {
-            TimberLogger.logD(TAG, "Starting specific scan for folder URI: $specificFolderUriString")
+            TimberLogger.logD(
+                TAG,
+                "Starting specific scan for folder URI: $specificFolderUriString"
+            )
             try {
                 listOf(specificFolderUriString.toUri())
             } catch (e: Exception) {
@@ -138,7 +141,10 @@ class SafFolderScanWorker @AssistedInject constructor(
             val outputData = workDataOf(KEY_ERROR_MESSAGE to finalErrorMessage)
             Result.failure(outputData)
         } else {
-            TimberLogger.logI(TAG, "Scan completed successfully for all processed folder(s).${if (specificFolderUriString != null) " URI: $specificFolderUriString" else ""}")
+            TimberLogger.logI(
+                TAG,
+                "Scan completed successfully for all processed folder(s).${if (specificFolderUriString != null) " URI: $specificFolderUriString" else ""}"
+            )
             Result.success()
         }
     }
@@ -180,28 +186,34 @@ class SafFolderScanWorker @AssistedInject constructor(
                     if (existingComic != null) {
                         comicToSave = existingComic.copy(
                             title = comicTitle,
+                            fileName = fileName,
+                            folderPath = dir.uri,
                             coverPath = coverImageUri ?: existingComic.coverPath,
                             lastModified = file.lastModified()
                         )
                         TimberLogger.logD(
-                            TAG, "Updating existing comic: ${comicToSave.title} (URI: ${comicToSave.filePath})"
+                            TAG,
+                            "Updating existing comic: ${comicToSave.title} (URI: ${comicToSave.filePath})"
                         )
                     } else {
                         comicToSave = ComicEntity(
                             filePath = fileUri,
                             title = comicTitle,
+                            fileName = fileName,
+                            folderPath = dir.uri,
                             coverPath = coverImageUri,
                             lastModified = file.lastModified()
                         )
                         TimberLogger.logI(
-                            TAG, "Found new comic: ${comicToSave.title} (URI: ${comicToSave.filePath}). Saving to DB."
+                            TAG,
+                            "Found new comic: ${comicToSave.title} (URI: ${comicToSave.filePath}). Saving to DB."
                         )
                     }
 
                     try {
-                        comicsDao.insertComic(comicToSave)
+                        comicsDao.insertComicAndFts(comicToSave)
                         TimberLogger.logD(
-                            TAG, "Successfully saved/updated comic: ${comicToSave.title}"
+                            TAG, "Successfully saved/updated comic (and FTS): ${comicToSave.title}"
                         )
                     } catch (e: Exception) {
                         FirebaseCrashlytics.getInstance().recordException(e)
@@ -397,7 +409,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                             }
                         }
                     }
-                } // End of when
+                }
 
                 localScaledBitmap?.let { bmp ->
                     coverFile = saveBitmapToCache(
@@ -410,10 +422,10 @@ class SafFolderScanWorker @AssistedInject constructor(
                 TimberLogger.logE(
                     TAG, "General error extracting cover for ${comicFile.name}: ${e.message}", e
                 )
-                localScaledBitmap = null // Ensure reset on error
+                localScaledBitmap = null
                 coverFile = null
             } finally {
-                localScaledBitmap?.recycle() // Recycle in finally block
+                localScaledBitmap?.recycle()
             }
             return@withContext coverFile?.toUri()
         }

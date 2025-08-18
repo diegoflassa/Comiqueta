@@ -40,8 +40,8 @@ class GetComicInfoUseCase @Inject constructor(
             val p1 = parts1.getOrNull(i)
             val p2 = parts2.getOrNull(i)
 
-            if (p1 == null) return@Comparator -1 // s1 is shorter
-            if (p2 == null) return@Comparator 1  // s2 is shorter
+            if (p1 == null) return@Comparator -1
+            if (p2 == null) return@Comparator 1
 
             val isNum1 = p1.matches(Regex("[0-9]+"))
             val isNum2 = p2.matches(Regex("[0-9]+"))
@@ -104,7 +104,7 @@ class GetComicInfoUseCase @Inject constructor(
                         val renderer = PdfRenderer(pfd)
                         pageCount = renderer.pageCount
                         pageIdentifiers.addAll(List(pageCount) { it.toString() })
-                        renderer.close() // Close renderer ASAP
+                        renderer.close()
                     }
 
                     ComicFileType.CBZ -> {
@@ -202,7 +202,7 @@ class GetComicInfoUseCase @Inject constructor(
                                     ) || fileName.endsWith(".tbz2", true) ->
                                         TarArchiveInputStream(BZip2CompressorInputStream(bis))
 
-                                    else -> TarArchiveInputStream(bis) // Plain .tar
+                                    else -> TarArchiveInputStream(bis)
                                 }
                                 tarInput.use { ais ->
                                     generateSequence { ais.nextEntry }
@@ -220,7 +220,7 @@ class GetComicInfoUseCase @Inject constructor(
                     }
 
                     ComicFileType.JPG, ComicFileType.JPEG, ComicFileType.PNG, ComicFileType.GIF, ComicFileType.WEBP -> {
-                        pageIdentifiers.add(fileName) // For single images, the identifier is the filename itself
+                        pageIdentifiers.add(fileName)
                         pageCount = 1
                     }
                     // No default needed as ComicFileType is exhaustive or fromMimeTypeOrExtension would have thrown
@@ -237,7 +237,7 @@ class GetComicInfoUseCase @Inject constructor(
                 throw IOException("Failed to parse comic: ${e.message}", e)
             } finally {
                 try {
-                    pfd?.close() // Close PFD if it was opened (only for PDF)
+                    pfd?.close()
                 } catch (e: IOException) {
                     TimberLogger.logE(
                         "GetComicInfoUseCase",
@@ -249,7 +249,7 @@ class GetComicInfoUseCase @Inject constructor(
             ComicInfo(
                 title,
                 pageCount,
-                Collections.unmodifiableList(pageIdentifiers.toList()), // Ensure immutability
+                Collections.unmodifiableList(pageIdentifiers.toList()),
                 determinedFileType
             )
         }

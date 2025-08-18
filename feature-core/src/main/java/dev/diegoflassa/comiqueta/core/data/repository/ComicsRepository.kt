@@ -35,7 +35,7 @@ class ComicsRepository @Inject constructor(
         categoryId: Long?,
         flags: Set<ComicFlags>,
         pageSize: Int,
-        searchQuery: String? // Added to match interface
+        searchQuery: String?
     ): Flow<PagingData<Comic>> {
         val pagerFlow: Flow<PagingData<ComicEntity>> = Pager(
             config = PagingConfig(
@@ -54,8 +54,15 @@ class ComicsRepository @Inject constructor(
                     null
                 }
 
-                // Sanitize search query: use null if blank, otherwise add wildcards for LIKE operator
-                val effectiveSearchQuery = if (searchQuery.isNullOrBlank()) null else "%${searchQuery.trim()}%"
+                // Prepare search query for FTS: use null if blank, otherwise add '*' for prefix matching.
+                // The FTS query will search across title, author, and fileName in the FTS table.
+                val effectiveFtsQuery = if (searchQuery.isNullOrBlank()) {
+                    null
+                } else {
+                    // Ensure the query is not just a wildcard if the search term is empty
+                    val trimmedQuery = searchQuery.trim()
+                    if (trimmedQuery.isNotEmpty()) "$trimmedQuery*" else null
+                }
 
                 // Launch a coroutine to perform the count and log in the background
                 CoroutineScope(Dispatchers.IO).launch {
@@ -64,9 +71,9 @@ class ComicsRepository @Inject constructor(
                         filterByFavorite = filterByFavorite,
                         createdAfterTimestamp = createdAfterTimestamp,
                         filterByRead = filterByRead,
-                        searchQuery = effectiveSearchQuery
+                        ftsQuery = effectiveFtsQuery
                     )
-                    TimberLogger.logI(tag, "Count: $count, CategoryId: $categoryId, Favorite: $filterByFavorite, CreatedAfter: $createdAfterTimestamp, Read: $filterByRead, Search: '$effectiveSearchQuery', Flags: $flags")
+                    TimberLogger.logI(tag, "Count: $count, CategoryId: $categoryId, Favorite: $filterByFavorite, CreatedAfter: $createdAfterTimestamp, Read: $filterByRead, FTS Search: '$effectiveFtsQuery', Flags: $flags")
                 }
 
                 comicsDao.getComicsPagingSource(
@@ -74,13 +81,12 @@ class ComicsRepository @Inject constructor(
                     filterByFavorite = filterByFavorite,
                     createdAfterTimestamp = createdAfterTimestamp,
                     filterByRead = filterByRead,
-                    searchQuery = effectiveSearchQuery // Pass sanitized search query for paging source
+                    ftsQuery = effectiveFtsQuery
                 )
             }).flow
 
         return pagerFlow.map { pagingData: PagingData<ComicEntity> ->
             pagingData.map { comicEntity: ComicEntity ->
-                // The asExternalModel() already uses the isNew(daysConsideredNew) logic for the Comic model's isNew property
                 comicEntity.asExternalModel()
             }
         }
@@ -91,22 +97,22 @@ class ComicsRepository @Inject constructor(
     }
 
     override suspend fun insertComic(comic: Comic) {
-        comicsDao.insertComic(comic.asEntity())
+        comicsDao.insertComicAndFts(comic.asEntity()) // Updated to use transactional FTS method
     }
 
     override suspend fun insertComics(comics: List<ComicEntity>) {
-        comicsDao.insertComics(comics)
+        comicsDao.insertComicsAndFts(comics) // Updated to use transactional FTS method
     }
 
     override suspend fun updateComic(comic: Comic) {
-        comicsDao.updateComic(comic.asEntity())
+        comicsDao.updateComicAndFts(comic.asEntity()) // Updated to use transactional FTS method
     }
 
     override suspend fun deleteComicByFilePath(filePath: Uri) {
-        comicsDao.deleteComicByFilePath(filePath)
+        comicsDao.deleteComicByFilePathAndFts(filePath) // Updated to use transactional FTS method
     }
 
     override suspend fun clearAllComics() {
-        comicsDao.clearAllComics()
+        comicsDao.clearAllComicsAndFts() // Updated to use transactional FTS method
     }
 }

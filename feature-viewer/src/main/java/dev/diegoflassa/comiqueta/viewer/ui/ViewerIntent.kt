@@ -1,8 +1,5 @@
 package dev.diegoflassa.comiqueta.viewer.ui
 
-// No Uri import needed if LoadComic takes a String
-// import android.net.Uri
-
 /**
  * Represents user actions or events for the Comic Viewer screen,
  * to be processed by the ViewerViewModel.

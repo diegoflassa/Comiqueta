@@ -281,8 +281,7 @@ class HomeViewModel @Inject constructor(
                     _uiState.update { it.copy(generalStoragePermissionGranted = intent.isGranted) }
                     if (intent.isGranted) {
                         _effect.send(HomeEffect.ShowToast("Storage permission granted!"))
-                        // Optionally trigger a scan or other actions, e.g., if a blocked action can now proceed
-                        // reduce(HomeIntent.ScanComicsFolders) // Example: Trigger scan if this was the purpose
+                        _effect.send(HomeEffect.OpenFolderPicker)
                     } else {
                         _effect.send(HomeEffect.ShowToast("Storage permission denied. Some features might be limited."))
                     }
