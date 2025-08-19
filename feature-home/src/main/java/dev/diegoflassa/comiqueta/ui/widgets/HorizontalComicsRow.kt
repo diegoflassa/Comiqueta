@@ -2,81 +2,235 @@ package dev.diegoflassa.comiqueta.ui.widgets
 
 import android.content.res.Configuration
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemKey
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
+import dev.diegoflassa.comiqueta.core.theme.trackBarThumbColor
+import dev.diegoflassa.comiqueta.core.theme.trackBarTrackColor
+import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.ui.home.HomeIntent
-import androidx.core.net.toUri
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 
 @Composable
 fun HorizontalComicsRow(
-    comics: LazyPagingItems<Comic>,
     modifier: Modifier = Modifier,
+    comics: LazyPagingItems<Comic>,
+    itemsPerPage: Int = 4,
     onIntent: ((HomeIntent) -> Unit)? = null
 ) {
-    LazyRow(
-        modifier = modifier,
-        contentPadding = PaddingValues(
-            horizontal = 16.dp,
-            vertical = 8.dp
-        ),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    val lazyListState = rememberLazyListState()
+    val itemCount = comics.itemCount
+    val pageCount by remember(itemCount, itemsPerPage) {
+        derivedStateOf {
+            if (itemCount > 0) ceil(itemCount.toFloat() / itemsPerPage).toInt() else 0
+        }
+    }
+    val currentPage by remember(itemCount, pageCount, itemsPerPage) {
+        derivedStateOf {
+            if (itemCount > 0 && pageCount > 0 && lazyListState.layoutInfo.visibleItemsInfo.isNotEmpty()) {
+                val firstVisible = lazyListState.firstVisibleItemIndex
+                val lastVisible =
+                    lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: firstVisible
+                val centerVisibleIndex = firstVisible + (lastVisible - firstVisible) / 2
+                (centerVisibleIndex / itemsPerPage).coerceIn(0, pageCount - 1)
+            } else 0
+        }
+    }
+
+    if (itemCount == 0) {
+        return
+    }
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        items(
-            count = comics.itemCount,
-            key = comics.itemKey { comic -> comic.filePath.toString() }
-        ) { index ->
-            val comic = comics[index]
-            if (comic != null) {
-                ComicCoverItem(comic = comic, onIntent = onIntent)
-            } else {
-                // Optional: You can display a placeholder while items are loading
-                // PlaceholderComicCoverItem()
+        LazyRow(
+            state = lazyListState,
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(
+                count = comics.itemCount,
+                key = { index ->
+                    comics[index]?.filePath?.toString() ?: index
+                }
+            ) { index ->
+                val comic = comics[index]
+                if (comic != null) {
+                    ComicCoverItem(comic = comic, onIntent = onIntent)
+                }
             }
+        }
+
+        if (pageCount > 1) {
+            Spacer(modifier = Modifier.height(12.dp))
+            ScrollTrackIndicator(
+                pageCount = pageCount,
+                currentPage = currentPage,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
 
 @Composable
 fun HorizontalComicsRowForPreview(
-    comics: List<Comic?>,
     modifier: Modifier = Modifier,
+    comics: List<Comic?>,
+    itemsPerPage: Int = 4,
     onIntent: ((HomeIntent) -> Unit)? = null
 ) {
-    LazyRow(
-        modifier = modifier,
-        contentPadding = PaddingValues(
-            horizontal = 16.dp,
-            vertical = 8.dp
-        ),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    val lazyListState = rememberLazyListState()
+    val itemCount = comics.size
+    val pageCount by remember(itemCount, itemsPerPage) {
+        derivedStateOf {
+            if (itemCount > 0) ceil(itemCount.toFloat() / itemsPerPage).toInt() else 0
+        }
+    }
+    val currentPage by remember(itemCount, pageCount, itemsPerPage) {
+        derivedStateOf {
+            if (itemCount > 0 && pageCount > 0 && lazyListState.layoutInfo.visibleItemsInfo.isNotEmpty()) {
+                val firstVisible = lazyListState.firstVisibleItemIndex
+                val lastVisible =
+                    lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: firstVisible
+                val centerVisibleIndex = firstVisible + (lastVisible - firstVisible) / 2
+                (centerVisibleIndex / itemsPerPage).coerceIn(0, pageCount - 1)
+            } else 0
+        }
+    }
+
+    if (itemCount == 0) {
+        return
+    }
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        items(
-            count = comics.size,
-            key = { index -> comics[index]?.filePath ?: Random.nextInt() }
-        ) { index ->
-            val comic = comics[index]
-            if (comic != null) {
-                ComicCoverItem(comic = comic, onIntent = onIntent)
-            } else {
-                // Optional: You can display a placeholder while items are loading
-                // PlaceholderComicCoverItem()
+        LazyRow(
+            state = lazyListState,
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(
+                count = comics.size,
+                key = { index ->
+                    comics[index]?.filePath?.toString() ?: Random.nextInt()
+                } // Preview can use Random for simplicity if keys aren't critical for preview stability
+            ) { index ->
+                val comic = comics[index]
+                if (comic != null) {
+                    ComicCoverItem(comic = comic, onIntent = onIntent)
+                }
             }
+        }
+        if (pageCount > 1) {
+            Spacer(modifier = Modifier.height(12.dp))
+            ScrollTrackIndicator(
+                pageCount = pageCount,
+                currentPage = currentPage,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
+
+@Composable
+fun ScrollTrackIndicator(
+    pageCount: Int,
+    currentPage: Int,
+    modifier: Modifier = Modifier,
+    trackColor: Color = MaterialTheme.colorScheme.trackBarTrackColor,
+    thumbColor: Color = MaterialTheme.colorScheme.trackBarThumbColor,
+    barHeight: Dp = 2.dp.scaled(),
+    thumbIndicatorWidth: Dp = 23.dp.scaled()
+) {
+    if (pageCount <= 1) {
+        // To maintain consistent layout height if needed, add a Spacer here:
+        // Spacer(modifier = modifier.height(barHeight))
+        return
+    }
+
+    BoxWithConstraints(
+        modifier = modifier.height(barHeight)
+    ) {
+        val trackShape = RoundedCornerShape(percent = 50)
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(trackColor, trackShape)
+        )
+
+        // Movable Thumb
+        val thumbWidthActual = thumbIndicatorWidth.coerceAtMost(this.maxWidth)
+        val thumbWidthPx = with(LocalDensity.current) { thumbWidthActual.toPx() }
+        val trackWidthPx = this.constraints.maxWidth.toFloat()
+
+        val draggableWidthPx = (trackWidthPx - thumbWidthPx).coerceAtLeast(0f)
+
+        val currentOffsetRatio = if (pageCount > 1) {
+            currentPage.toFloat() / (pageCount - 1).coerceAtLeast(1)
+        } else {
+            0f
+        }
+        val currentOffsetPx = (currentOffsetRatio * draggableWidthPx).coerceIn(0f, draggableWidthPx)
+
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(currentOffsetPx.roundToInt(), 0) }
+                .width(thumbWidthActual)
+                .fillMaxHeight()
+                .background(thumbColor, trackShape)
+        )
+    }
+}
+
 
 // --- HorizontalComicsRow Previews (using HorizontalComicsRowForPreview) ---
 
@@ -136,11 +290,9 @@ private val comicsWithNullsPreviewData: List<Comic?> =
 private fun HorizontalComicsRowPreviewLightDefault() {
     ComiquetaThemeContent(darkTheme = false) {
         Surface {
-            // HorizontalComicsRowForPreview doesn't take a title directly
-            // The title would be rendered by a parent composable in a real scenario
             HorizontalComicsRowForPreview(
                 comics = sampleComicsPreviewData,
-                onIntent = {} // Dummy intent handler for preview
+                onIntent = {}
             )
         }
     }
@@ -213,7 +365,7 @@ private fun HorizontalComicsRowPreviewLightEmpty() {
     ComiquetaThemeContent(darkTheme = false) {
         Surface {
             HorizontalComicsRowForPreview(
-                comics = emptyList(), // Test with an empty list
+                comics = emptyList(),
                 onIntent = {}
             )
         }
@@ -234,8 +386,6 @@ private fun HorizontalComicsRowPreviewLightWithNulls() {
                 comics = comicsWithNullsPreviewData,
                 onIntent = {}
             )
-            // If you have a PlaceholderComicCoverItem(), your HorizontalComicsRowForPreview
-            // would render it for the null items.
         }
     }
 }

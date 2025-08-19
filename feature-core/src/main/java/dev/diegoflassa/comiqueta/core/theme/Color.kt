@@ -50,14 +50,29 @@ object ComiquetaLightColors {
 
     //Custom colors
     val settingIconTintLight = Color(0xFF231F20)
+
+    //Tab colors
     val tabSelectedTextLight = Color(0xFFBCBCBC)
     val tabUnselectedTextLight = Color(0xFFFFFFFF)
+
+    //BottomAppBar colors
     val bottomAppBarSelectedIconLight = Color(0xFF333333)
     val bottomAppBarUnselectedIconLight = Color(0xFFBCBCBC)
     val bottomAppBarSelectedTextLight = Color(0xFF333333)
     val bottomAppBarUnselectedTextLight = Color(0xFFBCBCBC)
+
+    //Header colors
     val headerSelectedIconLight = Color(0xFFBCBCBC)
     val headerUnselectedIconLight = Color(0xFFFFFFFF)
+
+    //ComicsRow colors
+    val trackBarTrackColorLight = Color(0xFFF2F2F2)
+    val trackBarThumbColorLight = Color(0xFF333333)
+
+    //ComicListItem colors
+    val comicListItemTitleTextColorLight = Color(0xFF000000)
+    val comicListItemSubtitleTextColorLight = Color(0xFFB1B1B1)
+    val comicListItemIconColorLight = Color(0xFF333333)
 }
 
 object ComiquetaDarkColors {
@@ -99,14 +114,29 @@ object ComiquetaDarkColors {
 
     //Custom colors
     val settingIconTintDark = Color(0xFFFFFFFF)
+
+    //Tab colors
     val tabSelectedTextDark = Color(0xFF333333)
     val tabUnselectedTextDark = Color(0xFFBCBCBC)
+
+    //BottomAppBar colors
     val bottomAppBarSelectedIconDark = Color(0xFFFFFFFF)
     val bottomAppBarUnselectedIconDark = Color(0xFFBCBCBC)
     val bottomAppBarSelectedTextDark = Color(0xFFFFFFFF)
     val bottomAppBarUnselectedTextDark = Color(0xFFBCBCBC)
-    val headerSelectedIconDark = Color(0xFF333333)
-    val headerUnselectedIconDark = Color(0xFFBCBCBC)
+
+    //Header colors
+    val headerSelectedIconDark = Color(0xFFBCBCBC)
+    val headerUnselectedIconDark = Color(0xFF333333)
+
+    //ComicsRow colors
+    val trackBarTrackColorDark = Color(0xFFF2F2F2)
+    val trackBarThumbColorDark = Color(0xFF333333)
+
+    //ComicListItem colors
+    val comicListItemTitleTextColorDark = Color(0xFF000000)
+    val comicListItemSubtitleTextColorDark = Color(0xFFB1B1B1)
+    val comicListItemIconColorDark = Color(0xFF333333)
 }
 
 @Composable
@@ -233,6 +263,8 @@ val ColorScheme.settingIconTint: Color
         }
     }
 
+//Tab colors
+
 val ColorScheme.tabSelectedText: Color
     @Composable
     @ReadOnlyComposable
@@ -254,6 +286,8 @@ val ColorScheme.tabUnselectedText: Color
             ComiquetaDarkColors.tabUnselectedTextDark
         }
     }
+
+//BottomAppBar colors
 
 val ColorScheme.bottomAppBarSelectedIcon: Color
     @Composable
@@ -299,6 +333,8 @@ val ColorScheme.bottomAppBarUnselectedText: Color
         }
     }
 
+//Header colors
+
 val ColorScheme.headerSelectedIcon: Color
     @Composable
     @ReadOnlyComposable
@@ -318,5 +354,64 @@ val ColorScheme.headerUnselectedIcon: Color
             ComiquetaLightColors.headerUnselectedIconLight
         } else {
             ComiquetaDarkColors.headerUnselectedIconDark
+        }
+    }
+
+//TrackBar colors
+
+val ColorScheme.trackBarTrackColor: Color
+    @Composable
+    @ReadOnlyComposable
+    get() {
+        return if (this.primary == comiquetaLightColorScheme.primary) {
+            ComiquetaLightColors.trackBarTrackColorLight
+        } else {
+            ComiquetaDarkColors.trackBarTrackColorDark
+        }
+    }
+
+val ColorScheme.trackBarThumbColor: Color
+    @Composable
+    @ReadOnlyComposable
+    get() {
+        return if (this.primary == comiquetaLightColorScheme.primary) {
+            ComiquetaLightColors.trackBarThumbColorLight
+        } else {
+            ComiquetaDarkColors.trackBarThumbColorDark
+        }
+    }
+
+//ComicListItem colors
+
+val ColorScheme.comicListItemTitleTextColor: Color
+    @Composable
+    @ReadOnlyComposable
+    get() {
+        return if (this.primary == comiquetaLightColorScheme.primary) {
+            ComiquetaLightColors.comicListItemTitleTextColorLight
+        } else {
+            ComiquetaDarkColors.comicListItemTitleTextColorDark
+        }
+    }
+
+val ColorScheme.comicListItemSubtitleTextColor: Color
+    @Composable
+    @ReadOnlyComposable
+    get() {
+        return if (this.primary == comiquetaLightColorScheme.primary) {
+            ComiquetaLightColors.comicListItemSubtitleTextColorLight
+        } else {
+            ComiquetaDarkColors.comicListItemSubtitleTextColorDark
+        }
+    }
+
+val ColorScheme.comicListItemIconColor: Color
+    @Composable
+    @ReadOnlyComposable
+    get() {
+        return if (this.primary == comiquetaLightColorScheme.primary) {
+            ComiquetaLightColors.comicListItemIconColorLight
+        } else {
+            ComiquetaDarkColors.comicListItemIconColorDark
         }
     }

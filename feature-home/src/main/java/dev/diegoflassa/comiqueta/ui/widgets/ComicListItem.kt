@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +37,9 @@ import coil.compose.rememberAsyncImagePainter
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
+import dev.diegoflassa.comiqueta.core.theme.comicListItemIconColor
+import dev.diegoflassa.comiqueta.core.theme.comicListItemSubtitleTextColor
+import dev.diegoflassa.comiqueta.core.theme.comicListItemTitleTextColor
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.home.R
 import dev.diegoflassa.comiqueta.ui.home.HomeIntent
@@ -51,7 +55,7 @@ fun ComicListItem(
             .fillMaxWidth()
             .padding(horizontal = 16.dp.scaled(), vertical = 4.dp.scaled())
             .clickable { onIntent?.invoke(HomeIntent.ComicSelected(comic)) },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp.scaled()),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         shape = RoundedCornerShape(8.dp.scaled())
     ) {
         Row(
@@ -78,24 +82,29 @@ fun ComicListItem(
             Spacer(modifier = Modifier.width(8.dp.scaled()))
 
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center,
             ) {
                 Text(
                     text = comic?.title ?: stringResource(id = R.string.unknown_title),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp,
+                    color = ComiquetaTheme.colorScheme.comicListItemTitleTextColor,
+                    maxLines = 1,
                 )
                 Text(
-                    text = "Chapter ${comic?.chapter ?: "?"} - Page ${comic?.page ?: "?"}",
+                    text = "Chapter ${comic?.chapter ?: "?"} - Page ${comic?.page ?: ""}",
+                    fontWeight = FontWeight.Normal,
                     fontSize = 12.sp,
-                    color = ComiquetaTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    color = ComiquetaTheme.colorScheme.comicListItemSubtitleTextColor,
+                    maxLines = 1,
                 )
             }
 
             Icon(
                 painter = rememberVectorPainter(Icons.Default.ChevronRight),
                 contentDescription = stringResource(id = R.string.more_options),
-                tint = ComiquetaTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                tint = ComiquetaTheme.colorScheme.comicListItemIconColor,
                 modifier = Modifier
                     .width(25.dp.scaled())
                     .aspectRatio(0.5f)
