@@ -68,7 +68,7 @@ fun CategoriesSection(
 
             if (tabPositions.isNotEmpty() && selectedTabIndex in tabPositions.indices) {
                 val currentTabPosition = tabPositions[selectedTabIndex]
-                val currentTextWidth = textWidths[selectedTabIndex]?.scaled() ?: 0.dp
+                val currentTextWidth = textWidths[selectedTabIndex] ?: 0.dp
 
                 if (currentTextWidth > 0.dp) {
                     val mainIndicatorHeight = 2.dp.scaled()
@@ -117,9 +117,13 @@ fun CategoriesSection(
                             maxLines = 1,
                             onTextLayout = { textLayoutResult ->
                                 val lastVisibleLine = textLayoutResult.lineCount - 1
-                                val lastVisibleCharIndex = textLayoutResult.getLineEnd(lastVisibleLine, visibleEnd = true)
+                                val lastVisibleCharIndex =
+                                    textLayoutResult.getLineEnd(lastVisibleLine, visibleEnd = false)
 
-                                val lastCharRight = textLayoutResult.getHorizontalPosition(lastVisibleCharIndex - 1, usePrimaryDirection = true)
+                                val lastCharRight = textLayoutResult.getHorizontalPosition(
+                                    lastVisibleCharIndex - 1,
+                                    usePrimaryDirection = true
+                                )
 
                                 val visibleWidth = with(density) { lastCharRight.toDp() }
                                 TimberLogger.logI(tag, "Visible width[$index]: $visibleWidth")
@@ -136,7 +140,7 @@ fun CategoriesSection(
 // --- CategoriesSection Previews ---
 
 val sampleCategoriesForPreview = listOf(
-    CategoryEntity(id = 0, name = "All"),
+    CategoryEntity(id = 0, name = "All long text to test"),
     CategoryEntity(id = 1, name = "Action"),
     CategoryEntity(id = 2, name = "Comedy"),
     CategoryEntity(id = 3, name = "Sci-Fi"),
