@@ -523,18 +523,6 @@ fun ComicsContentForPreview(
             )
         }
 
-        if (uiState.categories.isNotEmpty()) {
-            item { // Categories Section
-                CategoriesSection(
-                    categories = uiState.categories,
-                    selectedCategory = uiState.selectedCategory,
-                    onCategoryClicked = { category ->
-                        onIntent?.invoke(HomeIntent.CategorySelected(category))
-                    }
-                )
-            }
-        }
-
         if (latestComics.isNotEmpty()) {
             item { // Latest Comics Header
                 SectionHeader(
@@ -569,13 +557,26 @@ fun ComicsContentForPreview(
             }
         }
 
+        if (uiState.categories.isNotEmpty()) {
+            item { // Categories Section
+                CategoriesSection(
+                    categories = uiState.categories,
+                    selectedCategory = uiState.selectedCategory,
+                    onCategoryClicked = { category ->
+                        onIntent?.invoke(HomeIntent.CategorySelected(category))
+                    }
+                )
+            }
+        }
+
         // "All Comics" / "Results" Section
         if (comics.isNotEmpty() || uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
             item { // All Comics / Results Header
                 SectionHeader(
-                    title = if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) stringResource(
-                        R.string.results_section_title
-                    ) else stringResource(R.string.all_comics_section_title),
+                    title = if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) uiState.selectedCategory?.name
+                        ?: stringResource(
+                            R.string.results_section_title
+                        ) else stringResource(R.string.all_comics_section_title),
                     isExpanded = allComicsExpanded,
                     showGridListOption = true,
                     onHeaderClick = { allComicsExpanded = !allComicsExpanded },
@@ -715,18 +716,6 @@ fun ComicsContent(
             )
         }
 
-        if (uiState.categories.isNotEmpty()) {
-            item { // Categories Section
-                CategoriesSection(
-                    categories = uiState.categories,
-                    selectedCategory = uiState.selectedCategory,
-                    onCategoryClicked = { category ->
-                        onIntent?.invoke(HomeIntent.CategorySelected(category))
-                    }
-                )
-            }
-        }
-
         if (latestComics.itemCount > 0) {
             item { // Latest Comics Header
                 SectionHeader(
@@ -761,13 +750,26 @@ fun ComicsContent(
             }
         }
 
+        if (uiState.categories.isNotEmpty()) {
+            item { // Categories Section
+                CategoriesSection(
+                    categories = uiState.categories,
+                    selectedCategory = uiState.selectedCategory,
+                    onCategoryClicked = { category ->
+                        onIntent?.invoke(HomeIntent.CategorySelected(category))
+                    }
+                )
+            }
+        }
+
         // "All Comics" / "Results" Section
         if (comics.itemCount > 0 || uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) {
             item { // All Comics / Results Header
                 SectionHeader(
-                    title = if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) stringResource(
-                        R.string.results_section_title
-                    ) else stringResource(R.string.all_comics_section_title),
+                    title = if (uiState.searchQuery.isNotBlank() || uiState.selectedCategory != null) uiState.selectedCategory?.name
+                        ?: stringResource(
+                            R.string.results_section_title
+                        ) else stringResource(R.string.all_comics_section_title),
                     isExpanded = allComicsExpanded,
                     showGridListOption = true,
                     onHeaderClick = { allComicsExpanded = !allComicsExpanded },
