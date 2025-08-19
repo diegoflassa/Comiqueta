@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ViewList
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -88,7 +87,7 @@ fun SectionHeader(
                 }
             }) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ViewList,
+                    painter = painterResource(id = dev.diegoflassa.comiqueta.core.R.drawable.ic_list),
                     contentDescription = stringResource(R.string.view_as_list_description),
                     modifier = Modifier.size(21.dp),
                     tint = if (currentViewMode == ViewMode.LIST) MaterialTheme.colorScheme.headerSelectedIcon else MaterialTheme.colorScheme.headerUnselectedIcon
@@ -104,7 +103,7 @@ fun SectionHeader(
             }
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.GridView,
+                    painter = painterResource(id = dev.diegoflassa.comiqueta.core.R.drawable.ic_grid),
                     contentDescription = stringResource(R.string.view_as_grid_description),
                     modifier = Modifier.size(21.dp),
                     tint = if (currentViewMode == ViewMode.GRID) ComiquetaTheme.colorScheme.headerSelectedIcon else ComiquetaTheme.colorScheme.headerUnselectedIcon
@@ -116,7 +115,12 @@ fun SectionHeader(
 
 // --- SectionHeader Previews ---
 @PreviewScreenSizes
-@Preview(name = "SectionHeader - Expanded, Grid, View Options - Dark", group = "SectionHeader", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "SectionHeader - Expanded, Grid, View Options - Dark",
+    group = "SectionHeader",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun SectionHeaderExpandedGridViewOptionsPreview() {
     ComiquetaThemeContent {
@@ -134,7 +138,12 @@ private fun SectionHeaderExpandedGridViewOptionsPreview() {
 }
 
 @PreviewScreenSizes
-@Preview(name = "SectionHeader - Collapsed, List, View Options - Dark", group = "SectionHeader", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "SectionHeader - Collapsed, List, View Options - Dark",
+    group = "SectionHeader",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun SectionHeaderCollapsedListViewOptionsPreview() {
     ComiquetaThemeContent {
@@ -152,7 +161,12 @@ private fun SectionHeaderCollapsedListViewOptionsPreview() {
 }
 
 @PreviewScreenSizes
-@Preview(name = "SectionHeader - Expanded, No View Options - Dark", group = "SectionHeader", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "SectionHeader - Expanded, No View Options - Dark",
+    group = "SectionHeader",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun SectionHeaderExpandedNoViewOptionsPreview() {
     ComiquetaThemeContent {
@@ -170,7 +184,12 @@ private fun SectionHeaderExpandedNoViewOptionsPreview() {
 }
 
 @PreviewScreenSizes
-@Preview(name = "SectionHeader - Collapsed, No View Options - Dark", group = "SectionHeader", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    name = "SectionHeader - Collapsed, No View Options - Dark",
+    group = "SectionHeader",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun SectionHeaderCollapsedNoViewOptionsPreview() {
     ComiquetaThemeContent {

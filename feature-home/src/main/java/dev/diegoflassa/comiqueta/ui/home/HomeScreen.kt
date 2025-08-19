@@ -1,9 +1,9 @@
 package dev.diegoflassa.comiqueta.ui.home
 
-import android.Manifest // Added
+import android.Manifest
 import android.content.res.Configuration
 import android.net.Uri
-import android.os.Build // Added
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -54,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
@@ -251,7 +252,7 @@ fun HomeScreenContentForPreview(
                         IconButton(onClick = { onIntent?.invoke(HomeIntent.NavigateTo(Screen.Settings)) }) {
                             Icon(
                                 modifier = Modifier.size(ComiquetaTheme.dimen.iconSettings.scaled()),
-                                imageVector = Icons.Outlined.Settings,
+                                painter = painterResource(id = dev.diegoflassa.comiqueta.core.R.drawable.ic_settings),
                                 tint = ComiquetaTheme.colorScheme.settingIconTint,
                                 contentDescription = "Settings"
                             )
@@ -502,7 +503,7 @@ fun ComicsContentForPreview(
                 leadingIcon = {
                     Icon(
                         modifier = Modifier.size(ComiquetaTheme.dimen.iconSize.scaled()),
-                        imageVector = Icons.Outlined.Search,
+                        painter = painterResource(id = dev.diegoflassa.comiqueta.core.R.drawable.ic_search),
                         contentDescription = stringResource(R.string.search_icon_description),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
