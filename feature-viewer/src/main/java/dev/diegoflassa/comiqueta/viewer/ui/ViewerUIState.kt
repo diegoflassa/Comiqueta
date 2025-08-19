@@ -7,9 +7,10 @@ import dev.diegoflassa.comiqueta.core.model.ComicFileType
  * Represents the state of the Comic Viewer screen.
  */
 data class ViewerUIState(
-    val isLoading: Boolean = false,
+    val isLoadingFocused: Boolean = false,
     val comicTitle: String = "",
-    val currentBitmap: ImageBitmap? = null,
+    val focusedBitmap: ImageBitmap? = null,
+    val neighborBitmaps: Map<Int, ImageBitmap?> = emptyMap(),
     val currentPage: Int = 0,
     val pageCount: Int = 0,
     val fileType: ComicFileType? = null,

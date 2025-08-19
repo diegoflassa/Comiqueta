@@ -39,6 +39,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key // Added for HorizontalPager key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,7 @@ import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalViewConfiguration
+// import androidx.compose.ui.res.stringResource // If you add R.string.comic_page_description
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -64,6 +66,7 @@ import androidx.core.graphics.createBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
+// import dev.diegoflassa.comiqueta.viewer.R // If you add string resources like comic_page_description
 import android.graphics.Color as AndroidColor
 import kotlin.math.abs
 
@@ -146,7 +149,10 @@ fun ViewerScreenContent(
 
     LaunchedEffect(pagerState.settledPage) {
         val settledPage = pagerState.settledPage
+        // Ensure that we only send GoToPage if the settled page is different from the ViewModel's current page
+        // and also ensure pageCount is positive to avoid issues with empty comics.
         if (uiState.pageCount > 0 && settledPage != uiState.currentPage) {
+            TimberLogger.logI(tag, "Pager settled on $settledPage, informing ViewModel.")
             onIntent?.invoke(ViewerIntent.GoToPage(settledPage))
         }
     }
@@ -192,7 +198,8 @@ fun ViewerScreenContent(
                 .padding(padding)
                 .fillMaxSize()
                 .clickable(
-                    enabled = !uiState.isLoading && uiState.error == null && uiState.pageCount > 0,
+                    // Use isLoadingFocused and check if pageCount is > 0 before enabling toggle
+                    enabled = !uiState.isLoadingFocused && uiState.error == null && uiState.pageCount > 0,
                     onClick = { onIntent?.invoke(ViewerIntent.ToggleUiVisibility) }
                 ),
             contentAlignment = Alignment.Center
@@ -202,9 +209,11 @@ fun ViewerScreenContent(
             var offsetY by remember { mutableFloatStateOf(0f) }
             var isImageZoomed by remember { mutableStateOf(false) }
 
+            // Reset zoom/pan when the focused bitmap for the settled page changes,
+            // or when the settled page itself changes.
             LaunchedEffect(
                 pagerState.settledPage,
-                uiState.currentBitmap
+                uiState.focusedBitmap
             ) {
                 TimberLogger.logI(
                     tag,
@@ -217,8 +226,12 @@ fun ViewerScreenContent(
             }
 
             when {
-                uiState.isLoading && uiState.currentBitmap == null -> {
-                    TimberLogger.logI(tag, "Displaying global loading indicator")
+                // Global loading: when comic is first loading and no focused bitmap is available yet.
+                uiState.isLoadingFocused && uiState.focusedBitmap == null && uiState.pageCount == 0 -> {
+                    TimberLogger.logI(
+                        tag,
+                        "Displaying global loading indicator (initial comic load)"
+                    )
                     CircularProgressIndicator()
                 }
 
@@ -237,28 +250,41 @@ fun ViewerScreenContent(
                 uiState.pageCount > 0 -> {
                     TimberLogger.logI(
                         tag,
-                        "Displaying HorizontalPager. Current VM page: ${uiState.currentPage}, Pager current: ${pagerState.currentPage}, Pager settled: ${pagerState.settledPage}"
+                        "Displaying HorizontalPager. VMPage: ${uiState.currentPage}, PagerCurrent: ${pagerState.currentPage}, PagerSettled: ${pagerState.settledPage}"
                     )
                     HorizontalPager(
                         state = pagerState,
                         userScrollEnabled = !isImageZoomed,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        beyondViewportPageCount = 1,
+                        key = { pageIndex -> pageIndex } // Added key
                     ) { pageIndexInPager ->
 
-                        val bitmapToDisplay =
-                            if (pageIndexInPager == uiState.currentPage) uiState.currentBitmap else null
+                        val bitmapToDisplay: ImageBitmap? = key(
+                            uiState.currentPage,
+                            uiState.focusedBitmap,
+                            uiState.neighborBitmaps
+                        ) {
+                            // This key helps recompose this specific logic when relevant parts of uiState change for this pageIndexInPager
+                            if (pageIndexInPager == uiState.currentPage) {
+                                uiState.focusedBitmap
+                            } else {
+                                uiState.neighborBitmaps[pageIndexInPager]
+                            }
+                        }
 
                         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                             val viewConfiguration = LocalViewConfiguration.current
                             val touchSlop = viewConfiguration.touchSlop
 
-                            val imageModifier = Modifier
+                            // This imageModifier is now more general, applied if bitmapToDisplay is not null
+                            val imageDisplayModifier = Modifier
                                 .fillMaxSize()
                                 .pointerInput(
-                                    bitmapToDisplay,
-                                    pagerState.currentPage
+                                    bitmapToDisplay, // Key on bitmapToDisplay
+                                    pagerState.currentPage // And current page from pager
                                 ) {
-                                    if (bitmapToDisplay != null) {
+                                    if (bitmapToDisplay != null) { // Only enable gestures if bitmap is present
                                         awaitPointerEventScope {
                                             while (true) {
                                                 val event = awaitPointerEvent()
@@ -344,8 +370,13 @@ fun ViewerScreenContent(
                                                                 delta.y
                                                             )
                                                         ) {
-                                                            TimberLogger.logI(tag, "Do nothing")
+                                                            // Horizontal swipe detected, do nothing to allow pager to scroll
+                                                            TimberLogger.logD(
+                                                                tag,
+                                                                "Horizontal gesture detected, not consuming for zoom/pan."
+                                                            )
                                                         } else if (abs(delta.y) > touchSlop) {
+                                                            // Vertical swipe detected, consume if not zooming (though this path might be less common with current logic)
                                                             firstChange.consume()
                                                         }
                                                     }
@@ -363,29 +394,47 @@ fun ViewerScreenContent(
 
                             if (bitmapToDisplay != null) {
                                 Image(
-                                    bitmap = bitmapToDisplay,
-                                    contentDescription = "Page ${pageIndexInPager + 1}",
+                                    bitmap = bitmapToDisplay, // It's already an ImageBitmap
+                                    contentDescription = "Page ${pageIndexInPager + 1}", // Consider stringResource(R.string.comic_page_description, pageIndexInPager + 1)
                                     contentScale = ContentScale.Fit,
-                                    modifier = imageModifier.background(MaterialTheme.colorScheme.surfaceVariant)
+                                    modifier = imageDisplayModifier.background(MaterialTheme.colorScheme.surfaceVariant)
                                 )
                             } else {
+                                // Per-page loading indicator or placeholder
                                 Box(
                                     Modifier
                                         .fillMaxSize()
                                         .background(
                                             MaterialTheme.colorScheme.surfaceVariant.copy(
-                                                alpha = 0.5f
+                                                alpha = 0.3f
                                             )
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    if (pageIndexInPager == uiState.currentPage && uiState.isLoading) {
+                                    val isLoadingThisPage =
+                                        (pageIndexInPager == uiState.currentPage && uiState.isLoadingFocused) ||
+                                                (abs(uiState.currentPage - pageIndexInPager) == 1 && uiState.neighborBitmaps[pageIndexInPager] == null && uiState.pageCount > 0)
+
+                                    if (isLoadingThisPage) {
+                                        TimberLogger.logD(
+                                            tag,
+                                            "Showing loading indicator for page $pageIndexInPager (focused: ${uiState.currentPage}, isLoadingFocused: ${uiState.isLoadingFocused})"
+                                        )
                                         CircularProgressIndicator()
-                                    } else if (pageIndexInPager == uiState.currentPage) {
-                                        Text(
-                                            "Page ${pageIndexInPager + 1}",
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            style = MaterialTheme.typography.labelMedium
+                                    } else {
+                                        // Optionally, show page number if it's the current page and somehow bitmap is null but not loading (e.g. error state for specific page)
+                                        // For now, keep it blank if not loading and no bitmap for non-focused pages
+                                        if (pageIndexInPager == uiState.currentPage) {
+                                            Text(
+                                                "Page ${pageIndexInPager + 1}",
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                                    alpha = 0.7f
+                                                )
+                                            )
+                                        }
+                                        TimberLogger.logD(
+                                            tag,
+                                            "No bitmap and not actively loading page $pageIndexInPager"
                                         )
                                     }
                                 }
@@ -394,8 +443,8 @@ fun ViewerScreenContent(
                     }
                 }
 
-                else -> {
-                    TimberLogger.logI(tag, "Displaying 'No comic loaded' message")
+                else -> { // No comic loaded or pageCount is 0 after initial load attempt
+                    TimberLogger.logI(tag, "Displaying 'No comic loaded or empty comic' message")
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -449,11 +498,13 @@ private fun ViewerScreenPreviewEmpty() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
-                isLoading = false,
+                isLoadingFocused = false,
                 comicTitle = "",
                 error = null,
                 pageCount = 0,
-                currentPage = 0
+                currentPage = 0,
+                focusedBitmap = null,
+                neighborBitmaps = emptyMap()
             ),
             onIntent = {}
         )
@@ -462,14 +513,16 @@ private fun ViewerScreenPreviewEmpty() {
 
 @PreviewScreenSizes
 @Composable
-private fun ViewerScreenPreviewLoading() {
+private fun ViewerScreenPreviewLoadingInitial() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
-                isLoading = true,
+                isLoadingFocused = true,
                 comicTitle = "Loading Comic...",
-                pageCount = 5,
+                pageCount = 0,
                 currentPage = 0,
+                focusedBitmap = null,
+                neighborBitmaps = emptyMap(),
                 error = null
             ),
             onIntent = {}
@@ -479,12 +532,35 @@ private fun ViewerScreenPreviewLoading() {
 
 @PreviewScreenSizes
 @Composable
+private fun ViewerScreenPreviewLoadingPage() {
+    ComiquetaThemeContent {
+        ViewerScreenContent(
+            uiState = ViewerUIState(
+                isLoadingFocused = true,
+                comicTitle = "Sample Comic Title",
+                pageCount = 5,
+                currentPage = 0,
+                focusedBitmap = null,
+                neighborBitmaps = emptyMap(),
+                error = null
+            ),
+            onIntent = {}
+        )
+    }
+}
+
+
+@PreviewScreenSizes
+@Composable
 private fun ViewerScreenPreviewWithComic() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
-                isLoading = false,
-                currentBitmap = createDummyBitmapForPreview(pageNumber = 1),
+                isLoadingFocused = false,
+                focusedBitmap = createDummyBitmapForPreview(pageNumber = 1),
+                neighborBitmaps = mapOf(
+                    1 to createDummyBitmapForPreview(pageNumber = 2)
+                ),
                 currentPage = 0,
                 pageCount = 5,
                 comicTitle = "Sample Comic Title",
@@ -501,11 +577,13 @@ private fun ViewerScreenPreviewWithError() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
-                isLoading = false,
+                isLoadingFocused = false,
                 error = "Failed to load this amazing comic book. Please try again!",
                 comicTitle = "Error Comic",
                 pageCount = 0,
-                currentPage = 0
+                currentPage = 0,
+                focusedBitmap = null,
+                neighborBitmaps = emptyMap()
             ),
             onIntent = {}
         )
