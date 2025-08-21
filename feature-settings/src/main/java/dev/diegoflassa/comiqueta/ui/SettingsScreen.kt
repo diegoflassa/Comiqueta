@@ -27,8 +27,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ListAlt
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Policy // Added Icon
+import androidx.compose.material.icons.filled.Policy
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -56,7 +58,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat // Needed for shouldShowRequestPermissionRationale
+import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -67,9 +69,10 @@ import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
-import dev.diegoflassa.comiqueta.data.model.PermissionDisplayStatus // Using the one in the provided file
+import dev.diegoflassa.comiqueta.data.model.PermissionDisplayStatus
 
 private const val tag = "SettingsScreen"
+private const val MAX_PRELOAD_PAGES = 5
 
 private fun getPermissionFriendlyNameSettings(permission: String): String {
     return when (permission) {
@@ -144,8 +147,9 @@ fun SettingsScreen(
                 contentResolver.takePersistableUriPermission(uri, takeFlags)
                 TimberLogger.logD(tag, "Persistable URI permission granted for $uri")
                 settingsViewModel.processIntent(SettingsIntent.FolderSelected(uri))
-            } catch (e: SecurityException) {
-                TimberLogger.logE(tag, "Failed to take persistable URI permission for $uri", e)
+            } catch (se: SecurityException) {
+                se.printStackTrace()
+                TimberLogger.logE(tag, "Failed to take persistable URI permission for $uri", se)
                 Toast.makeText(
                     context,
                     "Failed to get persistent access to the folder.",
@@ -171,7 +175,7 @@ fun SettingsScreen(
                 }
 
                 is SettingsEffect.LaunchFolderPicker -> {
-                    folderPickerLauncher.launch(null)
+                    folderPickerLauncher.launch(null) // Initial URI can be null for SAF
                 }
 
                 is SettingsEffect.LaunchViewFolderIntent -> {
@@ -181,7 +185,8 @@ fun SettingsScreen(
                     }
                     try {
                         context.startActivity(intent)
-                    } catch (e: ActivityNotFoundException) {
+                    } catch (anfe: ActivityNotFoundException) {
+                        anfe.printStackTrace()
                         Toast.makeText(
                             context,
                             noAppToOpenFolder,
@@ -190,7 +195,7 @@ fun SettingsScreen(
                         TimberLogger.logE(
                             tag,
                             "No activity found to handle folder URI: ${effect.folderUri}",
-                            e
+                            anfe
                         )
                     }
                 }
@@ -244,46 +249,45 @@ fun SettingsScreenContent(
         },
         modifier = modifier
     ) { paddingValues ->
-        Column(
+        LazyColumn( // Changed to LazyColumn to accommodate more settings
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp.scaled()),
         ) {
-            if (uiState.isLoading && uiState.permissionDisplayStatuses.isEmpty() && uiState.comicsFolders.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                // Permissions Section
+            item { // Permissions Section Title
                 Text(
                     text = stringResource(R.string.settings_section_permissions_title),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
                 )
-                if (uiState.permissionDisplayStatuses.isEmpty()) {
+            }
+            if (uiState.permissionDisplayStatuses.isEmpty()) {
+                item {
                     Text(
                         stringResource(R.string.settings_permissions_none_required),
                         modifier = Modifier.padding(vertical = 8.dp.scaled()),
                         textAlign = TextAlign.Center
                     )
-                } else {
-                    uiState.permissionDisplayStatuses.forEach { (permission, status) ->
+                }
+            } else {
+                uiState.permissionDisplayStatuses.forEach { (permission, status) ->
+                    item {
                         PermissionItem(
                             permission = permission,
                             status = status,
                             onRequestPermissionClick = {
                                 onIntent?.invoke(
-                                    SettingsIntent.RequestPermission(
-                                        permission
-                                    )
+                                    SettingsIntent.RequestPermission(permission)
                                 )
                             },
                             onOpenSettingsClick = { onIntent?.invoke(SettingsIntent.OpenAppSettingsClicked) }
                         )
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp.scaled()))
                     }
-                    if (uiState.permissionDisplayStatuses.keys.any { it == Manifest.permission.READ_EXTERNAL_STORAGE }) {
+                }
+                if (uiState.permissionDisplayStatuses.keys.any { it == Manifest.permission.READ_EXTERNAL_STORAGE }) {
+                    item {
                         Text(
                             stringResource(R.string.settings_permission_read_external_storage_rationale_extended),
                             style = MaterialTheme.typography.bodySmall,
@@ -296,37 +300,88 @@ fun SettingsScreenContent(
                         )
                     }
                 }
+            }
 
-                // Monitored Folders Section
+            item { // Monitored Folders Section Title
                 Text(
                     text = stringResource(R.string.settings_section_monitored_folders_title),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
                 )
-                if (uiState.comicsFolders.isEmpty()) {
+            }
+            if (uiState.comicsFolders.isEmpty()) {
+                item {
                     Text(
                         stringResource(R.string.settings_monitored_folders_empty),
                         modifier = Modifier.padding(vertical = 8.dp.scaled()),
                         textAlign = TextAlign.Center
                     )
-                } else {
-                    LazyColumn(modifier = Modifier.weight(1f)) { // Added weight(1f)
-                        items(
-                            uiState.comicsFolders.size,
-                            key = { index -> uiState.comicsFolders[index].toString() }
-                        ) { index ->
-                            val folderUri = uiState.comicsFolders[index]
-                            ComicsFolderUriItem(
-                                folderUri = folderUri,
-                                onIntent = { intent -> onIntent?.invoke(intent) }
-                            )
-                            HorizontalDivider()
+                }
+            } else {
+                items(
+                    uiState.comicsFolders.size,
+                    key = { index -> uiState.comicsFolders[index].toString() }
+                ) { index ->
+                    val folderUri = uiState.comicsFolders[index]
+                    ComicsFolderUriItem(
+                        folderUri = folderUri,
+                        onIntent = { intent -> onIntent?.invoke(intent) }
+                    )
+                    HorizontalDivider()
+                }
+            }
+            item { Spacer(modifier = Modifier.height(16.dp.scaled())) }
+
+
+            // Viewer Settings Section - Added
+            item {
+                Text(
+                    text = "Viewer Settings", // Consider adding to strings.xml
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
+                )
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    ListItem(
+                        headlineContent = { Text("Comic Page Pre-loading") }, // Consider strings.xml
+                        supportingContent = { Text("Pages to load ahead/behind current page (0-${MAX_PRELOAD_PAGES}).") }, // Consider strings.xml
+                        trailingContent = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(
+                                    onClick = {
+                                        val currentCount = uiState.viewerPagesToPreloadAhead
+                                        if (currentCount > 0) {
+                                            onIntent?.invoke(SettingsIntent.UpdateViewerPagesToPreloadAhead(currentCount - 1))
+                                        }
+                                    },
+                                    enabled = uiState.viewerPagesToPreloadAhead > 0
+                                ) {
+                                    Icon(Icons.Default.Remove, contentDescription = "Decrease pre-load count") // Consider strings.xml
+                                }
+                                Text(
+                                    text = uiState.viewerPagesToPreloadAhead.toString(),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(horizontal = 8.dp.scaled())
+                                )
+                                IconButton(
+                                    onClick = {
+                                        val currentCount = uiState.viewerPagesToPreloadAhead
+                                        if (currentCount < MAX_PRELOAD_PAGES) {
+                                            onIntent?.invoke(SettingsIntent.UpdateViewerPagesToPreloadAhead(currentCount + 1))
+                                        }
+                                    },
+                                    enabled = uiState.viewerPagesToPreloadAhead < MAX_PRELOAD_PAGES
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = "Increase pre-load count") // Consider strings.xml
+                                }
+                            }
                         }
-                    }
+                    )
                 }
                 Spacer(modifier = Modifier.height(16.dp.scaled()))
+            }
 
-                // Manage Categories Section
+            // Manage Categories Section
+            item {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -344,8 +399,11 @@ fun SettingsScreenContent(
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp.scaled()))
+            }
 
-                // New Privacy Settings / Ad Consent Section
+
+            // Privacy Settings / Ad Consent Section
+            item {
                 val context = LocalContext.current
                 val activity = context as? Activity
                 Card(
@@ -393,7 +451,16 @@ fun SettingsScreenContent(
                         }
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp.scaled()))
+                Spacer(modifier = Modifier.height(16.dp.scaled())) // Space at the end
+            }
+
+            // Handle initial loading state for the whole screen
+            if (uiState.isLoading && uiState.permissionDisplayStatuses.isEmpty() && uiState.comicsFolders.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) { // fillParentMaxSize for LazyColumn item
+                        CircularProgressIndicator()
+                    }
+                }
             }
         }
     }
@@ -483,7 +550,9 @@ fun ComicsFolderUriItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onIntent?.invoke(SettingsIntent.FolderSelected(folderUri)) }
+            .clickable { // Consider what happens on click for the whole item
+                onIntent?.invoke(SettingsIntent.OpenFolder(folderUri)) // Changed to OpenFolder
+            }
             .padding(vertical = 12.dp.scaled()),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -526,7 +595,8 @@ private fun SettingsScreenPreview() {
                         shouldShowRationale = false
                     )
                 ),
-                comicsFolders = listOf("content://com.android.externalstorage.documents/tree/primary%3ADCIM".toUri())
+                comicsFolders = listOf("content://com.android.externalstorage.documents/tree/primary%3ADCIM".toUri()),
+                viewerPagesToPreloadAhead = 1 // Added for preview
             )
         )
     }
@@ -555,7 +625,8 @@ private fun SettingsScreenPreviewDark() {
                 comicsFolders = listOf(
                     "content://com.android.externalstorage.documents/tree/primary%3ADCIM".toUri(),
                     "content://com.android.externalstorage.documents/tree/primary%3APictures".toUri()
-                )
+                ),
+                viewerPagesToPreloadAhead = 2 // Added for preview
             )
         )
     }
@@ -569,7 +640,8 @@ private fun SettingsScreenPreviewEmpty() {
             uiState = SettingsUIState(
                 isLoading = false,
                 permissionDisplayStatuses = emptyMap(),
-                comicsFolders = emptyList()
+                comicsFolders = emptyList(),
+                viewerPagesToPreloadAhead = 0 // Added for preview
             )
         )
     }
@@ -583,7 +655,8 @@ private fun SettingsScreenPreviewLoading() {
             uiState = SettingsUIState(
                 isLoading = true,
                 permissionDisplayStatuses = emptyMap(),
-                comicsFolders = emptyList()
+                comicsFolders = emptyList(),
+                viewerPagesToPreloadAhead = 1 // Added for preview
             )
         )
     }

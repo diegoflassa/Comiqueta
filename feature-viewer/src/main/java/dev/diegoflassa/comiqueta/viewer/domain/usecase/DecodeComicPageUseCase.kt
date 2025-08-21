@@ -107,7 +107,7 @@ class DecodeComicPageUseCase @Inject constructor(
                                 }
                             }
                         }
-                        null // Should have returned from within the loop if found
+                        null
                     }
 
                     ComicFileType.CBR -> {
@@ -189,7 +189,7 @@ class DecodeComicPageUseCase @Inject constructor(
                         } finally {
                             if (tempFile.exists()) tempFile.delete()
                         }
-                        null // Should have returned from within the loop if found
+                        null
                     }
 
                     ComicFileType.CBT -> {
@@ -227,18 +227,18 @@ class DecodeComicPageUseCase @Inject constructor(
                                 }
                             }
                         }
-                        null // Should have returned from within the loop if found
+                        null
                     }
 
                     ComicFileType.JPG, ComicFileType.JPEG, ComicFileType.PNG, ComicFileType.GIF, ComicFileType.WEBP -> {
                         // For single images, pageIdentifier is the filename, but we decode directly from the URI
                         context.contentResolver.openInputStream(comicUri)?.use { inputStream ->
-                            if (fileType != ComicFileType.GIF) { // GIF animated not well supported by ImageDecoder for single frame
+                            if (fileType != ComicFileType.GIF) {
                                 val source =
                                     ImageDecoder.createSource(context.contentResolver, comicUri)
                                 ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
                                     decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-                                    decoder.isMutableRequired = true // Or false if not needed
+                                    decoder.isMutableRequired = true
                                 }
                             } else {
                                 BitmapFactory.decodeStream(inputStream, null, bitmapOptions)
@@ -251,21 +251,23 @@ class DecodeComicPageUseCase @Inject constructor(
                     "Successfully decoded page index: $pageIndex, identifier: $pageIdentifier"
                 )
                 loadedBitmap?.asImageBitmap()
-            } catch (e: Exception) {
+            } catch (ex: Exception) {
+                ex.printStackTrace()
                 TimberLogger.logE(
                     "DecodeComicPageUseCase",
                     "Error decoding page index: $pageIndex, identifier: '$pageIdentifier' for $comicUri",
-                    e
+                    ex
                 )
-                null // Return null if any error occurs
+                null
             } finally {
                 try {
                     pfd?.close()
-                } catch (e: IOException) {
+                } catch (ioe: IOException) {
+                    ioe.printStackTrace()
                     TimberLogger.logE(
                         "DecodeComicPageUseCase",
                         "Error closing PFD for $comicUri in decodePage",
-                        e
+                        ioe
                     )
                 }
             }

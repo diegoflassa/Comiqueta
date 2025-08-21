@@ -5,10 +5,14 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.core.content.ContextCompat
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.diegoflassa.comiqueta.core.data.preferences.PreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.IAddMonitoredFolderUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.IGetMonitoredFoldersUseCase
@@ -21,12 +25,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch // Added
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 
 @HiltViewModel
 open class SettingsViewModel @Inject constructor(
@@ -35,7 +40,8 @@ open class SettingsViewModel @Inject constructor(
     private val addMonitoredFolderUseCase: IAddMonitoredFolderUseCase,
     private val removeMonitoredFolderUseCase: IRemoveMonitoredFolderUseCase,
     getRelevantOsPermissionsUseCase: IGetRelevantOsPermissionsUseCase,
-    private val refreshPermissionDisplayStatusUseCase: IRefreshPermissionDisplayStatusUseCase
+    private val refreshPermissionDisplayStatusUseCase: IRefreshPermissionDisplayStatusUseCase,
+    private val dataStore: DataStore<Preferences>
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUIState(isLoading = true))
@@ -44,9 +50,21 @@ open class SettingsViewModel @Inject constructor(
     private val _effect = Channel<SettingsEffect>(Channel.BUFFERED)
     open val effect: Flow<SettingsEffect> = _effect.receiveAsFlow()
 
+    private val viewerPagesToPreloadAhead: Flow<Int> = dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.VIEWER_PAGES_TO_PRELOAD_AHEAD] ?: PreferencesKeys.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
+        }
+
+    // --- Implementation for Viewer Page Preloading ---
+    suspend fun setViewerPagesToPreloadAhead(count: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.VIEWER_PAGES_TO_PRELOAD_AHEAD] = count.coerceAtLeast(0) // Ensure non-negative
+        }
+    }
+
     init {
         processIntent(SettingsIntent.LoadInitialData)
-        // Initial permission status setup without activity (no rationale check here)
+        // Initial permission status setup
         val initialPermissions = getRelevantOsPermissionsUseCase()
         val initialGrantStatuses = initialPermissions.associateWith { permission ->
             PermissionDisplayStatus(
@@ -58,20 +76,33 @@ open class SettingsViewModel @Inject constructor(
             )
         }
         _uiState.update { it.copy(permissionDisplayStatuses = initialGrantStatuses) }
+
+        // Observe viewer pages to preload setting
+        viewModelScope.launch {
+            viewerPagesToPreloadAhead
+                .catch { e ->
+                    TimberLogger.logE("SettingsViewModel", "Error observing viewerPagesToPreloadAhead", e)
+                    // Optionally emit a default or error state to UI if needed
+                }
+                .collect { preloadCount ->
+                    _uiState.update { it.copy(viewerPagesToPreloadAhead = preloadCount) }
+                }
+        }
     }
 
     private fun loadPersistedFolders() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true) } // Keep this for folder loading part
             try {
                 val persistedUris = getMonitoredFoldersUseCase().first()
                 _uiState.update { currentState ->
                     currentState.copy(comicsFolders = persistedUris, isLoading = false)
                 }
-            } catch (e: Exception) {
-                TimberLogger.logE("SettingsViewModel", "Error loading persisted folders via UseCase", e)
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                TimberLogger.logE("SettingsViewModel", "Error loading persisted folders via UseCase", ex)
                 _uiState.update { it.copy(isLoading = false) }
-                viewModelScope.launch { _effect.send(SettingsEffect.ShowToast("Error loading folders: ${e.message}")) }
+                viewModelScope.launch { _effect.send(SettingsEffect.ShowToast("Error loading folders: ${ex.message}")) }
             }
         }
     }
@@ -81,6 +112,7 @@ open class SettingsViewModel @Inject constructor(
             when (intent) {
                 is SettingsIntent.LoadInitialData -> {
                     loadPersistedFolders()
+                    // Preload pages setting is already being observed from init
                 }
 
                 is SettingsIntent.RefreshPermissionStatuses -> {
@@ -118,11 +150,21 @@ open class SettingsViewModel @Inject constructor(
                 is SettingsIntent.NavigateToCategoriesClicked -> {
                     _effect.send(SettingsEffect.NavigateToCategoriesScreen)
                 }
+
+                is SettingsIntent.UpdateViewerPagesToPreloadAhead -> { // Added handler
+                    try {
+                        setViewerPagesToPreloadAhead(intent.count)
+                        // UI state will update automatically due to the flow collection in init
+                        _effect.send(SettingsEffect.ShowToast("Viewer prefetch setting updated."))
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
+                        TimberLogger.logE("SettingsViewModel", "Error updating viewerPagesToPreloadAhead", ex)
+                        _effect.send(SettingsEffect.ShowToast("Error updating setting: ${ex.message}"))
+                    }
+                }
             }
         }
     }
-
-    // Removed private fun getRelevantOsPermissions() as it's directly called from UseCase or its functionality is within Refresh UseCase
 
     private fun refreshOsPermissionDisplayStatuses(activity: Activity) {
         val newStatuses = refreshPermissionDisplayStatusUseCase(activity)
@@ -133,13 +175,9 @@ open class SettingsViewModel @Inject constructor(
 
     private fun handleOsPermissionResults(results: Map<String, PermissionDisplayStatus>, activity: Activity) {
         _uiState.update { currentState ->
-            // After permission results, it's best to refresh all statuses using the use case,
-            // as shouldShowRationale might have changed for denied permissions.
             val refreshedStatuses = refreshPermissionDisplayStatusUseCase(activity)
             currentState.copy(permissionDisplayStatuses = refreshedStatuses)
         }
-        // Optionally, could still iterate through 'results' to show specific toasts for granted/denied,
-        // but the UI state is now fully updated by the use case.
     }
 
     private suspend fun removeFolder(folderUri: Uri) {
@@ -160,9 +198,10 @@ open class SettingsViewModel @Inject constructor(
                     )
                 )
             }
-        } catch (e: Exception) {
-            TimberLogger.logE("SettingsViewModel", "Error removing folder $folderUri via UseCase", e)
-            _effect.send(SettingsEffect.ShowToast("Error removing folder: ${e.message}"))
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            TimberLogger.logE("SettingsViewModel", "Error removing folder $folderUri via UseCase", ex)
+            _effect.send(SettingsEffect.ShowToast("Error removing folder: ${ex.message}"))
         } finally {
             loadPersistedFolders()
         }
@@ -186,11 +225,12 @@ open class SettingsViewModel @Inject constructor(
                     )
                 )
             }
-        } catch (e: Exception) {
-            TimberLogger.logE("SettingsViewModel", "Error adding folder $uri via UseCase", e)
-            _effect.send(SettingsEffect.ShowToast("Error adding folder: ${e.message}"))
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            TimberLogger.logE("SettingsViewModel", "Error adding folder $uri via UseCase", ex)
+            _effect.send(SettingsEffect.ShowToast("Error adding folder: ${ex.message}"))
         } finally {
-            loadPersistedFolders() // Refresh the list from the source of truth
+            loadPersistedFolders() 
         }
     }
 }

@@ -223,7 +223,6 @@ class GetComicInfoUseCase @Inject constructor(
                         pageIdentifiers.add(fileName)
                         pageCount = 1
                     }
-                    // No default needed as ComicFileType is exhaustive or fromMimeTypeOrExtension would have thrown
                 }
 
                 TimberLogger.logD(
@@ -231,18 +230,20 @@ class GetComicInfoUseCase @Inject constructor(
                     "Finished processing file type. Page count: $pageCount"
                 )
 
-            } catch (e: Exception) {
-                TimberLogger.logE("GetComicInfoUseCase", "Error getting comic info for $uri", e)
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                TimberLogger.logE("GetComicInfoUseCase", "Error getting comic info for $uri", ex)
                 // Re-throw specific exception types if needed, or a general one
-                throw IOException("Failed to parse comic: ${e.message}", e)
+                throw IOException("Failed to parse comic: ${ex.message}", ex)
             } finally {
                 try {
                     pfd?.close()
-                } catch (e: IOException) {
+                } catch (ioe: IOException) {
+                    ioe.printStackTrace()
                     TimberLogger.logE(
                         "GetComicInfoUseCase",
                         "Error closing PFD for $uri",
-                        e
+                        ioe
                     )
                 }
             }

@@ -53,7 +53,8 @@ if (!isCiServer) {
                     isIgnoreExitValue = true
                 }.result.get()
                 result.exitValue == 0
-            } catch (e: Exception) {
+            } catch (ex: Exception) {
+                ex.printStackTrace()
                 false
             }
 
@@ -79,8 +80,9 @@ if (!isCiServer) {
                     )
                 }.result.get()
                 logger.lifecycle("✅ Keystore successfully generated at: ${keystoreFile.absolutePath}")
-            } catch (e: Exception) {
-                logger.error("❌ Failed to generate keystore: ${e.message}")
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                logger.error("❌ Failed to generate keystore: ${ex.message}")
                 logger.warn("⚠ Build will continue, but signing may fail without a keystore.")
             }
         }

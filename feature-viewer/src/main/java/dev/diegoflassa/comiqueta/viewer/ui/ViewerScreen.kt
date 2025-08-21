@@ -39,7 +39,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key // Added for HorizontalPager key
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,7 +53,6 @@ import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalViewConfiguration
-// import androidx.compose.ui.res.stringResource // If you add R.string.comic_page_description
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -61,12 +60,13 @@ import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
-// import dev.diegoflassa.comiqueta.viewer.R // If you add string resources like comic_page_description
+import dev.diegoflassa.comiqueta.viewer.R
 import android.graphics.Color as AndroidColor
 import kotlin.math.abs
 
@@ -140,8 +140,9 @@ fun ViewerScreenContent(
                 )
                 try {
                     pagerState.scrollToPage(targetPage)
-                } catch (e: Exception) {
-                    TimberLogger.logE(tag, "Error scrolling to page: $targetPage", e)
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    TimberLogger.logE(tag, "Error scrolling to page: $targetPage", ex)
                 }
             }
         }
@@ -198,7 +199,6 @@ fun ViewerScreenContent(
                 .padding(padding)
                 .fillMaxSize()
                 .clickable(
-                    // Use isLoadingFocused and check if pageCount is > 0 before enabling toggle
                     enabled = !uiState.isLoadingFocused && uiState.error == null && uiState.pageCount > 0,
                     onClick = { onIntent?.invoke(ViewerIntent.ToggleUiVisibility) }
                 ),
@@ -226,7 +226,6 @@ fun ViewerScreenContent(
             }
 
             when {
-                // Global loading: when comic is first loading and no focused bitmap is available yet.
                 uiState.isLoadingFocused && uiState.focusedBitmap == null && uiState.pageCount == 0 -> {
                     TimberLogger.logI(
                         tag,
@@ -257,7 +256,7 @@ fun ViewerScreenContent(
                         userScrollEnabled = !isImageZoomed,
                         modifier = Modifier.fillMaxSize(),
                         beyondViewportPageCount = 1,
-                        key = { pageIndex -> pageIndex } // Added key
+                        key = { pageIndex -> pageIndex }
                     ) { pageIndexInPager ->
 
                         val bitmapToDisplay: ImageBitmap? = key(
@@ -281,10 +280,10 @@ fun ViewerScreenContent(
                             val imageDisplayModifier = Modifier
                                 .fillMaxSize()
                                 .pointerInput(
-                                    bitmapToDisplay, // Key on bitmapToDisplay
-                                    pagerState.currentPage // And current page from pager
+                                    bitmapToDisplay,
+                                    pagerState.currentPage
                                 ) {
-                                    if (bitmapToDisplay != null) { // Only enable gestures if bitmap is present
+                                    if (bitmapToDisplay != null) {
                                         awaitPointerEventScope {
                                             while (true) {
                                                 val event = awaitPointerEvent()
@@ -394,8 +393,8 @@ fun ViewerScreenContent(
 
                             if (bitmapToDisplay != null) {
                                 Image(
-                                    bitmap = bitmapToDisplay, // It's already an ImageBitmap
-                                    contentDescription = "Page ${pageIndexInPager + 1}", // Consider stringResource(R.string.comic_page_description, pageIndexInPager + 1)
+                                    bitmap = bitmapToDisplay,
+                                    contentDescription = stringResource(R.string.comic_page_description, pageIndexInPager + 1),
                                     contentScale = ContentScale.Fit,
                                     modifier = imageDisplayModifier.background(MaterialTheme.colorScheme.surfaceVariant)
                                 )

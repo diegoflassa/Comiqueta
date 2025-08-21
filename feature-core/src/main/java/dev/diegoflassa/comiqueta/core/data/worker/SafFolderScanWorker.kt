@@ -64,10 +64,11 @@ class SafFolderScanWorker @AssistedInject constructor(
             )
             try {
                 listOf(specificFolderUriString.toUri())
-            } catch (e: Exception) {
-                FirebaseCrashlytics.getInstance().recordException(e)
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 val errorMessage = "Invalid specific folder URI provided: $specificFolderUriString"
-                TimberLogger.logE(TAG, errorMessage, e)
+                TimberLogger.logE(TAG, errorMessage, ex)
                 val outputData = workDataOf(KEY_ERROR_MESSAGE to errorMessage)
                 return Result.failure(outputData)
             }
@@ -75,10 +76,11 @@ class SafFolderScanWorker @AssistedInject constructor(
             TimberLogger.logD(TAG, "Starting general scan of all persisted folders.")
             try {
                 comicsFolderRepository.getPersistedPermissions()
-            } catch (e: Exception) {
-                FirebaseCrashlytics.getInstance().recordException(e)
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 val errorMessage = "Error fetching persisted folders for general scan."
-                TimberLogger.logE(TAG, "$errorMessage Repository error.", e)
+                TimberLogger.logE(TAG, "$errorMessage Repository error.", ex)
                 val outputData = workDataOf(KEY_ERROR_MESSAGE to errorMessage)
                 return Result.failure(outputData)
             }
@@ -96,10 +98,11 @@ class SafFolderScanWorker @AssistedInject constructor(
             TimberLogger.logD(TAG, "Processing folder URI: $folderUri")
             val rootDoc = try {
                 DocumentFile.fromTreeUri(appContext, folderUri)
-            } catch (e: Exception) {
-                FirebaseCrashlytics.getInstance().recordException(e)
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 val errorMessage = "Error accessing folder: $folderUri"
-                TimberLogger.logE(TAG, errorMessage, e)
+                TimberLogger.logE(TAG, errorMessage, ex)
                 if (firstErrorMessage == null) firstErrorMessage =
                     "Error accessing folder. Please check permissions for $folderUri."
                 anyFolderScanFailed = true
@@ -122,10 +125,11 @@ class SafFolderScanWorker @AssistedInject constructor(
                 )
                 scanDocumentFileForComics(rootDoc)
                 TimberLogger.logD(TAG, "Scan finished for URI: $folderUri")
-            } catch (e: Exception) {
-                FirebaseCrashlytics.getInstance().recordException(e)
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 val scanErrorMessage = "Error scanning folder: ${rootDoc.name}"
-                TimberLogger.logE(TAG, "$scanErrorMessage (URI: $folderUri)", e)
+                TimberLogger.logE(TAG, "$scanErrorMessage (URI: $folderUri)", ex)
                 if (firstErrorMessage == null) firstErrorMessage = scanErrorMessage
                 anyFolderScanFailed = true
             }
@@ -215,10 +219,11 @@ class SafFolderScanWorker @AssistedInject constructor(
                         TimberLogger.logD(
                             TAG, "Successfully saved/updated comic (and FTS): ${comicToSave.title}"
                         )
-                    } catch (e: Exception) {
-                        FirebaseCrashlytics.getInstance().recordException(e)
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
+                        FirebaseCrashlytics.getInstance().recordException(ex)
                         TimberLogger.logE(
-                            TAG, "Error saving/updating comic ${comicToSave.title}: ${e.message}", e
+                            TAG, "Error saving/updating comic ${comicToSave.title}: ${ex.message}", ex
                         )
                     }
                 } else {
@@ -284,12 +289,13 @@ class SafFolderScanWorker @AssistedInject constructor(
                                         }
                                     }
                                 }
-                        } catch (e: Exception) {
-                            FirebaseCrashlytics.getInstance().recordException(e)
+                        } catch (ex: Exception) {
+                            ex.printStackTrace()
+                            FirebaseCrashlytics.getInstance().recordException(ex)
                             TimberLogger.logE(
                                 TAG,
-                                "Error listing entries in archive ${comicFile.name} (ext: $extension): ${e.message}",
-                                e
+                                "Error listing entries in archive ${comicFile.name} (ext: $extension): ${ex.message}",
+                                ex
                             )
                             errorInListing = true
                         }
@@ -326,12 +332,13 @@ class SafFolderScanWorker @AssistedInject constructor(
                                             }
                                         }
                                     }
-                            } catch (e: Exception) {
-                                FirebaseCrashlytics.getInstance().recordException(e)
+                            } catch (ex: Exception) {
+                                ex.printStackTrace()
+                                FirebaseCrashlytics.getInstance().recordException(ex)
                                 TimberLogger.logE(
                                     TAG,
-                                    "Error extracting first image from archive ${comicFile.name} (ext: $extension): ${e.message}",
-                                    e
+                                    "Error extracting first image from archive ${comicFile.name} (ext: $extension): ${ex.message}",
+                                    ex
                                 )
                             }
                         }
@@ -352,12 +359,13 @@ class SafFolderScanWorker @AssistedInject constructor(
                                         }
                                     }
                                 }
-                        } catch (e: Exception) {
-                            FirebaseCrashlytics.getInstance().recordException(e)
+                        } catch (ex: Exception) {
+                            ex.printStackTrace()
+                            FirebaseCrashlytics.getInstance().recordException(ex)
                             TimberLogger.logE(
                                 TAG,
-                                "Error listing entries in CBR (junrar) ${comicFile.name}: ${e.message}",
-                                e
+                                "Error listing entries in CBR (junrar) ${comicFile.name}: ${ex.message}",
+                                ex
                             )
                             errorInListing = true
                         }
@@ -399,12 +407,13 @@ class SafFolderScanWorker @AssistedInject constructor(
                                             }
                                         }
                                     }
-                            } catch (e: Exception) {
-                                FirebaseCrashlytics.getInstance().recordException(e)
+                            } catch (ex: Exception) {
+                                ex.printStackTrace()
+                                FirebaseCrashlytics.getInstance().recordException(ex)
                                 TimberLogger.logE(
                                     TAG,
-                                    "Error extracting first image from CBR (junrar) ${comicFile.name}: ${e.message}",
-                                    e
+                                    "Error extracting first image from CBR (junrar) ${comicFile.name}: ${ex.message}",
+                                    ex
                                 )
                             }
                         }
@@ -417,10 +426,11 @@ class SafFolderScanWorker @AssistedInject constructor(
                     )
                 }
 
-            } catch (e: Exception) {
-                FirebaseCrashlytics.getInstance().recordException(e)
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 TimberLogger.logE(
-                    TAG, "General error extracting cover for ${comicFile.name}: ${e.message}", e
+                    TAG, "General error extracting cover for ${comicFile.name}: ${ex.message}", ex
                 )
                 localScaledBitmap = null
                 coverFile = null
@@ -457,9 +467,10 @@ class SafFolderScanWorker @AssistedInject constructor(
             }
             TimberLogger.logD(TAG, "Saved cover to: ${imageFile.absolutePath}")
             return imageFile
-        } catch (e: IOException) {
+        } catch (ioe: IOException) {
+            ioe.printStackTrace()
             TimberLogger.logE(
-                TAG, "Error saving bitmap to cache: ${e.message}", e
+                TAG, "Error saving bitmap to cache: ${ioe.message}", ioe
             )
         }
         return null
@@ -516,9 +527,10 @@ class SafFolderScanWorker @AssistedInject constructor(
                         val thisNum = BigInteger(thisChunk)
                         val thatNum = BigInteger(thatChunk)
                         result = thisNum.compareTo(thatNum)
-                    } catch (ex: NumberFormatException) {
+                    } catch (nfe: NumberFormatException) {
+                        nfe.printStackTrace()
                         TimberLogger.logE(
-                            TAG, " Error comparing chunks : $thisChunk, $thatChunk", ex
+                            TAG, " Error comparing chunks : $thisChunk, $thatChunk", nfe
                         )
                         result = thisChunk.compareTo(thatChunk)
                     }

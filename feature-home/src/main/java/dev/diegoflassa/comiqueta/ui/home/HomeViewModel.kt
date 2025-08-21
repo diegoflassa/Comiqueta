@@ -351,13 +351,15 @@ class HomeViewModel @Inject constructor(
                         }.collectLatest { _favoriteComicsFlow.value = it }
                 }
 
-            } catch (e: CancellationException) {
-                TimberLogger.logD(tag, "Comics loading cancelled", e)
+            } catch (ce: CancellationException) {
+                ce.printStackTrace()
+                TimberLogger.logD(tag, "Comics loading cancelled", ce)
                 _uiState.update { it.copy(isLoading = false) }
-            } catch (e: Exception) {
-                TimberLogger.logE(tag, "Unexpected error during combined comics loading", e)
-                _effect.send(HomeEffect.ShowToast("An unexpected error occurred: ${e.message}"))
-                _uiState.update { it.copy(error = e.message, isLoading = false) }
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                TimberLogger.logE(tag, "Unexpected error during combined comics loading", ex)
+                _effect.send(HomeEffect.ShowToast("An unexpected error occurred: ${ex.message}"))
+                _uiState.update { it.copy(error = ex.message, isLoading = false) }
                 _comicsFlow.value = PagingData.empty()
                 _latestComicsFlow.value = PagingData.empty()
                 _favoriteComicsFlow.value = PagingData.empty()
@@ -410,6 +412,7 @@ class HomeViewModel @Inject constructor(
                 _effect.send(HomeEffect.ShowToast("General folder scan enqueued."))
                 observeScanWorker(workRequestId)
             } catch (ex: Exception) {
+                ex.printStackTrace()
                 TimberLogger.logE(tag, "Failed to enqueue general folder scan worker", ex)
                 _effect.send(HomeEffect.ShowToast("Error starting general scan: ${ex.message}"))
             }

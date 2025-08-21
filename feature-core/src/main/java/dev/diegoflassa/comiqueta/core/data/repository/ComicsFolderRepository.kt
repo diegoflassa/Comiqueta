@@ -32,11 +32,12 @@ class ComicsFolderRepository @Inject constructor(
     private fun fetchCurrentPersistedPermissions(): List<Uri> {
         return try {
             contentResolver.persistedUriPermissions.map { it.uri }
-        } catch (e: Exception) {
+        } catch (ex: Exception) {
+            ex.printStackTrace()
             TimberLogger.logE(
                 "ComicsFolderRepository",
                 "Error retrieving persisted URI permissions",
-                e
+                ex
             )
             emptyList()
         }
@@ -59,15 +60,17 @@ class ComicsFolderRepository @Inject constructor(
             TimberLogger.logD("ComicsFolderRepository", "Successfully took permission for $uri")
             _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
             true
-        } catch (e: SecurityException) {
+        } catch (se: SecurityException) {
+            se.printStackTrace()
             TimberLogger.logE(
                 "ComicsFolderRepository",
                 "Failed to take persistable URI permission for $uri",
-                e
+                se
             )
             false
-        } catch (e: Exception) {
-            TimberLogger.logE("ComicsFolderRepository", "Error taking permission for $uri", e)
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            TimberLogger.logE("ComicsFolderRepository", "Error taking permission for $uri", ex)
             false
         }
     }
@@ -81,16 +84,18 @@ class ComicsFolderRepository @Inject constructor(
             TimberLogger.logD("ComicsFolderRepository", "Successfully released permission for $uri")
             _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
             true
-        } catch (e: SecurityException) {
+        } catch (se: SecurityException) {
+            se.printStackTrace()
             TimberLogger.logE(
                 "ComicsFolderRepository",
                 "Failed to release persistable URI permission for $uri",
-                e
+                se
             )
             // If the permission was not granted or already released.
             false
-        } catch (e: Exception) {
-            TimberLogger.logE("ComicsFolderRepository", "Error releasing permission for $uri", e)
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            TimberLogger.logE("ComicsFolderRepository", "Error releasing permission for $uri", ex)
             false
         }
     }
