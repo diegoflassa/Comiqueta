@@ -41,7 +41,7 @@ kotlin {
 
 dependencies {
     //Modules
-    implementation(project(":feature-core"))
+    implementation(project(":core"))
     implementation(project(":feature-home"))
     implementation(project(":feature-settings"))
     implementation(project(":feature-categories"))

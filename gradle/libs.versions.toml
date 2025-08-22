@@ -124,9 +124,6 @@ ax-datastore = "1.1.7"
 #Splashscreen
 ax-splashscreen = "1.0.1"
 
-#Profile Installer
-#ax-profileinstaller = "1.4.1"
-
 #App Search
 ax-appsearch = "1.1.0"
 ax-appsearch-compiler = "1.1.0"
@@ -235,7 +232,6 @@ ax-compose-ui-test = { module = "androidx.compose.ui:ui-test" }
 ax-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 ax-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 org-mockito-android = { module = "org.mockito:mockito-android", version.ref = "org-mockito-android" }
-#org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "org-jetbrains-kotlinx-coroutines-test" } # This is an old commented one, we added a new one under #Unit Tests
 
 #Compose Navigation 3
 ##Core Navigation 3 libraries
@@ -345,7 +341,7 @@ io-coil-kt-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "i
 #Root build.gradle
 com-osacky-doctor = { id = "com.osacky.doctor", version.ref = "com-osacky-doctor" }
 org-jetbrains-kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "org-jetbrains-kotlinx-kover" }
-firebase-appdistribution-gradle = { id = "com.google.firebase.appdistribution", version.ref = "firebase-appdistribution-gradle" } # Added
+firebase-appdistribution-gradle = { id = "com.google.firebase.appdistribution", version.ref = "firebase-appdistribution-gradle" }
 
 #Common
 com-android-application = { id = "com.android.application", version.ref = "gradle" }

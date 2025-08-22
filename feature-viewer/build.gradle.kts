@@ -14,7 +14,7 @@ android {
 
 dependencies {
     //Módulos
-    implementation(project(":feature-core"))
+    implementation(project(":core"))
 
     //Common Testing
     testImplementation(libs.junit)
