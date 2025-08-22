@@ -57,7 +57,6 @@ ax-paging-compose = "3.3.6"
 
 #Compose Testing
 org-mockito-android = "5.19.0"
-#org-jetbrains-kotlinx-coroutines-test = "1.10.2"
 
 #Compose Navigation 3
 ax-navigation3-runtime = "1.0.0-alpha07"
