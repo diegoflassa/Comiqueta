@@ -357,4 +357,3 @@ androidx-room = { id = "androidx.room", version.ref = "androidx-room" }
 
 #Project build.gradle
 hilt-android-gradle-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android-gradle-plugin" }
-
