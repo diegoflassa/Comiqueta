@@ -49,9 +49,6 @@ open class ViewerViewModel @Inject constructor(
     private var currentComicFileType: ComicFileType? = null
 
     private lateinit var pageBitmapCache: LruCache<Int, ImageBitmap>
-    private val _pagesToPreloadLogic =
-        MutableStateFlow(DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD)
-
 
     private var focusedPageJob: Job? = null
     private val neighborPageJobs = mutableMapOf<Int, Job>()
@@ -59,19 +56,17 @@ open class ViewerViewModel @Inject constructor(
     private val viewerPagesToPreloadAhead: Flow<Int> = dataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.VIEWER_PAGES_TO_PRELOAD_AHEAD]
-                ?: DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
+                ?: ViewerUIState.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
         }
 
     companion object {
         private const val MIN_PRELOAD_COUNT_LOGIC = 0
         private const val MAX_PRELOAD_COUNT_LOGIC = 5
         private const val MAX_SETTING_FOR_CACHE_INIT = 10
-        const val DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD = 1
     }
 
     init {
         viewModelScope.launch {
-            // Step 1: Initialize Cache based on the *initial* setting value
             val initialSettingValue = try {
                 viewerPagesToPreloadAhead.first()
             } catch (ex: Exception) {
@@ -81,7 +76,7 @@ open class ViewerViewModel @Inject constructor(
                     "Failed to get initial preload count, using default.",
                     ex
                 )
-                PreferencesKeys.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
+                ViewerUIState.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
             }
 
             val cacheInitPreloadCount = initialSettingValue
@@ -93,14 +88,13 @@ open class ViewerViewModel @Inject constructor(
                 "Cache initialized. Capacity based on setting value: $initialSettingValue (used: $cacheInitPreloadCount)"
             )
 
-            // Step 2: Set initial logic preload and then observe changes
             val initialLogicPreload = initialSettingValue
                 .coerceAtLeast(MIN_PRELOAD_COUNT_LOGIC)
                 .coerceAtMost(MAX_PRELOAD_COUNT_LOGIC)
-            _pagesToPreloadLogic.value = initialLogicPreload
+            _uiState.update { it.copy(pagesToPreloadLogic = initialLogicPreload) }
             TimberLogger.logI(
                 "ViewerViewModel",
-                "Initial logic preload count set to: $initialLogicPreload"
+                "Initial logic preload count set to: $initialLogicPreload. UIState updated."
             )
 
             viewerPagesToPreloadAhead
@@ -110,12 +104,13 @@ open class ViewerViewModel @Inject constructor(
                         "Error observing viewerPagesToPreloadAhead",
                         e
                     )
-                    // Revert to a safe default if the flow errors
-                    if (_pagesToPreloadLogic.value != PreferencesKeys.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD) {
-                        _pagesToPreloadLogic.value =
-                            PreferencesKeys.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
-                                .coerceAtLeast(MIN_PRELOAD_COUNT_LOGIC)
-                                .coerceAtMost(MAX_PRELOAD_COUNT_LOGIC)
+                    val safeDefault = ViewerUIState.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
+                        .coerceAtLeast(MIN_PRELOAD_COUNT_LOGIC)
+                        .coerceAtMost(MAX_PRELOAD_COUNT_LOGIC)
+
+                    if (_uiState.value.pagesToPreloadLogic != safeDefault) {
+                        _uiState.value.copy(pagesToPreloadLogic = safeDefault)
+                        _uiState.update { it.copy(pagesToPreloadLogic = safeDefault) }
                         triggerNeighborReloadIfNeeded()
                     }
                 }
@@ -123,12 +118,13 @@ open class ViewerViewModel @Inject constructor(
                     val newLogicPreload = newSettingValue
                         .coerceAtLeast(MIN_PRELOAD_COUNT_LOGIC)
                         .coerceAtMost(MAX_PRELOAD_COUNT_LOGIC)
-                    if (_pagesToPreloadLogic.value != newLogicPreload) {
+                    if (_uiState.value.pagesToPreloadLogic != newLogicPreload) {
                         TimberLogger.logI(
                             "ViewerViewModel",
-                            "Preload setting changed. From Config: $newSettingValue, Applied for Logic: $newLogicPreload"
+                            "Preload setting changed. From DataStore: $newSettingValue, Applied for Logic: $newLogicPreload"
                         )
-                        _pagesToPreloadLogic.value = newLogicPreload
+                        _uiState.value.copy(pagesToPreloadLogic = newLogicPreload)
+                        _uiState.update { it.copy(pagesToPreloadLogic = newLogicPreload) }
                         triggerNeighborReloadIfNeeded()
                     }
                 }
@@ -146,9 +142,8 @@ open class ViewerViewModel @Inject constructor(
         if (uiState.value.focusedBitmap != null && comicPageIdentifiers.isNotEmpty()) {
             TimberLogger.logD(
                 "ViewerViewModel",
-                "Preload setting changed, re-evaluating neighbors for page ${uiState.value.currentPage}"
+                "Preload setting changed (now ${uiState.value.pagesToPreloadLogic}), re-evaluating neighbors for page ${uiState.value.currentPage}"
             )
-            // No need to cancel all jobs here, loadNeighborPagesAsync will handle out-of-scope ones.
             loadNeighborPagesAsync(uiState.value.currentPage)
         }
     }
@@ -186,20 +181,18 @@ open class ViewerViewModel @Inject constructor(
             if (::pageBitmapCache.isInitialized) {
                 pageBitmapCache.evictAll()
             } else {
-                // This is a fallback. Init block should have initialized it.
-                // If hit, log an error, and create a default cache to avoid crashing.
                 TimberLogger.logE(
                     "ViewerViewModel",
                     "CRITICAL: Cache accessed in handleLoadComic before init completed!"
                 )
                 val fallbackPreload =
-                    _pagesToPreloadLogic.value.coerceAtMost(MAX_SETTING_FOR_CACHE_INIT)
+                    _uiState.value.pagesToPreloadLogic.coerceAtMost(MAX_SETTING_FOR_CACHE_INIT)
                 pageBitmapCache = LruCache(1 + 2 * fallbackPreload)
             }
             comicPageIdentifiers = emptyList()
 
             focusedPageJob?.cancelJob()
-            cancelAndClearNeighborJobs() // Clear all old jobs
+            cancelAndClearNeighborJobs()
 
             try {
                 TimberLogger.logI("ViewerViewModel", "LoadComic: Starting for $uri")
@@ -252,9 +245,9 @@ open class ViewerViewModel @Inject constructor(
             if (uiState.value.currentPage == pageNumber && uiState.value.focusedBitmap != null) {
                 TimberLogger.logI(
                     "ViewerViewModel",
-                    "handleGoToPage: Already on page $pageNumber. Ensuring neighbors for current setting."
+                    "handleGoToPage: Already on page $pageNumber. Ensuring neighbors for current setting (${uiState.value.pagesToPreloadLogic})."
                 )
-                loadNeighborPagesAsync(pageNumber) // Re-evaluate neighbors if setting changed
+                loadNeighborPagesAsync(pageNumber)
                 return
             }
             loadFocusedAndNeighborPages(pageNumber)
@@ -280,14 +273,13 @@ open class ViewerViewModel @Inject constructor(
             }
             return
         }
-        val currentLogicPreload = _pagesToPreloadLogic.value
+        val currentUILogicPreload = uiState.value.pagesToPreloadLogic
         TimberLogger.logD(
             "ViewerViewModel",
-            "loadFocusedAndNeighborPages for index: $targetPageIndex, with logic preload: $currentLogicPreload"
+            "loadFocusedAndNeighborPages for index: $targetPageIndex, with UI logic preload: $currentUILogicPreload (internal logic: ${_uiState.value.pagesToPreloadLogic})"
         )
 
         focusedPageJob?.cancelJob()
-        // cancelAndClearNeighborJobs() // Let loadNeighborPagesAsync handle more precise job/UI state cleanup
 
         val cachedFocusedBitmap = pageBitmapCache.get(targetPageIndex)
 
@@ -296,9 +288,9 @@ open class ViewerViewModel @Inject constructor(
                 currentPage = targetPageIndex,
                 isLoadingFocused = cachedFocusedBitmap == null,
                 focusedBitmap = cachedFocusedBitmap,
-                neighborBitmaps = buildMap { // Populate initially from cache based on current logic
-                    if (currentLogicPreload > MIN_PRELOAD_COUNT_LOGIC) {
-                        for (i in 1..currentLogicPreload) {
+                neighborBitmaps = buildMap {
+                    if (currentState.pagesToPreloadLogic > MIN_PRELOAD_COUNT_LOGIC) {
+                        for (i in 1..currentState.pagesToPreloadLogic) {
                             val prevIdx = targetPageIndex - i
                             val nextIdx = targetPageIndex + i
                             if (prevIdx >= 0) pageBitmapCache.get(prevIdx)?.let { put(prevIdx, it) }
@@ -367,16 +359,15 @@ open class ViewerViewModel @Inject constructor(
             )
             return
         }
-        val currentLogicPreload = _pagesToPreloadLogic.value
+        val currentLoadingLogicPreload = _uiState.value.pagesToPreloadLogic
         TimberLogger.logD(
             "ViewerViewModel",
-            "Loading neighbors for page: $focusedPageIndex, Effective Preload Logic: $currentLogicPreload"
+            "Loading neighbors for page: $focusedPageIndex, Effective Loading Logic Preload: $currentLoadingLogicPreload (UI state reports: ${uiState.value.pagesToPreloadLogic})"
         )
 
-        // Determine valid range for current preload setting
         val validPreloadIndices = mutableSetOf<Int>()
-        if (currentLogicPreload > MIN_PRELOAD_COUNT_LOGIC) {
-            for (offset in 1..currentLogicPreload) {
+        if (currentLoadingLogicPreload > MIN_PRELOAD_COUNT_LOGIC) {
+            for (offset in 1..currentLoadingLogicPreload) {
                 if (focusedPageIndex - offset >= 0) validPreloadIndices.add(focusedPageIndex - offset)
                 if (focusedPageIndex + offset < uiState.value.pageCount) validPreloadIndices.add(
                     focusedPageIndex + offset
@@ -384,13 +375,12 @@ open class ViewerViewModel @Inject constructor(
             }
         }
 
-        // Cancel jobs for neighbors no longer in scope
         val jobsToRemove = mutableListOf<Int>()
         neighborPageJobs.forEach { (index, job) ->
             if (!validPreloadIndices.contains(index)) {
                 TimberLogger.logD(
                     "ViewerViewModel",
-                    "Neighbor job for page $index is out of scope. Cancelling."
+                    "Neighbor job for page $index is out of scope (current logic: $currentLoadingLogicPreload). Cancelling."
                 )
                 job.cancelJob()
                 jobsToRemove.add(index)
@@ -398,7 +388,6 @@ open class ViewerViewModel @Inject constructor(
         }
         jobsToRemove.forEach { neighborPageJobs.remove(it) }
 
-        // Remove bitmaps from UI state for neighbors no longer in scope
         _uiState.update { currentState ->
             val currentNeighbors = currentState.neighborBitmaps
             val updatedNeighbors = currentNeighbors.filterKeys { validPreloadIndices.contains(it) }
@@ -409,12 +398,15 @@ open class ViewerViewModel @Inject constructor(
             }
         }
 
-        if (currentLogicPreload == MIN_PRELOAD_COUNT_LOGIC) {
-            TimberLogger.logD("ViewerViewModel", "Preload count is 0. No new neighbor loading.")
+        if (currentLoadingLogicPreload == MIN_PRELOAD_COUNT_LOGIC) {
+            TimberLogger.logD(
+                "ViewerViewModel",
+                "Loading logic preload count is 0. No new neighbor loading."
+            )
             return
         }
 
-        for (offset in 1..currentLogicPreload) {
+        for (offset in 1..currentLoadingLogicPreload) {
             listOf(focusedPageIndex - offset, focusedPageIndex + offset).forEach { neighborIndex ->
                 if (neighborIndex >= 0 && neighborIndex < comicPageIdentifiers.size &&
                     pageBitmapCache.get(neighborIndex) == null &&
@@ -423,22 +415,20 @@ open class ViewerViewModel @Inject constructor(
                     neighborPageJobs[neighborIndex] = viewModelScope.launch {
                         TimberLogger.logD(
                             "ViewerViewModel",
-                            "Pre-loading neighbor: $neighborIndex (offset for $focusedPageIndex)"
+                            "Pre-loading neighbor: $neighborIndex (offset for $focusedPageIndex, logic: $currentLoadingLogicPreload)"
                         )
                         try {
                             val bitmap = loadPageBitmapInternal(neighborIndex)
                             if (isActive && bitmap != null) {
-                                _uiState.update {
-                                    // Re-check relevance against current page and *current* preload setting
-                                    val latestPreloadLogic = _pagesToPreloadLogic.value
-                                    if (abs(it.currentPage - neighborIndex) <= latestPreloadLogic && latestPreloadLogic > 0) {
-                                        it.copy(neighborBitmaps = it.neighborBitmaps + (neighborIndex to bitmap))
+                                _uiState.update { state ->
+                                    if (abs(state.currentPage - neighborIndex) <= state.pagesToPreloadLogic && state.pagesToPreloadLogic > 0) {
+                                        state.copy(neighborBitmaps = state.neighborBitmaps + (neighborIndex to bitmap))
                                     } else {
                                         TimberLogger.logD(
                                             "ViewerViewModel",
-                                            "Loaded neighbor $neighborIndex but it's no longer relevant for current page ${it.currentPage} with preload $latestPreloadLogic"
+                                            "Loaded neighbor $neighborIndex but it's no longer relevant for current page ${state.currentPage} with UI preload ${state.pagesToPreloadLogic} (logic: $currentLoadingLogicPreload)"
                                         )
-                                        it
+                                        state
                                     }
                                 }
                             }
@@ -516,7 +506,10 @@ open class ViewerViewModel @Inject constructor(
                 null
             }
         } catch (cex: CancellationException) {
-            TimberLogger.logE("ViewerViewModel", "Decoding cancelled for page $pageIndex.", cex)
+            TimberLogger.logI(
+                "ViewerViewModel",
+                "Decoding cancelled for page $pageIndex."
+            )
             throw cex
         } catch (ex: Exception) {
             TimberLogger.logE("ViewerViewModel", "Error during decodeComicPage for $pageIndex", ex)
