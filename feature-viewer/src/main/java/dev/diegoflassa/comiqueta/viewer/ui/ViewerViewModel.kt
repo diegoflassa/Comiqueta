@@ -50,9 +50,12 @@ open class ViewerViewModel @Inject constructor(
 
     private lateinit var pageBitmapCache: LruCache<Int, ImageBitmap>
 
+
     private var focusedPageJob: Job? = null
     private val neighborPageJobs = mutableMapOf<Int, Job>()
 
+    private val _pagesToPreloadLogic =
+        MutableStateFlow(ViewerUIState.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD)
     private val viewerPagesToPreloadAhead: Flow<Int> = dataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.VIEWER_PAGES_TO_PRELOAD_AHEAD]
@@ -70,7 +73,6 @@ open class ViewerViewModel @Inject constructor(
             val initialSettingValue = try {
                 viewerPagesToPreloadAhead.first()
             } catch (ex: Exception) {
-                ex.printStackTrace()
                 TimberLogger.logE(
                     "ViewerViewModel",
                     "Failed to get initial preload count, using default.",
@@ -91,6 +93,7 @@ open class ViewerViewModel @Inject constructor(
             val initialLogicPreload = initialSettingValue
                 .coerceAtLeast(MIN_PRELOAD_COUNT_LOGIC)
                 .coerceAtMost(MAX_PRELOAD_COUNT_LOGIC)
+            _pagesToPreloadLogic.value = initialLogicPreload
             _uiState.update { it.copy(pagesToPreloadLogic = initialLogicPreload) }
             TimberLogger.logI(
                 "ViewerViewModel",
@@ -108,8 +111,8 @@ open class ViewerViewModel @Inject constructor(
                         .coerceAtLeast(MIN_PRELOAD_COUNT_LOGIC)
                         .coerceAtMost(MAX_PRELOAD_COUNT_LOGIC)
 
-                    if (_uiState.value.pagesToPreloadLogic != safeDefault) {
-                        _uiState.value.copy(pagesToPreloadLogic = safeDefault)
+                    if (_pagesToPreloadLogic.value != safeDefault) {
+                        _pagesToPreloadLogic.value = safeDefault
                         _uiState.update { it.copy(pagesToPreloadLogic = safeDefault) }
                         triggerNeighborReloadIfNeeded()
                     }
@@ -118,12 +121,12 @@ open class ViewerViewModel @Inject constructor(
                     val newLogicPreload = newSettingValue
                         .coerceAtLeast(MIN_PRELOAD_COUNT_LOGIC)
                         .coerceAtMost(MAX_PRELOAD_COUNT_LOGIC)
-                    if (_uiState.value.pagesToPreloadLogic != newLogicPreload) {
+                    if (_pagesToPreloadLogic.value != newLogicPreload) {
                         TimberLogger.logI(
                             "ViewerViewModel",
                             "Preload setting changed. From DataStore: $newSettingValue, Applied for Logic: $newLogicPreload"
                         )
-                        _uiState.value.copy(pagesToPreloadLogic = newLogicPreload)
+                        _pagesToPreloadLogic.value = newLogicPreload
                         _uiState.update { it.copy(pagesToPreloadLogic = newLogicPreload) }
                         triggerNeighborReloadIfNeeded()
                     }
@@ -174,7 +177,8 @@ open class ViewerViewModel @Inject constructor(
                 it.copy(
                     isLoadingFocused = true, error = null, comicTitle = "",
                     focusedBitmap = null, neighborBitmaps = emptyMap(),
-                    currentPage = 0, pageCount = 0
+                    currentPage = 0, pageCount = 0,
+                    pagesToPreloadLogic = _pagesToPreloadLogic.value
                 )
             }
             currentComicUri = uri
@@ -186,7 +190,7 @@ open class ViewerViewModel @Inject constructor(
                     "CRITICAL: Cache accessed in handleLoadComic before init completed!"
                 )
                 val fallbackPreload =
-                    _uiState.value.pagesToPreloadLogic.coerceAtMost(MAX_SETTING_FOR_CACHE_INIT)
+                    _pagesToPreloadLogic.value.coerceAtMost(MAX_SETTING_FOR_CACHE_INIT)
                 pageBitmapCache = LruCache(1 + 2 * fallbackPreload)
             }
             comicPageIdentifiers = emptyList()
@@ -215,7 +219,6 @@ open class ViewerViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoadingFocused = false) }
                 }
             } catch (cex: CancellationException) {
-                cex.printStackTrace()
                 TimberLogger.logE(
                     "ViewerViewModel",
                     "LoadComic (getComicInfo) cancelled: ${cex.message}",
@@ -223,7 +226,6 @@ open class ViewerViewModel @Inject constructor(
                 )
                 _uiState.update { it.copy(isLoadingFocused = false) }
             } catch (ex: Exception) {
-                ex.printStackTrace()
                 TimberLogger.logE(
                     "ViewerViewModel",
                     "LoadComic (getComicInfo): Error loading comic $uri",
@@ -276,7 +278,7 @@ open class ViewerViewModel @Inject constructor(
         val currentUILogicPreload = uiState.value.pagesToPreloadLogic
         TimberLogger.logD(
             "ViewerViewModel",
-            "loadFocusedAndNeighborPages for index: $targetPageIndex, with UI logic preload: $currentUILogicPreload (internal logic: ${_uiState.value.pagesToPreloadLogic})"
+            "loadFocusedAndNeighborPages for index: $targetPageIndex, with UI logic preload: $currentUILogicPreload (internal logic: ${_pagesToPreloadLogic.value})"
         )
 
         focusedPageJob?.cancelJob()
@@ -321,7 +323,6 @@ open class ViewerViewModel @Inject constructor(
                         }
                     }
                 } catch (cex: CancellationException) {
-                    cex.printStackTrace()
                     TimberLogger.logE(
                         "ViewerViewModel",
                         "Focused page $targetPageIndex loading cancelled.",
@@ -333,7 +334,6 @@ open class ViewerViewModel @Inject constructor(
                         )
                     }
                 } catch (ex: Exception) {
-                    ex.printStackTrace()
                     TimberLogger.logE(
                         "ViewerViewModel",
                         "Error loading focused page $targetPageIndex",
@@ -359,7 +359,7 @@ open class ViewerViewModel @Inject constructor(
             )
             return
         }
-        val currentLoadingLogicPreload = _uiState.value.pagesToPreloadLogic
+        val currentLoadingLogicPreload = _pagesToPreloadLogic.value
         TimberLogger.logD(
             "ViewerViewModel",
             "Loading neighbors for page: $focusedPageIndex, Effective Loading Logic Preload: $currentLoadingLogicPreload (UI state reports: ${uiState.value.pagesToPreloadLogic})"
@@ -433,14 +433,12 @@ open class ViewerViewModel @Inject constructor(
                                 }
                             }
                         } catch (cex: CancellationException) {
-                            cex.printStackTrace()
                             TimberLogger.logE(
                                 "ViewerViewModel",
                                 "Neighbor $neighborIndex loading cancelled.",
                                 cex
                             )
                         } catch (ex: Exception) {
-                            ex.printStackTrace()
                             TimberLogger.logE(
                                 "ViewerViewModel",
                                 "Error pre-loading neighbor $neighborIndex",
@@ -506,10 +504,7 @@ open class ViewerViewModel @Inject constructor(
                 null
             }
         } catch (cex: CancellationException) {
-            TimberLogger.logI(
-                "ViewerViewModel",
-                "Decoding cancelled for page $pageIndex."
-            )
+            TimberLogger.logI("ViewerViewModel", "Decoding cancelled for page $pageIndex.")
             throw cex
         } catch (ex: Exception) {
             TimberLogger.logE("ViewerViewModel", "Error during decodeComicPage for $pageIndex", ex)
@@ -521,7 +516,6 @@ open class ViewerViewModel @Inject constructor(
         try {
             if (this.isActive) this.cancel()
         } catch (ex: Exception) {
-            ex.printStackTrace()
             TimberLogger.logE(
                 "ViewerViewModel",
                 "Exception during job cancellation: ${ex.message}",

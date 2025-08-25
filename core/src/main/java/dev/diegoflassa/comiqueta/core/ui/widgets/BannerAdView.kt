@@ -3,11 +3,13 @@ package dev.diegoflassa.comiqueta.core.ui.widgets
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -15,6 +17,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
+import dev.diegoflassa.comiqueta.core.ui.extensions.hasHeightBeenSet
 
 @Composable
 fun BannerAdView(
@@ -25,7 +29,16 @@ fun BannerAdView(
     var adViewInstance: AdView? = null
 
     AndroidView(
-        modifier = modifier.fillMaxWidth().wrapContentHeight(),
+        modifier = modifier
+            .fillMaxWidth()
+            .background(ComiquetaTheme.colorScheme.background)
+            .let { currentModifier ->
+                if (currentModifier.hasHeightBeenSet().not()) {
+                    currentModifier.height(50.dp)
+                } else {
+                    currentModifier
+                }
+            },
         factory = { ctx ->
             AdView(ctx).apply {
                 adViewInstance = this
