@@ -5,7 +5,7 @@ gradle = "8.12.1"
 kotlin = "2.2.10"
 
 #Project build.gradle
-hilt-android-gradle-plugin = "2.57"
+hilt-android-gradle-plugin = "2.57.1"
 
 #App
 firebase-perf-gradle = "2.0.1"
@@ -46,10 +46,10 @@ firebase-bom = "34.1.0"
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2025.08.00"
+compose-bom = "2025.08.01"
 ax-constraintlayout-compose = "1.1.1"
 ax-activity-compose = "1.10.1"
-lifecycle-viewmodel-compose = "2.9.2"
+lifecycle-viewmodel-compose = "2.9.3"
 ax-navigation-compose = "2.9.3"
 kotlinx-serialization-json = "1.9.0"
 ax-paging-runtime-ktx = "3.3.6"
@@ -59,8 +59,8 @@ ax-paging-compose = "3.3.6"
 org-mockito-android = "5.19.0"
 
 #Compose Navigation 3
-ax-navigation3-runtime = "1.0.0-alpha07"
-ax-navigation3-ui = "1.0.0-alpha07"
+ax-navigation3-runtime = "1.0.0-alpha08"
+ax-navigation3-ui = "1.0.0-alpha08"
 ax-navigation3-viewmodel = "1.0.0-alpha04"
 #ax-navigation3-adaptive = "1.0.0-SNAPSHOT"
 
@@ -72,13 +72,13 @@ room-paging = "2.7.2"
 room-testing = "2.7.2"
 
 #Dagger & Hilt
-hilt-android = "2.57"
-hilt-android-compiler = "2.57"
+hilt-android = "2.57.1"
+hilt-android-compiler = "2.57.1"
 hilt-common = "1.2.0"
 hilt-compiler = "1.2.0"
 ax-hilt-navigation-compose = "1.2.0"
 hilt-work = "1.2.0"
-hilt-android-testing = "2.57"
+hilt-android-testing = "2.57.1"
 
 #OkHttp
 okhttp-bom = "5.1.0"
@@ -94,12 +94,12 @@ retrofit2-converter-moshi = "3.0.0"
 retrofit2-converter-gson = "3.0.0"
 
 #Lifecycle
-ax-lifecycle-runtime-ktx = "2.9.2"
-ax-lifecycle-common = "2.9.2"
-ax-lifecycle-common-java8 = "2.9.2"
-ax-lifecycle-viewmodel-savedstate = "2.9.2"
-ax-lifecycle-livedata-ktx = "2.9.2"
-ax-lifecycle-viewmodel-ktx = "2.9.2"
+ax-lifecycle-runtime-ktx = "2.9.3"
+ax-lifecycle-common = "2.9.3"
+ax-lifecycle-common-java8 = "2.9.3"
+ax-lifecycle-viewmodel-savedstate = "2.9.3"
+ax-lifecycle-livedata-ktx = "2.9.3"
+ax-lifecycle-viewmodel-ktx = "2.9.3"
 
 #Lifecycle Extensions
 ax-lifecycle-extensions = "2.2.0"
@@ -153,7 +153,7 @@ io-coil-kt-coil-compose = "2.7.0"
 
 #Plugins
 #Root build.gradle
-com-osacky-doctor = "0.11.0"
+com-osacky-doctor = "0.12.0"
 org-jetbrains-kotlinx-kover = "0.9.1"
 
 #Common
