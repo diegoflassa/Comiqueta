@@ -30,6 +30,7 @@ class MyApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        inicializarClarity()
         FirebaseApp.initializeApp(this)
         TimberManager.inicializar(this)
         TimberLogger.logI(TAG, "onCreate")
@@ -39,11 +40,24 @@ class MyApplication : Application(), Configuration.Provider {
             .setWorkerFactory(workerFactory)
             .build()
         WorkManager.initialize(this, hiltWorkManagerConfiguration)
+    }
 
+    private fun inicializarClarity() {
+        if (config.clarityId.isNotEmpty()) {
+            val clarityConfig = ClarityConfig(config.clarityId)
+            Clarity.initialize(applicationContext, clarityConfig)
+            Clarity.setOnSessionStartedCallback { session ->
+                associateClarityWithCrashlytics()
+            }
+            TimberLogger.logI(
+                TAG,
+                "Microsoft Clarity initialized with Project ID: ${config.clarityId}"
+            )
+        }
+    }
+
+    private fun associateClarityWithCrashlytics(){
         try {
-            inicializarClarity()
-            TimberLogger.logI(TAG, "Microsoft Clarity initialized with Project ID: ${config.clarityId}")
-
             val claritySessionUrl: String? = getCurrentSessionUrl()
 
             if (!claritySessionUrl.isNullOrEmpty()) {
@@ -54,13 +68,6 @@ class MyApplication : Application(), Configuration.Provider {
             }
         } catch (ex: Exception) {
             TimberLogger.logE(TAG, "Error during Clarity initialization or logging Session URL to Crashlytics", ex)
-        }
-    }
-
-    private fun inicializarClarity() {
-        if (config.clarityId.isNotEmpty()) {
-            val clarityConfig = ClarityConfig(config.clarityId)
-            Clarity.initialize(applicationContext, clarityConfig)
         }
     }
 

@@ -19,6 +19,7 @@ import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
 import dagger.hilt.android.AndroidEntryPoint
+import dev.diegoflassa.comiqueta.core.data.extensions.modoDebugHabilitado
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
@@ -75,13 +76,19 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestConsentInfo() {
-        val debugSettings = ConsentDebugSettings.Builder(this)
-            // .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
-            // .addTestDeviceHashedId("YOUR_TEST_DEVICE_HASHED_ID_FROM_LOGCAT")
-            .build()
-        val params = ConsentRequestParameters.Builder()
-            // .setConsentDebugSettings(debugSettings) // Uncomment for testing
-            .build()
+        val debugSettings = if (modoDebugHabilitado()) {
+            ConsentDebugSettings.Builder(this)
+                .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+                //.addTestDeviceHashedId("YOUR_TEST_DEVICE_HASHED_ID_FROM_LOGCAT")
+                .build()
+        } else {
+            null
+        }
+        val params = ConsentRequestParameters.Builder().also {
+            if (debugSettings != null) {
+                it.setConsentDebugSettings(debugSettings)
+            }
+        }.build()
 
         consentInformation = UserMessagingPlatform.getConsentInformation(this)
         consentInformation.requestConsentInfoUpdate(
