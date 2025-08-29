@@ -18,23 +18,16 @@ import com.google.android.ump.ConsentDebugSettings
 import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
-import com.microsoft.clarity.Clarity
-import com.microsoft.clarity.ClarityConfig
 import dagger.hilt.android.AndroidEntryPoint
-import dev.diegoflassa.comiqueta.core.data.config.IConfig
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.navigation.NavDisplay
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var config: IConfig
 
     private lateinit var consentInformation: ConsentInformation
     private val isMobileAdsInitializeCalled = AtomicBoolean(false)
@@ -65,7 +58,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        inicializarClarity()
     }
 
     private fun configureAdRequestFlags() {
@@ -151,13 +143,6 @@ class MainActivity : ComponentActivity() {
                 "Cannot request ads. Consent not obtained or SDK not ready. Ads hidden."
             )
             showAds = false // Update Compose state
-        }
-    }
-
-    private fun inicializarClarity() {
-        if (config.clarityId.isNotEmpty()) {
-            val clarityConfig = ClarityConfig(config.clarityId)
-            Clarity.initialize(applicationContext, clarityConfig)
         }
     }
 }
