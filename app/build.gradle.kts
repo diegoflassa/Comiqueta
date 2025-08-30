@@ -43,24 +43,28 @@ firebaseAppDistribution {
         println("App Distribution: firebase_app_distribution.properties not found for appId/testers. These might need to be set via CI environment variables or plugin config.")
     }
 
-    // Determine service credentials file path
+    // Service credentials will now be primarily picked up via the GOOGLE_APPLICATION_CREDENTIALS environment variable.
+    // The comiqueta.ci.serviceCredentialsFile project property and FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE env var
+    // are no longer the primary mechanism for CI in this setup.
+    // Keeping the println for diagnostics if GOOGLE_APPLICATION_CREDENTIALS is not picked up and plugin falls back or errors.
     val ciProjectPropertyCredentialsFile = project.properties["comiqueta.ci.serviceCredentialsFile"]?.toString()
-    val ciEnvVarCredentialsFile = System.getenv("FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE")
+    val ciEnvVarCredentialsFile = System.getenv("FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE") // Old env var, less likely to be used now
+    val googleAppCredentials = System.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
-    if (ciProjectPropertyCredentialsFile != null) {
+    if (googleAppCredentials != null) {
+        println("App Distribution: GOOGLE_APPLICATION_CREDENTIALS is set to: $googleAppCredentials. Plugin should use this.")
+        // DO NOT set serviceCredentialsFile here if GOOGLE_APPLICATION_CREDENTIALS is set,
+        // as it might override the env var behavior.
+    } else if (ciProjectPropertyCredentialsFile != null) {
+        // This was the previous CI method, keeping logic as a fallback if GOOGLE_APPLICATION_CREDENTIALS fails for some reason
         serviceCredentialsFile = ciProjectPropertyCredentialsFile
-        println("App Distribution: Using service credentials from Gradle project property 'comiqueta.ci.serviceCredentialsFile': $serviceCredentialsFile")
+        println("App Distribution: GOOGLE_APPLICATION_CREDENTIALS not set. Using service credentials from Gradle project property 'comiqueta.ci.serviceCredentialsFile': $serviceCredentialsFile")
     } else if (ciEnvVarCredentialsFile != null) {
+        // Fallback to the older environment variable method (less likely to be used in CI now)
         serviceCredentialsFile = ciEnvVarCredentialsFile
-        println("App Distribution: Using service credentials from CI environment variable 'FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE': $serviceCredentialsFile")
+        println("App Distribution: GOOGLE_APPLICATION_CREDENTIALS not set. Using service credentials from CI environment variable 'FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE': $serviceCredentialsFile")
     } else {
-        println("App Distribution: Neither 'comiqueta.ci.serviceCredentialsFile' project property nor 'FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE' environment variable is set. App Distribution upload will likely fail if credentials are required.")
-        // Add a local file fallback here if needed, e.g.,
-        // val localServiceAccount = project.rootProject.file("path/to/local/service-account.json")
-        // if (localServiceAccount.exists()) {
-        //     serviceCredentialsFile = localServiceAccount.absolutePath
-        //     println("App Distribution: Using local fallback service credentials: $serviceCredentialsFile")
-        // }
+        println("App Distribution: No service credentials explicitly configured via GOOGLE_APPLICATION_CREDENTIALS, project property, or older environment variable. Upload may fail if not authenticated otherwise.")
     }
 
     releaseNotes = "Debug test version from Gradle."
