@@ -4,7 +4,10 @@ import android.content.Context
 import dev.diegoflassa.comiqueta.core.R
 import javax.inject.Inject
 
-class Config @Inject constructor(val context: Context) : IConfig {
+class Config @Inject constructor(
+    private val context: Context,
+) : IConfig {
+
     override val clarityId by lazy {
         context.getString(R.string.CLARITY_ID)
     }

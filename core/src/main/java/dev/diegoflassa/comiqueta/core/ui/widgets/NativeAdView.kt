@@ -28,7 +28,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
-import com.google.android.gms.ads.nativead.NativeAdView as GoogleNativeAdView // Alias to avoid confusion
+import com.google.android.gms.ads.nativead.NativeAdView as GoogleNativeAdView
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 
 private const val TAG = "NativeAdWidget"
@@ -84,7 +84,7 @@ fun NativeAdView(
     LaunchedEffect(enabled, adUnitId, nativeAdLayoutResId) {
         if (!enabled || adUnitId.isBlank()) {
             TimberLogger.logI(TAG, "Native ad loading disabled or adUnitId is blank.")
-            nativeAdState = null // Clear previous ad if disabled
+            nativeAdState = null
             return@LaunchedEffect
         }
 
@@ -93,7 +93,7 @@ fun NativeAdView(
         val loader = AdLoader.Builder(context, adUnitId)
             .forNativeAd { ad: NativeAd ->
                 TimberLogger.logI(TAG, "Native Ad loaded: \$adUnitId")
-                nativeAdState?.destroy() // Destroy any old ad before assigning new one
+                nativeAdState?.destroy()
                 nativeAdState = ad
             }
             .withAdListener(object : AdListener() {
@@ -154,11 +154,11 @@ fun NativeAdView(
                     // Populate the views
                     (adView.headlineView as? TextView)?.text = currentNativeAd.headline
                     (adView.bodyView as? TextView)?.text = currentNativeAd.body
-                    (adView.callToActionView as? TextView)?.text = currentNativeAd.callToAction // Can be Button or TextView
+                    (adView.callToActionView as? TextView)?.text = currentNativeAd.callToAction
                     (adView.iconView as? ImageView)?.setImageDrawable(currentNativeAd.icon?.drawable)
 
                     adView.mediaView?.let {
-                        it.setImageScaleType(ImageView.ScaleType.CENTER_CROP) // Example, adjust as needed
+                        it.setImageScaleType(ImageView.ScaleType.CENTER_CROP)
                         it.mediaContent = (currentNativeAd.mediaContent ?: return@let)
                     }
 

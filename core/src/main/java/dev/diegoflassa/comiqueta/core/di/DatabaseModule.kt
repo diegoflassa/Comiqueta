@@ -1,10 +1,6 @@
 package dev.diegoflassa.comiqueta.core.di
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStoreFile
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,8 +13,6 @@ import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import javax.inject.Provider
 import javax.inject.Singleton
 
-private const val USER_PREFERENCES_NAME = "user_preferences"
-
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
@@ -30,14 +24,6 @@ object DatabaseModule {
         databaseCallback: DatabaseCallback
     ): ComicDatabase {
         return ComicDatabase.getDatabase(context, databaseCallback)
-    }
-
-    @Singleton
-    @Provides
-    fun providePreferencesDataStore(@ApplicationContext appContext: Context): DataStore<Preferences> {
-        return PreferenceDataStoreFactory.create(
-            produceFile = { appContext.preferencesDataStoreFile(USER_PREFERENCES_NAME) }
-        )
     }
 
     @Singleton

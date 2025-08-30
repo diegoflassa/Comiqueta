@@ -32,24 +32,24 @@ import kotlin.random.Random
 
 fun Context.obterPackageInfo(): PackageInfo? = try {
     packageManager.getPackageInfo(packageName, 0)
-} catch (e: PackageManager.NameNotFoundException) {
-    e.printStackTrace()
+} catch (nnfe: PackageManager.NameNotFoundException) {
+    nnfe.printStackTrace()
     null
 }
 
 fun Context.obterVersaoDoApp(): String = try {
     val packageInfo: PackageInfo? = packageManager.getPackageInfo(packageName, 0)
     packageInfo?.versionName ?: ""
-} catch (e: PackageManager.NameNotFoundException) {
-    e.printStackTrace()
+} catch (nnfe: PackageManager.NameNotFoundException) {
+    nnfe.printStackTrace()
     ""
 }
 
 fun Context.obterNomeDoPacote(): String = try {
     val packageInfo: PackageInfo? = packageManager.getPackageInfo(packageName, 0)
     packageInfo?.packageName ?: ""
-} catch (e: PackageManager.NameNotFoundException) {
-    e.printStackTrace()
+} catch (nnfe: PackageManager.NameNotFoundException) {
+    nnfe.printStackTrace()
     ""
 }
 
@@ -57,8 +57,8 @@ fun Context.modoDebugHabilitado(): Boolean = try {
     val packageManager = packageManager
     val applicationInfo = packageManager.getApplicationInfo(this.packageName, 0)
     (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
-} catch (e: PackageManager.NameNotFoundException) {
-    e.printStackTrace()
+} catch (nnfe: PackageManager.NameNotFoundException) {
+    nnfe.printStackTrace()
     false
 }
 
@@ -162,7 +162,8 @@ fun Context.permissaoExiste(permissao: String): Boolean {
     try {
         packageManager.getPermissionInfo(permissao, 0)
         return true
-    } catch (ex: PackageManager.NameNotFoundException) {
+    } catch (nnfe: PackageManager.NameNotFoundException) {
+        nnfe.printStackTrace()
         return false
     }
 }

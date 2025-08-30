@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "7c3ae6a8a0569048d2da5e281da5974a",
+    "identityHash": "9aea3497c06ccd97475388a2d7d6cc40",
     "entities": [
       {
         "tableName": "comics",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`file_path` TEXT NOT NULL, `folder_path` TEXT NOT NULL, `file_name` TEXT, `comic_category_id` INTEGER, `cover_path` TEXT, `title` TEXT, `author` TEXT, `is_favorite` INTEGER NOT NULL, `is_new` INTEGER NOT NULL, `was_read` INTEGER NOT NULL, `last_page` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL, `created` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`file_path`), FOREIGN KEY(`comic_category_id`) REFERENCES `categories`(`id`) ON UPDATE CASCADE ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`file_path` TEXT NOT NULL, `folder_path` TEXT NOT NULL, `file_name` TEXT, `comic_category_id` INTEGER, `cover_path` TEXT, `title` TEXT, `author` TEXT, `is_favorite` INTEGER NOT NULL, `was_read` INTEGER NOT NULL, `last_page` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL, `created` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`file_path`), FOREIGN KEY(`comic_category_id`) REFERENCES `categories`(`id`) ON UPDATE CASCADE ON DELETE SET NULL )",
         "fields": [
           {
             "fieldPath": "filePath",
@@ -48,12 +48,6 @@
           {
             "fieldPath": "isFavorite",
             "columnName": "is_favorite",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "isNew",
-            "columnName": "is_new",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -144,11 +138,54 @@
             "id"
           ]
         }
+      },
+      {
+        "tableName": "comics_fts",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`file_path` TEXT NOT NULL, `title` TEXT, `author` TEXT, `file_name` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "filePath",
+            "columnName": "file_path",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "author",
+            "columnName": "author",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "file_name",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": []
+        },
+        "ftsVersion": "FTS4",
+        "ftsOptions": {
+          "tokenizer": "simple",
+          "tokenizerArgs": [],
+          "contentTable": "",
+          "languageIdColumnName": "",
+          "matchInfo": "FTS4",
+          "notIndexedColumns": [],
+          "prefixSizes": [],
+          "preferredOrder": "ASC"
+        },
+        "contentSyncTriggers": []
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7c3ae6a8a0569048d2da5e281da5974a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9aea3497c06ccd97475388a2d7d6cc40')"
     ]
   }
 }

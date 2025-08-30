@@ -1,26 +1,26 @@
 [versions]
 
 #Common
-gradle = "8.12.0"
-kotlin = "2.2.0"
+gradle = "8.12.2"
+kotlin = "2.2.10"
 
 #Project build.gradle
-hilt-android-gradle-plugin = "2.57"
+hilt-android-gradle-plugin = "2.57.1"
 
 #App
-firebase-perf-gradle = "2.0.0"
+firebase-perf-gradle = "2.0.1"
 firebase-appdistribution-gradle = "5.1.1"
 androidx-room = "2.7.2"
 
 #Project build.gradle
 google-services = "4.4.3"
-firebase-crashlytics-gradle = "3.0.5"
-perf-plugin = "2.0.0"
+firebase-crashlytics-gradle = "3.0.6"
+perf-plugin = "2.0.1"
 
 #Common
-core-ktx = "1.16.0"
+core-ktx = "1.17.0"
 material = "1.12.0"
-ui-text-google-fonts = "1.8.3"
+ui-text-google-fonts = "1.9.0"
 
 #Common Testing
 junit = "4.13.2"
@@ -32,7 +32,7 @@ benchmark-macro-junit4 = "1.4.0"
 
 #Unit Tests
 org-jetbrains-kotlinx-coroutines-test = "1.10.2"
-org-mockito-core = "5.18.0"
+org-mockito-core = "5.19.0"
 org-mockito-inline = "5.2.0"
 org-mockito-kotlin = "6.0.0"
 app-cash-turbine = "1.2.1"
@@ -40,28 +40,27 @@ androidx-paging-common = "3.3.6"
 com-google-truth = "1.4.4"
 
 #Firebase
-firebase-bom = "34.0.0"
+firebase-bom = "34.2.0"
 
 #Timber
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2025.07.00"
+compose-bom = "2025.08.01"
 ax-constraintlayout-compose = "1.1.1"
 ax-activity-compose = "1.10.1"
-lifecycle-viewmodel-compose = "2.9.2"
+lifecycle-viewmodel-compose = "2.9.3"
 ax-navigation-compose = "2.9.3"
 kotlinx-serialization-json = "1.9.0"
 ax-paging-runtime-ktx = "3.3.6"
 ax-paging-compose = "3.3.6"
 
 #Compose Testing
-org-mockito-android = "5.18.0"
-#org-jetbrains-kotlinx-coroutines-test = "1.10.2"
+org-mockito-android = "5.19.0"
 
 #Compose Navigation 3
-ax-navigation3-runtime = "1.0.0-alpha06"
-ax-navigation3-ui = "1.0.0-alpha06"
+ax-navigation3-runtime = "1.0.0-alpha08"
+ax-navigation3-ui = "1.0.0-alpha08"
 ax-navigation3-viewmodel = "1.0.0-alpha04"
 #ax-navigation3-adaptive = "1.0.0-SNAPSHOT"
 
@@ -73,13 +72,13 @@ room-paging = "2.7.2"
 room-testing = "2.7.2"
 
 #Dagger & Hilt
-hilt-android = "2.57"
-hilt-android-compiler = "2.57"
+hilt-android = "2.57.1"
+hilt-android-compiler = "2.57.1"
 hilt-common = "1.2.0"
 hilt-compiler = "1.2.0"
 ax-hilt-navigation-compose = "1.2.0"
 hilt-work = "1.2.0"
-hilt-android-testing = "2.57"
+hilt-android-testing = "2.57.1"
 
 #OkHttp
 okhttp-bom = "5.1.0"
@@ -95,12 +94,12 @@ retrofit2-converter-moshi = "3.0.0"
 retrofit2-converter-gson = "3.0.0"
 
 #Lifecycle
-ax-lifecycle-runtime-ktx = "2.9.2"
-ax-lifecycle-common = "2.9.2"
-ax-lifecycle-common-java8 = "2.9.2"
-ax-lifecycle-viewmodel-savedstate = "2.9.2"
-ax-lifecycle-livedata-ktx = "2.9.2"
-ax-lifecycle-viewmodel-ktx = "2.9.2"
+ax-lifecycle-runtime-ktx = "2.9.3"
+ax-lifecycle-common = "2.9.3"
+ax-lifecycle-common-java8 = "2.9.3"
+ax-lifecycle-viewmodel-savedstate = "2.9.3"
+ax-lifecycle-livedata-ktx = "2.9.3"
+ax-lifecycle-viewmodel-ktx = "2.9.3"
 
 #Lifecycle Extensions
 ax-lifecycle-extensions = "2.2.0"
@@ -123,9 +122,6 @@ ax-datastore = "1.1.7"
 
 #Splashscreen
 ax-splashscreen = "1.0.1"
-
-#Profile Installer
-#ax-profileinstaller = "1.4.1"
 
 #App Search
 ax-appsearch = "1.1.0"
@@ -151,17 +147,17 @@ play-services-ads-api = "24.5.0"
 com-google-android-ump-messaging-platform = "3.2.0"
 
 #Other
-clarity-compose = "3.4.3"
+clarity-compose = "3.4.5"
 com-google-auto-value = "1.11.0"
 io-coil-kt-coil-compose = "2.7.0"
 
 #Plugins
 #Root build.gradle
-com-osacky-doctor = "0.11.0"
+com-osacky-doctor = "0.12.0"
 org-jetbrains-kotlinx-kover = "0.9.1"
 
 #Common
-com-google-devtools-ksp = "2.2.0-2.0.2"
+com-google-devtools-ksp = "2.2.10-2.0.2"
 
 [libraries]
 
@@ -235,7 +231,6 @@ ax-compose-ui-test = { module = "androidx.compose.ui:ui-test" }
 ax-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 ax-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 org-mockito-android = { module = "org.mockito:mockito-android", version.ref = "org-mockito-android" }
-#org-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "org-jetbrains-kotlinx-coroutines-test" } # This is an old commented one, we added a new one under #Unit Tests
 
 #Compose Navigation 3
 ##Core Navigation 3 libraries
@@ -345,7 +340,7 @@ io-coil-kt-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "i
 #Root build.gradle
 com-osacky-doctor = { id = "com.osacky.doctor", version.ref = "com-osacky-doctor" }
 org-jetbrains-kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "org-jetbrains-kotlinx-kover" }
-firebase-appdistribution-gradle = { id = "com.google.firebase.appdistribution", version.ref = "firebase-appdistribution-gradle" } # Added
+firebase-appdistribution-gradle = { id = "com.google.firebase.appdistribution", version.ref = "firebase-appdistribution-gradle" }
 
 #Common
 com-android-application = { id = "com.android.application", version.ref = "gradle" }
@@ -362,4 +357,3 @@ androidx-room = { id = "androidx.room", version.ref = "androidx-room" }
 
 #Project build.gradle
 hilt-android-gradle-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android-gradle-plugin" }
-

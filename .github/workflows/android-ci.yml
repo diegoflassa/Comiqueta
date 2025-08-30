@@ -1,13 +1,13 @@
-name: Android CI
+name: Android CI & Distribute
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop ] # Distribute only on pushes to the main branch
+  # pull_request:
+  #   branches: [ main, develop ] # Keep PR builds if needed, but they won't distribute
 
 jobs:
-  build:
+  build_and_distribute:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,21 +35,43 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # Combined build and test step for debug variant
-      - name: Build and run unit tests for Debug
+      # This step can be used for PRs or general builds not intended for distribution
+      - name: Build and run unit tests for Debug (Optional)
+        if: github.event_name == 'pull_request' # Example: only run for PRs
         run: ./gradlew :app:assembleDebug :app:testDebugUnitTest
 
-    # Optional: Upload build artifacts (e.g., APK)
-    # - name: Upload Debug APK
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: app-debug
-    #     path: app/build/outputs/apk/debug/app-debug.apk # Adjust path as needed
+      # Steps for building and distributing the Release version (runs on push to main)
+      - name: Build Release AAB
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: ./gradlew :app:bundleRelease
 
-    # Optional: Upload test reports
-    # - name: Upload Debug Test Reports
-    #   if: always() # Always run this step to upload reports even if tests fail
+      - name: Build Debug AAB
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        run: ./gradlew :app:assembleRelease for APK
+
+      - name: Decode Firebase Service Account Key
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_APP_DISTRO_SERVICE_ACCOUNT_BASE64 }}
+        run: |
+          echo "Decoding Firebase service account key..."
+          SERVICE_ACCOUNT_FILE_PATH="${{ runner.temp }}/firebase_app_distribution.properties"
+          echo $FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > $SERVICE_ACCOUNT_FILE_PATH
+          echo "FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE=$SERVICE_ACCOUNT_FILE_PATH" >> $GITHUB_ENV
+          echo "Service account key decoded to $SERVICE_ACCOUNT_FILE_PATH"
+          echo "FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE environment variable set."
+
+      - name: Upload to Firebase App Distribution (Release)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: ./gradlew :app:appDistributionUploadRelease
+
+      - name: Upload to Firebase App Distribution (Debug)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        run: ./gradlew :app:appDistributionUploadDebug
+
+    # Optional: Upload build artifacts (e.g., AAB/APK) to GitHub for archival
+    # - name: Upload Release AAB Artifact
+    #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     #   uses: actions/upload-artifact@v4
     #   with:
-    #     name: debug-unit-test-reports
-    #     path: app/build/reports/tests/testDebugUnitTest/ # Adjust path as needed
+    #     name: app-release-aab
+    #     path: app/build/outputs/bundle/release/*.aab # Adjust path as needed

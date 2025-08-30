@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.paging.PagingData
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
-import dev.diegoflassa.comiqueta.core.data.model.Comic
+import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import kotlinx.coroutines.flow.Flow
 
 interface IComicsRepository {
@@ -15,7 +15,8 @@ interface IComicsRepository {
     fun getComicsPaginated(
         categoryId: Long? = 0,
         flags: Set<ComicFlags> = emptySet(),
-        pageSize: Int = DEFAULT_PAGE_SIZE
+        pageSize: Int = DEFAULT_PAGE_SIZE,
+        searchQuery: String? = null
     ): Flow<PagingData<Comic>>
 
     suspend fun getComicByFilePath(filePath: Uri): Comic?
