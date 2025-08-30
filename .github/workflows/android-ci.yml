@@ -37,13 +37,13 @@ jobs:
 
       # This step can be used for PRs or general builds not intended for distribution
       - name: Build and run unit tests for Debug (Optional)
-        if: github.event_name == 'pull_request' # Example: only run for PRs
+        if: github.event_name == 'pull_request'
         run: ./gradlew :app:assembleDebug :app:testDebugUnitTest
 
-      # Steps for building and distributing the Debug version (runs on push to main)
-      - name: Build Debug AAB
+      # Steps for building and distributing the Release version (runs on push to main)
+      - name: Build Release AAB
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: ./gradlew :app:bundleDebug
+        run: ./gradlew :app:bundleRelease
 
       - name: Build Debug APK
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'

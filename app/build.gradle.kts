@@ -3,13 +3,18 @@ import org.gradle.kotlin.dsl.project
 import java.util.Properties
 
 val firebaseAppDistributionProps = Properties()
-val firebasePropsFile = project.file("./../firebase_app_distribution.properties")
+// Try to read from project root first, then from app module directory as a fallback for CI
+var firebasePropsFile = project.rootProject.file("firebase_app_distribution.properties")
+if (!firebasePropsFile.exists() || !firebasePropsFile.isFile) {
+    firebasePropsFile = project.file("firebase_app_distribution.properties") // Original path for local
+}
+
 if (firebasePropsFile.exists() && firebasePropsFile.isFile) {
     firebasePropsFile.inputStream().use {
         firebaseAppDistributionProps.load(it)
     }
 } else {
-    println("Warning: firebase_app_distribution.properties not found. App Distribution appId might be missing.")
+    println("Warning: firebase_app_distribution.properties not found. App Distribution appId and testers might be missing for local builds.")
 }
 
 plugins {
@@ -24,16 +29,53 @@ plugins {
     alias(libs.plugins.firebase.appdistribution.gradle)
 }
 
-if (firebasePropsFile.exists()) {
-    val configuredTesters =
-        firebaseAppDistributionProps.getProperty("firebase.appdistribution.testers") ?: ""
-    println("Setted testers to: $configuredTesters")
-    firebaseAppDistribution {
+// Configure Firebase App Distribution
+firebaseAppDistribution {
+    // Attempt to load appId and testers from properties file if it exists (for local convenience)
+    if (firebasePropsFile.exists()) {
         appId = firebaseAppDistributionProps.getProperty("firebase.appdistribution.appId") ?: ""
-        testers = configuredTesters
-        releaseNotes = "Debug test version"
+        val configuredTesters = firebaseAppDistributionProps.getProperty("firebase.appdistribution.testers") ?: ""
+        if (configuredTesters.isNotEmpty()) {
+            testers = configuredTesters
+            println("App Distribution: Using testers from firebase_app_distribution.properties: $configuredTesters")
+        }
+    } else {
+        println("App Distribution: firebase_app_distribution.properties not found. appId and testers might need to be set via CI environment variables or plugin config.")
     }
+
+    // This is crucial for CI: Read the service credentials file path from the environment variable
+    // The environment variable FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE is set in the GitHub Actions workflow
+    val ciCredentialsFile = System.getenv("FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE")
+    if (ciCredentialsFile != null) {
+        serviceCredentialsFile = ciCredentialsFile
+        println("App Distribution: Using service credentials from CI environment variable: $ciCredentialsFile")
+    } else {
+        // Fallback for local builds if you have credentials at a fixed path locally and not using the env var
+        // Example: val localCredentials = project.rootProject.file("path/to/local/service-account.json")
+        // if (localCredentials.exists()) {
+        //     serviceCredentialsFile = localCredentials.absolutePath
+        //     println("App Distribution: Using local service credentials file: ${localCredentials.absolutePath}")
+        // } else {
+        println("App Distribution: CI environment variable FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE not set, and no local fallback path configured for serviceCredentialsFile.")
+        // }
+    }
+
+    // Default release notes, can be overridden per variant or by CI
+    releaseNotes = "Debug test version from Gradle."
+
+    // Example of per-variant configuration if needed later:
+    // variantFilter {
+    //     if (name.contains("debug", ignoreCase = true)) {
+    //         // config for debug
+    //         releaseNotes = "Debug build for testing."
+    //     }
+    //     if (name.contains("release", ignoreCase = true)) {
+    //         // config for release
+    //         releaseNotes = "New release version."
+    //     }
+    // }
 }
+
 
 kotlin {
     jvmToolchain(JavaVersion.VERSION_21.toString().toInt())
