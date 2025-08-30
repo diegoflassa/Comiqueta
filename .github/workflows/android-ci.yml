@@ -24,6 +24,22 @@ jobs:
           echo $GOOGLE_SERVICES_JSON_BASE64 | base64 --decode > $FILE_PATH
           echo "google-services.json created successfully."
 
+      - name: Decode firebase_app_distribution.properties
+        env:
+          FIREBASE_APP_DISTRO_PROPERTIES_BASE64: ${{ secrets.FIREBASE_APP_DISTRIBUTION_PROPERTIES_BASE64 }}
+        run: |
+          echo "Attempting to create firebase_app_distribution.properties..."
+          PROPERTIES_FILE_PATH="app/firebase_app_distribution.properties"
+          if [ -n "$FIREBASE_APP_DISTRO_PROPERTIES_BASE64" ]; then
+            mkdir -p "$(dirname "$PROPERTIES_FILE_PATH")" # Ensure app directory exists
+            echo "$FIREBASE_APP_DISTRO_PROPERTIES_BASE64" | base64 --decode > "$PROPERTIES_FILE_PATH"
+            echo "firebase_app_distribution.properties created successfully at $PROPERTIES_FILE_PATH."
+            echo "Content of firebase_app_distribution.properties:"
+            cat "$PROPERTIES_FILE_PATH"
+          else
+            echo "Warning: FIREBASE_APP_DISTRIBUTION_PROPERTIES_BASE64 secret is not set or is empty. Skipping creation of firebase_app_distribution.properties."
+          fi
+
       - name: Decode Firebase Service Account Key
         id: decode_sa_key
         env:
