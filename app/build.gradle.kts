@@ -40,40 +40,30 @@ firebaseAppDistribution {
             println("App Distribution: Using testers from firebase_app_distribution.properties: $configuredTesters")
         }
     } else {
-        println("App Distribution: firebase_app_distribution.properties not found. appId and testers might need to be set via CI environment variables or plugin config.")
+        println("App Distribution: firebase_app_distribution.properties not found for appId/testers. These might need to be set via CI environment variables or plugin config.")
     }
 
-    // This is crucial for CI: Read the service credentials file path from the environment variable
-    // The environment variable FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE is set in the GitHub Actions workflow
-    val ciCredentialsFile = System.getenv("FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE")
-    if (ciCredentialsFile != null) {
-        serviceCredentialsFile = ciCredentialsFile
-        println("App Distribution: Using service credentials from CI environment variable: $ciCredentialsFile")
+    // Determine service credentials file path
+    val ciProjectPropertyCredentialsFile = project.properties["comiqueta.ci.serviceCredentialsFile"]?.toString()
+    val ciEnvVarCredentialsFile = System.getenv("FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE")
+
+    if (ciProjectPropertyCredentialsFile != null) {
+        serviceCredentialsFile = ciProjectPropertyCredentialsFile
+        println("App Distribution: Using service credentials from Gradle project property 'comiqueta.ci.serviceCredentialsFile': $serviceCredentialsFile")
+    } else if (ciEnvVarCredentialsFile != null) {
+        serviceCredentialsFile = ciEnvVarCredentialsFile
+        println("App Distribution: Using service credentials from CI environment variable 'FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE': $serviceCredentialsFile")
     } else {
-        // Fallback for local builds if you have credentials at a fixed path locally and not using the env var
-        // Example: val localCredentials = project.rootProject.file("path/to/local/service-account.json")
-        // if (localCredentials.exists()) {
-        //     serviceCredentialsFile = localCredentials.absolutePath
-        //     println("App Distribution: Using local service credentials file: ${localCredentials.absolutePath}")
-        // } else {
-        println("App Distribution: CI environment variable FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE not set, and no local fallback path configured for serviceCredentialsFile.")
+        println("App Distribution: Neither 'comiqueta.ci.serviceCredentialsFile' project property nor 'FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE' environment variable is set. App Distribution upload will likely fail if credentials are required.")
+        // Add a local file fallback here if needed, e.g.,
+        // val localServiceAccount = project.rootProject.file("path/to/local/service-account.json")
+        // if (localServiceAccount.exists()) {
+        //     serviceCredentialsFile = localServiceAccount.absolutePath
+        //     println("App Distribution: Using local fallback service credentials: $serviceCredentialsFile")
         // }
     }
 
-    // Default release notes, can be overridden per variant or by CI
     releaseNotes = "Debug test version from Gradle."
-
-    // Example of per-variant configuration if needed later:
-    // variantFilter {
-    //     if (name.contains("debug", ignoreCase = true)) {
-    //         // config for debug
-    //         releaseNotes = "Debug build for testing."
-    //     }
-    //     if (name.contains("release", ignoreCase = true)) {
-    //         // config for release
-    //         releaseNotes = "New release version."
-    //     }
-    // }
 }
 
 

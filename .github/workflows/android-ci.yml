@@ -35,10 +35,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # This step can be used for PRs or general builds not intended for distribution
-      - name: Build and run unit tests for Debug (Optional)
-        if: github.event_name == 'pull_request'
-        run: ./gradlew :app:assembleDebug :app:testDebugUnitTest
+      - name: Run unit tests for Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: ./gradlew :app:testReleaseUnitTest
+
+      - name: Run unit tests for Debug
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        run: ./gradlew :app:testDebugUnitTest
 
       # Steps for building and distributing the Release version (runs on push to main)
       - name: Build Release AAB
@@ -50,23 +53,33 @@ jobs:
         run: ./gradlew :app:assembleDebug
 
       - name: Decode Firebase Service Account Key
+        id: decode_sa_key
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_APP_DISTRO_SERVICE_ACCOUNT_BASE64 }}
         run: |
           echo "Decoding Firebase service account key..."
-          SERVICE_ACCOUNT_FILE_PATH="${{ runner.temp }}/firebase_app_distribution.properties"
-          echo $FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > $SERVICE_ACCOUNT_FILE_PATH
-          echo "FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE=$SERVICE_ACCOUNT_FILE_PATH" >> $GITHUB_ENV
-          echo "Service account key decoded to $SERVICE_ACCOUNT_FILE_PATH"
-          echo "FIREBASE_APP_DISTRO_SERVICE_CREDENTIALS_FILE environment variable set."
+          SERVICE_ACCOUNT_FILE_PATH="${{ runner.temp }}/firebase_service_account.json"
+          echo "Attempting to decode to: $SERVICE_ACCOUNT_FILE_PATH"
+          echo "$FIREBASE_SERVICE_ACCOUNT_KEY_BASE64" | base64 --decode > "$SERVICE_ACCOUNT_FILE_PATH"
+          
+          echo "Verifying file existence and content: $SERVICE_ACCOUNT_FILE_PATH"
+          if [ -s "$SERVICE_ACCOUNT_FILE_PATH" ]; then
+            echo "Service account JSON file created and is not empty."
+            ls -l "$SERVICE_ACCOUNT_FILE_PATH"
+            # Set output for subsequent steps
+            echo "::set-output name=sa_file_path::$SERVICE_ACCOUNT_FILE_PATH"
+          else
+            echo "ERROR: Service account JSON file is empty or was not created at $SERVICE_ACCOUNT_FILE_PATH." >&2
+            exit 1 # Fail the step if the file is empty or not created
+          fi
 
       - name: Upload to Firebase App Distribution (Release)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: ./gradlew :app:appDistributionUploadRelease
+        run: ./gradlew :app:appDistributionUploadRelease -Pcomiqueta.ci.serviceCredentialsFile=${{ steps.decode_sa_key.outputs.sa_file_path }}
 
       - name: Upload to Firebase App Distribution (Debug)
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-        run: ./gradlew :app:appDistributionUploadDebug
+        run: ./gradlew :app:appDistributionUploadDebug -Pcomiqueta.ci.serviceCredentialsFile=${{ steps.decode_sa_key.outputs.sa_file_path }}
 
     # Optional: Upload build artifacts (e.g., AAB/APK) to GitHub for archival
     # - name: Upload Release AAB Artifact
