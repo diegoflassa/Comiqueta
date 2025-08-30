@@ -61,7 +61,7 @@ jobs:
             echo "Verifying workspace file: $ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
             if [ -s "$ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH" ]; then
               echo "Workspace service account JSON file copied and is not empty."
-              echo "::set-output name=sa_file_path::$ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
+              echo "sa_file_path=$ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH" >> $GITHUB_OUTPUT
               echo "Step output sa_file_path set to: $ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
             else
               echo "ERROR: Failed to copy or workspace service account file is empty at $ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH." >&2
