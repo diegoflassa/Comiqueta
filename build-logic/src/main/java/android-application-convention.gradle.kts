@@ -3,6 +3,8 @@ import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import java.io.FileInputStream
 import java.util.Properties
 import java.io.File // Ensure File is imported
+import java.time.LocalDateTime // Changed from LocalDate to LocalDateTime
+import java.time.format.DateTimeFormatter
 
 // Get the names of the tasks Gradle was requested to run
 val requestedTaskNames = gradle.startParameter.taskNames
@@ -109,12 +111,22 @@ android {
     applicationVariants.all {
         val variant = this
 
+        // Determine date-time suffix if in CI
+        val dateTimeSuffix = if (System.getenv("CI") == "true") {
+            val currentDateTime = LocalDateTime.now()
+            val formatter = DateTimeFormatter.ofPattern("dd_MM_yyyy-HH_mm")
+            "-${currentDateTime.format(formatter)}"
+        } else {
+            "" // No suffix if not in CI
+        }
+
         variant.outputs.all {
             val output = this
-            val apkName = Configuracoes.buildAppName(
+            val baseName = Configuracoes.buildAppName(
                 variant.name,
                 variant.versionName
-            ) + ".apk"
+            )
+            val apkName = "$baseName$dateTimeSuffix.apk"
             println("Set APK file name to: $apkName")
             val outputImpl = output as BaseVariantOutputImpl
             outputImpl.setOutputFileName(apkName)
@@ -132,10 +144,11 @@ android {
                         ?.firstOrNull()
 
                 if (generatedAab != null && generatedAab.exists()) {
-                    val newAabName = Configuracoes.buildAppName(
+                    val baseName = Configuracoes.buildAppName(
                         variant.name,
                         variant.versionName
-                    ) + ".aab"
+                    )
+                    val newAabName = "$baseName$dateTimeSuffix.aab"
 
                     val renamedFile = File(generatedAab.parentFile, newAabName)
 
