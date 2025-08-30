@@ -34,8 +34,6 @@ jobs:
             mkdir -p "$(dirname "$PROPERTIES_FILE_PATH")" # Ensure app directory exists
             echo "$FIREBASE_APP_DISTRO_PROPERTIES_BASE64" | base64 --decode > "$PROPERTIES_FILE_PATH"
             echo "firebase_app_distribution.properties created successfully at $PROPERTIES_FILE_PATH."
-            echo "Content of firebase_app_distribution.properties:"
-            cat "$PROPERTIES_FILE_PATH"
           else
             echo "Warning: FIREBASE_APP_DISTRIBUTION_PROPERTIES_BASE64 secret is not set or is empty. Skipping creation of firebase_app_distribution.properties."
           fi
@@ -56,7 +54,6 @@ jobs:
           echo "Verifying temporary file: $TEMP_SERVICE_ACCOUNT_FILE_PATH"
           if [ -s "$TEMP_SERVICE_ACCOUNT_FILE_PATH" ]; then
             echo "Temporary service account JSON file created and is not empty."
-            ls -l "$TEMP_SERVICE_ACCOUNT_FILE_PATH"
             
             echo "Copying temporary file to workspace at: $ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
             cp "$TEMP_SERVICE_ACCOUNT_FILE_PATH" "$ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
@@ -64,11 +61,6 @@ jobs:
             echo "Verifying workspace file: $ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
             if [ -s "$ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH" ]; then
               echo "Workspace service account JSON file copied and is not empty."
-              ls -l "$ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
-              # THIS IS THE CRUCIAL LINE TO PRINT THE CONTENT:
-              echo "Full content of decoded service account file ($ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH):"
-              cat "$ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
-              echo "\nEnd of service account file content."
               echo "::set-output name=sa_file_path::$ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
               echo "Step output sa_file_path set to: $ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
             else
@@ -105,17 +97,6 @@ jobs:
       - name: Build Debug APK
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
         run: ./gradlew :app:assembleDebug
-
-      - name: Pre-Upload - Verify Service Account File
-        run: |
-          echo "Verifying service account file existence and permissions before upload attempt..."
-          ls -l "${{ steps.decode_sa_key.outputs.sa_file_path }}"
-          echo "Path to be used by GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.decode_sa_key.outputs.sa_file_path }}"
-          if [ ! -f "${{ steps.decode_sa_key.outputs.sa_file_path }}" ]; then
-            echo "ERROR: Service account file NOT FOUND at ${{ steps.decode_sa_key.outputs.sa_file_path }} just before upload!" >&2
-            exit 1
-          fi
-          echo "Service account file confirmed to exist at ${{ steps.decode_sa_key.outputs.sa_file_path }}"
 
       - name: Upload to Firebase App Distribution (Release)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

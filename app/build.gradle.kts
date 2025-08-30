@@ -6,15 +6,13 @@ val firebaseAppDistributionProps = Properties()
 // Try to read from project root first, then from app module directory as a fallback for CI
 var firebasePropsFile = project.rootProject.file("firebase_app_distribution.properties")
 if (!firebasePropsFile.exists() || !firebasePropsFile.isFile) {
-    firebasePropsFile = project.file("firebase_app_distribution.properties") // Original path for local
+    firebasePropsFile = project.file("firebase_app_distribution.properties")
 }
 
 if (firebasePropsFile.exists() && firebasePropsFile.isFile) {
     firebasePropsFile.inputStream().use {
         firebaseAppDistributionProps.load(it)
     }
-} else {
-    println("Warning: firebase_app_distribution.properties not found. App Distribution appId and testers might be missing for local builds.")
 }
 
 plugins {
@@ -37,10 +35,7 @@ firebaseAppDistribution {
         val configuredTesters = firebaseAppDistributionProps.getProperty("firebase.appdistribution.testers") ?: ""
         if (configuredTesters.isNotEmpty()) {
             testers = configuredTesters
-            println("App Distribution: Using testers from firebase_app_distribution.properties: $configuredTesters")
         }
-    } else {
-        println("App Distribution: firebase_app_distribution.properties not found for appId/testers. These might need to be set via CI environment variables or plugin config.")
     }
 
     val googleAppCredentials = System.getenv("GOOGLE_APPLICATION_CREDENTIALS")
@@ -48,13 +43,8 @@ firebaseAppDistribution {
 
     if (googleAppCredentials != null && googleAppCredentials.isNotBlank()) {
         serviceCredentialsFile = googleAppCredentials
-        println("App Distribution: Using service credentials from GOOGLE_APPLICATION_CREDENTIALS environment variable: $serviceCredentialsFile")
     } else if (ciProjectPropertyCredentialsFile != null && ciProjectPropertyCredentialsFile.isNotBlank()) {
-        // Fallback to project property if GOOGLE_APPLICATION_CREDENTIALS isn't set (e.g., if we revert CI strategy later)
         serviceCredentialsFile = ciProjectPropertyCredentialsFile
-        println("App Distribution: GOOGLE_APPLICATION_CREDENTIALS not set. Using service credentials from Gradle project property 'comiqueta.ci.serviceCredentialsFile': $serviceCredentialsFile")
-    } else {
-        println("App Distribution: No service credentials configured via GOOGLE_APPLICATION_CREDENTIALS or 'comiqueta.ci.serviceCredentialsFile' project property. Upload may fail if credentials are required and not found by other means.")
     }
 
     releaseNotes = "Debug test version from Gradle."
