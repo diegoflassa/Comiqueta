@@ -45,9 +45,9 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: ./gradlew :app:bundleRelease
 
-      - name: Build Debug AAB
+      - name: Build Debug APK # Task produces APK
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-        run: ./gradlew :app:assembleRelease for APK
+        run: ./gradlew :app:assembleRelease
 
       - name: Decode Firebase Service Account Key
         env:
