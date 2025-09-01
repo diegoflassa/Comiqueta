@@ -17,7 +17,8 @@ data class ViewerUIState(
     val fileType: ComicFileType? = null,
     val isUiVisible: Boolean = true,
     val error: String? = null,
-    val pagesToPreloadLogic: Int = DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
+    val pagesToPreloadLogic: Int = DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD,
+    val loadingNeighborIndices: Set<Int> = emptySet()
 ){
     companion object {
         const val DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD = 1

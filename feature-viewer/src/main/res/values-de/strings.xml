@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="comic_page_description">Seite: %1$s</string>
+    <string name="no_comic_loaded_title">Kein Titel</string>
+    <string name="no_comic_loaded_subtitle">Kein Untertitel</string>
 </resources>

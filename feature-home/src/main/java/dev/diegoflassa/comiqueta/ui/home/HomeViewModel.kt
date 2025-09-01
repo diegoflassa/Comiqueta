@@ -72,8 +72,8 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadCategories()
-        loadPaginatedComics()
-        reduce(HomeIntent.CheckInitialFolderPermission)
+        //loadPaginatedComics()
+        //reduce(HomeIntent.CheckInitialFolderPermission)
     }
 
     private fun hasGeneralStoragePermission(): Boolean {
@@ -324,7 +324,9 @@ class HomeViewModel @Inject constructor(
                             TimberLogger.logE(tag, "Error loading main comics", e)
                             _effect.send(HomeEffect.ShowToast("Error loading comics: ${e.message}"))
                             emit(PagingData.empty())
-                        }.collectLatest { _comicsFlow.value = it }
+                        }.collectLatest {
+                            _comicsFlow.value = it
+                        }
                 }
 
                 async {
@@ -336,7 +338,9 @@ class HomeViewModel @Inject constructor(
                             TimberLogger.logE(tag, "Error loading latest comics", e)
                             _effect.send(HomeEffect.ShowToast("Error loading latest comics: ${e.message}"))
                             emit(PagingData.empty())
-                        }.collectLatest { _latestComicsFlow.value = it }
+                        }.collectLatest {
+                            _latestComicsFlow.value = it
+                        }
                 }
 
                 async {
@@ -348,7 +352,9 @@ class HomeViewModel @Inject constructor(
                             TimberLogger.logE(tag, "Error loading favorite comics", e)
                             _effect.send(HomeEffect.ShowToast("Error loading favorite comics: ${e.message}"))
                             emit(PagingData.empty())
-                        }.collectLatest { _favoriteComicsFlow.value = it }
+                        }.collectLatest {
+                            _favoriteComicsFlow.value = it
+                        }
                 }
 
             } catch (ce: CancellationException) {
@@ -365,7 +371,6 @@ class HomeViewModel @Inject constructor(
                 _favoriteComicsFlow.value = PagingData.empty()
             } finally {
                 if (_uiState.value.isLoading) {
-                    delay(250)
                     _uiState.update { it.copy(isLoading = false) }
                 }
             }

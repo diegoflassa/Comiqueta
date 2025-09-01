@@ -59,8 +59,10 @@ ax-paging-compose = "3.3.6"
 org-mockito-android = "5.19.0"
 
 #Compose Navigation 3
-ax-navigation3-runtime = "1.0.0-alpha08"
-ax-navigation3-ui = "1.0.0-alpha08"
+#Do NOT update to 1.0.0-alpha08. It causes bugs
+#Wait to test with 1.0.0-alpha09 or later
+ax-navigation3-runtime = "1.0.0-alpha07"
+ax-navigation3-ui = "1.0.0-alpha07"
 ax-navigation3-viewmodel = "1.0.0-alpha04"
 #ax-navigation3-adaptive = "1.0.0-SNAPSHOT"
 
