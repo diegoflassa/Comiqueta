@@ -381,10 +381,10 @@ fun ViewerScreenContent(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (isThisPageLoading) {
-                                        TimberLogger.logD(tag, "Page $pageIndexInPager: Displaying loading indicator. (Decision: isThisPageLoading=$isThisPageLoading based on uiState)")
+                                        TimberLogger.logD(tag, "Page $pageIndexInPager: Displaying loading indicator. (Decision: isThisPageLoading=true based on uiState)")
                                         CircularProgressIndicator()
                                     } else {
-                                        TimberLogger.logD(tag, "Page $pageIndexInPager: No bitmap, not loading. Displaying placeholder. (Decision: isThisPageLoading=$isThisPageLoading based on uiState)")
+                                        TimberLogger.logD(tag, "Page $pageIndexInPager: No bitmap, not loading. Displaying placeholder. (Decision: isThisPageLoading=false based on uiState)")
                                         Text(
                                             "Page ${pageIndexInPager + 1}",
                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
