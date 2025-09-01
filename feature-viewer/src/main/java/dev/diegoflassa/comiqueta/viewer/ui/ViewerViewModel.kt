@@ -155,8 +155,8 @@ open class ViewerViewModel @Inject constructor(
                     isLoadingFocused = true, error = null, comicTitle = "",
                     focusedBitmap = null, neighborBitmaps = emptyMap(),
                     currentPage = 0, pageCount = 0,
-                    pagesToPreloadLogic = _pagesToPreloadLogic.value, // Initialize with current logic
-                    loadingNeighborIndices = emptySet() // Reset loading neighbors
+                    pagesToPreloadLogic = _pagesToPreloadLogic.value,
+                    loadingNeighborIndices = emptySet()
                 )
             }
             currentComicUri = uri
@@ -176,7 +176,7 @@ open class ViewerViewModel @Inject constructor(
             focusedPageJob?.cancelJob("New comic load requested")
             neighborPageJobs.values.forEach { it.cancelJob("New comic load requested") }
             neighborPageJobs.clear()
-            _uiState.update { it.copy(loadingNeighborIndices = emptySet()) } // Clear explicitly
+            _uiState.update { it.copy(loadingNeighborIndices = emptySet()) }
 
 
             try {
@@ -251,7 +251,7 @@ open class ViewerViewModel @Inject constructor(
         focusedPageJob?.cancelJob("New target page: $targetPageIndex")
         val cachedFocusedBitmap = pageBitmapCache.get(targetPageIndex)
 
-        _uiState.update { // Initial update for focused page and clearing old errors
+        _uiState.update {
             it.copy(
                 currentPage = targetPageIndex,
                 focusedBitmap = cachedFocusedBitmap,

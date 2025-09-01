@@ -39,7 +39,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-// import androidx.compose.runtime.key // Removed as per new logic
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -203,7 +202,7 @@ fun ViewerScreenContent(
                 .fillMaxSize()
                 .clickable(
                     enabled = !isPagerScrollLocked &&
-                            !uiState.isLoadingFocused && // Check global loading focused flag
+                            uiState.isLoadingFocused.not() &&
                             uiState.error == null &&
                             uiState.pageCount > 0,
                     onClick = { onIntent?.invoke(ViewerIntent.ToggleUiVisibility) }
@@ -212,7 +211,10 @@ fun ViewerScreenContent(
         ) {
             when {
                 uiState.isLoadingFocused && uiState.focusedBitmap == null && uiState.pageCount == 0 -> {
-                    TimberLogger.logI(tag, "Displaying global loading indicator (initial comic load)")
+                    TimberLogger.logI(
+                        tag,
+                        "Displaying global loading indicator (initial comic load)"
+                    )
                     CircularProgressIndicator()
                 }
 
@@ -223,7 +225,7 @@ fun ViewerScreenContent(
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier
                             .padding(16.dp)
-                            .clickable { onIntent?.invoke(ViewerIntent.ErrorShown) }, // Allow dismissing error
+                            .clickable { onIntent?.invoke(ViewerIntent.ErrorShown) },
                         textAlign = TextAlign.Center
                     )
                 }
@@ -233,12 +235,12 @@ fun ViewerScreenContent(
                         state = pagerState,
                         userScrollEnabled = !isPagerScrollLocked,
                         modifier = Modifier.fillMaxSize(),
-                        beyondViewportPageCount = 1, 
-                        key = { pageIndex -> pageIndex } // Key for pager items stability
+                        beyondViewportPageCount = 1,
+                        key = { pageIndex -> pageIndex }
                     ) { pageIndexInPager ->
 
                         val density = LocalDensity.current.density
-                        
+
                         // For zoom/pan per page item
                         var itemScale by remember(pageIndexInPager) { mutableFloatStateOf(1f) }
                         var itemOffsetX by remember(pageIndexInPager) { mutableFloatStateOf(0f) }
@@ -248,46 +250,63 @@ fun ViewerScreenContent(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .graphicsLayer { // For page turning effect
-                                    val pageOffset = (pagerState.currentPage - pageIndexInPager) + pagerState.currentPageOffsetFraction
+                                    val pageOffset =
+                                        (pagerState.currentPage - pageIndexInPager) + pagerState.currentPageOffsetFraction
                                     val absPageOffset = abs(pageOffset)
                                     transformOrigin = TransformOrigin(
-                                        pivotFractionX = if (pageOffset > 0f) 0f else 1f, 
+                                        pivotFractionX = if (pageOffset > 0f) 0f else 1f,
                                         pivotFractionY = 0.5f
                                     )
                                     cameraDistance = 12f * density
                                     rotationY = pageOffset * 90f
                                     alpha = (1f - absPageOffset.coerceIn(0f, 1f)).coerceIn(0f, 1f)
-                                    val scaleFactor = (1f - absPageOffset.coerceIn(0f, 1f) * 0.25f).coerceIn(0f, 1f)
+                                    val scaleFactor =
+                                        (1f - absPageOffset.coerceIn(0f, 1f) * 0.25f).coerceIn(
+                                            0f,
+                                            1f
+                                        )
                                     scaleX = scaleFactor
                                     scaleY = scaleFactor
                                 }
                         ) {
-                            TimberLogger.logD(tag, "Page $pageIndexInPager evaluating: " +
-                                "isCurrent=${pageIndexInPager == uiState.currentPage}, " +
-                                "currentFocusedBitmapIsNull=${uiState.focusedBitmap == null}, " +
-                                "currentNeighborBitmapForThisPageIsNull=${uiState.neighborBitmaps[pageIndexInPager] == null}, " +
-                                "isActuallyLoadingFocused=${uiState.isLoadingFocused}, " +
-                                "isActuallyLoadingThisNeighbor=${uiState.loadingNeighborIndices.contains(pageIndexInPager)}, " +
-                                "completeLoadingNeighborIndices=${uiState.loadingNeighborIndices}")
+                            TimberLogger.logD(
+                                tag, "Page $pageIndexInPager evaluating: " +
+                                        "isCurrent=${pageIndexInPager == uiState.currentPage}, " +
+                                        "currentFocusedBitmapIsNull=${uiState.focusedBitmap == null}, " +
+                                        "currentNeighborBitmapForThisPageIsNull=${uiState.neighborBitmaps[pageIndexInPager] == null}, " +
+                                        "isActuallyLoadingFocused=${uiState.isLoadingFocused}, " +
+                                        "isActuallyLoadingThisNeighbor=${
+                                            uiState.loadingNeighborIndices.contains(
+                                                pageIndexInPager
+                                            )
+                                        }, " +
+                                        "completeLoadingNeighborIndices=${uiState.loadingNeighborIndices}"
+                            )
 
                             // Determine the bitmap for the current page being composed
-                            val currentBitmap: ImageBitmap? = if (pageIndexInPager == uiState.currentPage) {
-                                uiState.focusedBitmap
-                            } else {
-                                uiState.neighborBitmaps[pageIndexInPager]
-                            }
+                            val currentBitmap: ImageBitmap? =
+                                if (pageIndexInPager == uiState.currentPage) {
+                                    uiState.focusedBitmap
+                                } else {
+                                    uiState.neighborBitmaps[pageIndexInPager]
+                                }
 
                             // Determine if this specific page should show a loading indicator
                             val isThisPageLoading: Boolean =
-                                (pageIndexInPager == uiState.currentPage && uiState.isLoadingFocused && currentBitmap == null) || // Focused page is loading
-                                (pageIndexInPager != uiState.currentPage && uiState.loadingNeighborIndices.contains(pageIndexInPager) && currentBitmap == null) // Neighbor page is explicitly marked as loading by ViewModel
-                            
+                                (pageIndexInPager == uiState.currentPage && uiState.isLoadingFocused && currentBitmap == null) ||
+                                        (pageIndexInPager != uiState.currentPage && uiState.loadingNeighborIndices.contains(
+                                            pageIndexInPager
+                                        ) && currentBitmap == null)
+
                             val viewConfiguration = LocalViewConfiguration.current
                             val touchSlop = viewConfiguration.touchSlop
 
                             val imageDisplayModifier = Modifier
                                 .fillMaxSize()
-                                .pointerInput(pageIndexInPager, currentBitmap) { // Pass currentBitmap to re-trigger pointerInput on change
+                                .pointerInput(
+                                    pageIndexInPager,
+                                    currentBitmap
+                                ) { // Pass currentBitmap to re-trigger pointerInput on change
                                     if (currentBitmap != null) {
                                         awaitPointerEventScope {
                                             while (true) {
@@ -297,50 +316,77 @@ fun ViewerScreenContent(
 
                                                 val rawZoom = event.calculateZoom()
                                                 val rawPan = event.calculatePan()
-                                                val rawCentroid = event.calculateCentroid(useCurrent = true)
+                                                val rawCentroid =
+                                                    event.calculateCentroid(useCurrent = true)
 
-                                                val zoom = if (rawZoom.isNaN() || rawZoom.isInfinite()) 1f else rawZoom
-                                                val pan = if (rawPan == Offset.Unspecified) Offset.Zero else rawPan
-                                                val centroid = if (rawCentroid == Offset.Unspecified) Offset.Zero else rawCentroid
+                                                val zoom =
+                                                    if (rawZoom.isNaN() || rawZoom.isInfinite()) 1f else rawZoom
+                                                val pan =
+                                                    if (rawPan == Offset.Unspecified) Offset.Zero else rawPan
+                                                val centroid =
+                                                    if (rawCentroid == Offset.Unspecified) Offset.Zero else rawCentroid
 
                                                 if (hasTwoPointers || itemScale > 1f) {
                                                     val oldScale = itemScale
-                                                    val newScale = (itemScale * zoom).coerceIn(1f, 5f)
+                                                    val newScale =
+                                                        (itemScale * zoom).coerceIn(1f, 5f)
 
                                                     if (pageIndexInPager == pagerState.currentPage) {
                                                         isPagerScrollLocked = newScale > 1f
                                                     }
 
                                                     if (newScale > 1f) {
-                                                        val containerWidthPx = constraints.maxWidth.toFloat()
-                                                        val containerHeightPx = constraints.maxHeight.toFloat()
-                                                        val imageAspectRatio = currentBitmap.width.toFloat() / currentBitmap.height.toFloat()
-                                                        val containerAspectRatio = containerWidthPx / containerHeightPx
+                                                        val containerWidthPx =
+                                                            constraints.maxWidth.toFloat()
+                                                        val containerHeightPx =
+                                                            constraints.maxHeight.toFloat()
+                                                        val imageAspectRatio =
+                                                            currentBitmap.width.toFloat() / currentBitmap.height.toFloat()
+                                                        val containerAspectRatio =
+                                                            containerWidthPx / containerHeightPx
 
                                                         val fittedImageWidth: Float
                                                         val fittedImageHeight: Float
 
                                                         if (imageAspectRatio > containerAspectRatio) {
                                                             fittedImageWidth = containerWidthPx
-                                                            fittedImageHeight = fittedImageWidth / imageAspectRatio
+                                                            fittedImageHeight =
+                                                                fittedImageWidth / imageAspectRatio
                                                         } else {
                                                             fittedImageHeight = containerHeightPx
-                                                            fittedImageWidth = fittedImageHeight * imageAspectRatio
+                                                            fittedImageWidth =
+                                                                fittedImageHeight * imageAspectRatio
                                                         }
 
-                                                        val scaledImageWidth = fittedImageWidth * newScale
-                                                        val scaledImageHeight = fittedImageHeight * newScale
+                                                        val scaledImageWidth =
+                                                            fittedImageWidth * newScale
+                                                        val scaledImageHeight =
+                                                            fittedImageHeight * newScale
 
-                                                        val maxTranslateX = (scaledImageWidth - containerWidthPx).coerceAtLeast(0f) / 2f
-                                                        val maxTranslateY = (scaledImageHeight - containerHeightPx).coerceAtLeast(0f) / 2f
+                                                        val maxTranslateX =
+                                                            (scaledImageWidth - containerWidthPx).coerceAtLeast(
+                                                                0f
+                                                            ) / 2f
+                                                        val maxTranslateY =
+                                                            (scaledImageHeight - containerHeightPx).coerceAtLeast(
+                                                                0f
+                                                            ) / 2f
 
-                                                        itemOffsetX = (itemOffsetX + centroid.x * (1 - newScale / oldScale) + pan.x).coerceIn(-maxTranslateX, maxTranslateX)
-                                                        itemOffsetY = (itemOffsetY + centroid.y * (1 - newScale / oldScale) + pan.y).coerceIn(-maxTranslateY, maxTranslateY)
+                                                        itemOffsetX =
+                                                            (itemOffsetX + centroid.x * (1 - newScale / oldScale) + pan.x).coerceIn(
+                                                                -maxTranslateX,
+                                                                maxTranslateX
+                                                            )
+                                                        itemOffsetY =
+                                                            (itemOffsetY + centroid.y * (1 - newScale / oldScale) + pan.y).coerceIn(
+                                                                -maxTranslateY,
+                                                                maxTranslateY
+                                                            )
                                                     } else {
                                                         itemOffsetX = 0f
                                                         itemOffsetY = 0f
                                                         if (pageIndexInPager == pagerState.currentPage) {
-                                                           isPagerScrollLocked = false
+                                                            isPagerScrollLocked = false
                                                         }
                                                     }
                                                     itemScale = newScale
@@ -348,9 +394,13 @@ fun ViewerScreenContent(
                                                 } else if (changes.isNotEmpty()) {
                                                     val firstChange = changes.first()
                                                     if (firstChange.pressed && firstChange.previousPressed && firstChange.positionChanged()) {
-                                                        val delta = firstChange.position - firstChange.previousPosition
+                                                        val delta =
+                                                            firstChange.position - firstChange.previousPosition
                                                         if (abs(delta.x) <= touchSlop && abs(delta.y) > touchSlop) {
-                                                             TimberLogger.logD(tag, "Vertical gesture on unzoomed page $pageIndexInPager. Consuming.")
+                                                            TimberLogger.logD(
+                                                                tag,
+                                                                "Vertical gesture on unzoomed page $pageIndexInPager. Consuming."
+                                                            )
                                                             firstChange.consume()
                                                         }
                                                     }
@@ -369,7 +419,10 @@ fun ViewerScreenContent(
                             if (currentBitmap != null) {
                                 Image(
                                     bitmap = currentBitmap,
-                                    contentDescription = stringResource(R.string.comic_page_description, pageIndexInPager + 1),
+                                    contentDescription = stringResource(
+                                        R.string.comic_page_description,
+                                        pageIndexInPager + 1
+                                    ),
                                     contentScale = ContentScale.Fit,
                                     modifier = imageDisplayModifier.background(MaterialTheme.colorScheme.surfaceVariant)
                                 )
@@ -377,17 +430,29 @@ fun ViewerScreenContent(
                                 Box(
                                     Modifier
                                         .fillMaxSize()
-                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                                        .background(
+                                            MaterialTheme.colorScheme.surfaceVariant.copy(
+                                                alpha = 0.3f
+                                            )
+                                        ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (isThisPageLoading) {
-                                        TimberLogger.logD(tag, "Page $pageIndexInPager: Displaying loading indicator. (Decision: isThisPageLoading=true based on uiState)")
+                                        TimberLogger.logD(
+                                            tag,
+                                            "Page $pageIndexInPager: Displaying loading indicator. (Decision: isThisPageLoading=true based on uiState)"
+                                        )
                                         CircularProgressIndicator()
                                     } else {
-                                        TimberLogger.logD(tag, "Page $pageIndexInPager: No bitmap, not loading. Displaying placeholder. (Decision: isThisPageLoading=false based on uiState)")
+                                        TimberLogger.logD(
+                                            tag,
+                                            "Page $pageIndexInPager: No bitmap, not loading. Displaying placeholder. (Decision: isThisPageLoading=false based on uiState)"
+                                        )
                                         Text(
                                             "Page ${pageIndexInPager + 1}",
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                                alpha = 0.7f
+                                            )
                                         )
                                     }
                                 }
