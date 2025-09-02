@@ -8,6 +8,7 @@ import androidx.compose.animation.core.keyframes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -30,7 +31,7 @@ import kotlinx.coroutines.withContext
  * @return The remembered [PageCurlState].
  */
 @Composable
-public fun rememberPageCurlState(
+fun rememberPageCurlState(
     initialCurrent: Int = 0,
 ): PageCurlState =
     rememberSaveable(
@@ -58,7 +59,7 @@ public fun rememberPageCurlState(
     level = DeprecationLevel.ERROR,
 )
 @Suppress("UnusedPrivateMember")
-public fun rememberPageCurlState(
+fun rememberPageCurlState(
     initialCurrent: Int = 0,
     config: PageCurlConfig,
 ): PageCurlState =
@@ -88,7 +89,7 @@ public fun rememberPageCurlState(
     level = DeprecationLevel.ERROR,
 )
 @Suppress("UnusedPrivateMember")
-public fun rememberPageCurlState(
+fun rememberPageCurlState(
     max: Int,
     initialCurrent: Int = 0,
     config: PageCurlConfig = rememberPageCurlConfig()
@@ -117,21 +118,21 @@ public fun rememberPageCurlState(
  * @param initialMax The initial max number of pages.
  * @param initialCurrent The initial current page.
  */
-public class PageCurlState(
+class PageCurlState(
     initialMax: Int = 0,
     initialCurrent: Int = 0,
 ) {
     /**
      * The observable current page.
      */
-    public var current: Int by mutableStateOf(initialCurrent)
+    var current: Int by mutableIntStateOf(initialCurrent)
         internal set
 
     /**
      * The observable progress as page is turned.
      * When going forward it changes from 0 to 1, when going backward it is going from 0 to -1.
      */
-    public val progress: Float get() = internalState?.progress ?: 0f
+    val progress: Float get() = internalState?.progress ?: 0f
 
     internal var max: Int = initialMax
         private set
@@ -166,7 +167,7 @@ public class PageCurlState(
      *
      * @param value The page to snap to.
      */
-    public suspend fun snapTo(value: Int) {
+    suspend fun snapTo(value: Int) {
         current = value.coerceIn(0, max - 1)
         internalState?.reset()
     }
@@ -176,7 +177,7 @@ public class PageCurlState(
      *
      * @param block The animation block to animate a change.
      */
-    public suspend fun next(block: suspend Animatable<Edge, AnimationVector4D>.(Size) -> Unit = DefaultNext) {
+    suspend fun next(block: suspend Animatable<Edge, AnimationVector4D>.(Size) -> Unit = DefaultNext) {
         internalState?.animateTo(
             target = { current + 1 },
             animate = { forward.block(it) }
@@ -188,7 +189,7 @@ public class PageCurlState(
      *
      * @param block The animation block to animate a change.
      */
-    public suspend fun prev(block: suspend Animatable<Edge, AnimationVector4D>.(Size) -> Unit = DefaultPrev) {
+    suspend fun prev(block: suspend Animatable<Edge, AnimationVector4D>.(Size) -> Unit = DefaultPrev) {
         internalState?.animateTo(
             target = { current - 1 },
             animate = { backward.block(it) }
@@ -250,7 +251,7 @@ public class PageCurlState(
 /**
  * The wrapper to represent a line with 2 points: [top] and [bottom].
  */
-public data class Edge(val top: Offset, val bottom: Offset) {
+data class Edge(val top: Offset, val bottom: Offset) {
 
     internal val centerX: Float = (top.x + bottom.x) * 0.5f
 

@@ -24,7 +24,7 @@ import dev.diegoflassa.comiqueta.viewer.ui.page.config.rememberPageCurlConfig
  * @param content The content lambda to provide the page composable. Receives the page number.
  */
 @Composable
-public fun PageCurl(
+fun PageCurl(
     count: Int,
     modifier: Modifier = Modifier,
     state: PageCurlState = rememberPageCurlState(),
@@ -110,7 +110,7 @@ public fun PageCurl(
  * @param content The content lambda to provide the page composable. Receives the page number.
  */
 @Composable
-public fun PageCurl(
+fun PageCurl(
     count: Int,
     key: (Int) -> Any,
     modifier: Modifier = Modifier,
@@ -148,7 +148,7 @@ public fun PageCurl(
  */
 @Composable
 @Deprecated("Specify 'max' as 'count' in PageCurl composable.")
-public fun PageCurl(
+fun PageCurl(
     state: PageCurlState,
     modifier: Modifier = Modifier,
     content: @Composable (Int) -> Unit

@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
  * scope, the PageCurl size and tap position. Returns true if tap is handled and false otherwise.
  */
 @Composable
-public fun rememberPageCurlConfig(
+fun rememberPageCurlConfig(
     backPageColor: Color = Color.White,
     backPageContentAlpha: Float = 0.1f,
     shadowColor: Color = Color.Black,
@@ -191,7 +191,7 @@ public fun rememberPageCurlConfig(
  * @param onCustomTap The lambda to invoke to check if tap is handled by custom tap or not. Receives the density
  * scope, the PageCurl size and tap position. Returns true if tap is handled and false otherwise.
  */
-public class PageCurlConfig(
+class PageCurlConfig(
     backPageColor: Color,
     backPageContentAlpha: Float,
     shadowColor: Color,
@@ -205,74 +205,74 @@ public class PageCurlConfig(
     tapCustomEnabled: Boolean,
     dragInteraction: DragInteraction,
     tapInteraction: TapInteraction,
-    public val onCustomTap: Density.(IntSize, Offset) -> Boolean,
+    val onCustomTap: Density.(IntSize, Offset) -> Boolean,
 ) {
     /**
      * The color of the back-page. In majority of use-cases it should be set to the content background color.
      */
-    public var backPageColor: Color by mutableStateOf(backPageColor)
+    var backPageColor: Color by mutableStateOf(backPageColor)
 
     /**
      * The alpha which defines how content is "seen through" the back-page. From 0 (nothing is visible) to
      * 1 (everything is visible).
      */
-    public var backPageContentAlpha: Float by mutableStateOf(backPageContentAlpha)
+    var backPageContentAlpha: Float by mutableStateOf(backPageContentAlpha)
 
     /**
      * The color of the shadow. In majority of use-cases it should be set to the inverted color to the content
      * background color. Should be a solid color, see [shadowAlpha] to adjust opacity.
      */
-    public var shadowColor: Color by mutableStateOf(shadowColor)
+    var shadowColor: Color by mutableStateOf(shadowColor)
 
     /**
      * The alpha of the [shadowColor].
      */
-    public var shadowAlpha: Float by mutableStateOf(shadowAlpha)
+    var shadowAlpha: Float by mutableStateOf(shadowAlpha)
 
     /**
      * Defines how big the shadow is.
      */
-    public var shadowRadius: Dp by mutableStateOf(shadowRadius)
+    var shadowRadius: Dp by mutableStateOf(shadowRadius)
 
     /**
      * Defines how shadow is shifted from the page. A little shift may add more realism.
      */
-    public var shadowOffset: DpOffset by mutableStateOf(shadowOffset)
+    var shadowOffset: DpOffset by mutableStateOf(shadowOffset)
 
     /**
      * True if forward drag interaction is enabled or not.
      */
-    public var dragForwardEnabled: Boolean by mutableStateOf(dragForwardEnabled)
+    var dragForwardEnabled: Boolean by mutableStateOf(dragForwardEnabled)
 
     /**
      * True if backward drag interaction is enabled or not.
      */
-    public var dragBackwardEnabled: Boolean by mutableStateOf(dragBackwardEnabled)
+    var dragBackwardEnabled: Boolean by mutableStateOf(dragBackwardEnabled)
 
     /**
      * True if forward tap interaction is enabled or not.
      */
-    public var tapForwardEnabled: Boolean by mutableStateOf(tapForwardEnabled)
+    var tapForwardEnabled: Boolean by mutableStateOf(tapForwardEnabled)
 
     /**
      * True if backward tap interaction is enabled or not.
      */
-    public var tapBackwardEnabled: Boolean by mutableStateOf(tapBackwardEnabled)
+    var tapBackwardEnabled: Boolean by mutableStateOf(tapBackwardEnabled)
 
     /**
      * True if custom tap interaction is enabled or not, see [onCustomTap].
      */
-    public var tapCustomEnabled: Boolean by mutableStateOf(tapCustomEnabled)
+    var tapCustomEnabled: Boolean by mutableStateOf(tapCustomEnabled)
 
     /**
      * The drag interaction setting.
      */
-    public var dragInteraction: DragInteraction by mutableStateOf(dragInteraction)
+    var dragInteraction: DragInteraction by mutableStateOf(dragInteraction)
 
     /**
      * The tap interaction setting.
      */
-    public var tapInteraction: TapInteraction by mutableStateOf(tapInteraction)
+    var tapInteraction: TapInteraction by mutableStateOf(tapInteraction)
 
     /**
      * The drag interaction setting.
@@ -282,7 +282,7 @@ public class PageCurlConfig(
         /**
          * The pointer behavior during drag interaction.
          */
-        public val pointerBehavior: PointerBehavior
+        val pointerBehavior: PointerBehavior
 
         /**
          * The enumeration of available pointer behaviors.
