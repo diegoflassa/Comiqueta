@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items // Added for comicsFolders
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ListAlt
@@ -31,6 +32,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Remove
+// import androidx.compose.material.icons.filled.Search // Example for Rescan
+// import androidx.compose.material.icons.filled.DeleteSweep // Example for Clear DB
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -309,6 +312,17 @@ fun SettingsScreenContent(
                     modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
                 )
             }
+            // Button to add new folder
+            item {
+                Button(
+                    onClick = { onIntent?.invoke(SettingsIntent.AddFolderClicked) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.settings_add_folder_button))
+                }
+                Spacer(modifier = Modifier.height(8.dp.scaled()))
+            }
+
             if (uiState.comicsFolders.isEmpty()) {
                 item {
                     Text(
@@ -319,13 +333,12 @@ fun SettingsScreenContent(
                 }
             } else {
                 items(
-                    uiState.comicsFolders.size,
-                    key = { index -> uiState.comicsFolders[index].toString() }
-                ) { index ->
-                    val folderUri = uiState.comicsFolders[index]
+                    uiState.comicsFolders, // Directly use the list
+                    key = { folderUri -> folderUri.toString() }
+                ) { folderUri ->
                     ComicsFolderUriItem(
                         folderUri = folderUri,
-                        onIntent = { intent -> onIntent?.invoke(intent) }
+                        onIntent = onIntent
                     )
                     HorizontalDivider()
                 }
@@ -333,17 +346,17 @@ fun SettingsScreenContent(
             item { Spacer(modifier = Modifier.height(16.dp.scaled())) }
 
 
-            // Viewer Settings Section - Added
+            // Viewer Settings Section
             item {
                 Text(
-                    text = "Viewer Settings", // Consider adding to strings.xml
+                    text = stringResource(R.string.settings_section_viewer_title), // Changed to use string resource
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
                 )
                 Card(modifier = Modifier.fillMaxWidth()) {
                     ListItem(
-                        headlineContent = { Text("Comic Page Pre-loading") }, // Consider strings.xml
-                        supportingContent = { Text("Pages to load ahead/behind current page (0-${MAX_PRELOAD_PAGES}).") }, // Consider strings.xml
+                        headlineContent = { Text(stringResource(R.string.settings_viewer_preload_title)) }, // Changed
+                        supportingContent = { Text(stringResource(R.string.settings_viewer_preload_description, MAX_PRELOAD_PAGES)) }, // Changed
                         trailingContent = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 IconButton(
@@ -355,7 +368,7 @@ fun SettingsScreenContent(
                                     },
                                     enabled = uiState.viewerPagesToPreloadAhead > 0
                                 ) {
-                                    Icon(Icons.Default.Remove, contentDescription = "Decrease pre-load count") // Consider strings.xml
+                                    Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.settings_viewer_preload_decrease_desc)) // Changed
                                 }
                                 Text(
                                     text = uiState.viewerPagesToPreloadAhead.toString(),
@@ -371,7 +384,7 @@ fun SettingsScreenContent(
                                     },
                                     enabled = uiState.viewerPagesToPreloadAhead < MAX_PRELOAD_PAGES
                                 ) {
-                                    Icon(Icons.Default.Add, contentDescription = "Increase pre-load count") // Consider strings.xml
+                                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.settings_viewer_preload_increase_desc)) // Changed
                                 }
                             }
                         }
@@ -401,6 +414,33 @@ fun SettingsScreenContent(
                 Spacer(modifier = Modifier.height(16.dp.scaled()))
             }
 
+            // Data Management Section - ADDED
+            item {
+                Text(
+                    text = "Data Management", // TODO: Add to strings.xml (e.g., R.string.settings_section_data_management_title)
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
+                )
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    // Clear Local Database
+                    ListItem(
+                        headlineContent = { Text("Clear Local Database") }, // TODO: Add to strings.xml (e.g., R.string.settings_data_clear_db_title)
+                        supportingContent = { Text("Removes all locally stored comic information and settings.") }, // TODO: Add to strings.xml (e.g., R.string.settings_data_clear_db_desc)
+                        modifier = Modifier.clickable { onIntent?.invoke(SettingsIntent.ClearLocalDatabaseClicked) }
+                        // Optional: leadingContent = { Icon(Icons.Filled.DeleteSweep, contentDescription = "Clear Database") }
+                    )
+                    HorizontalDivider()
+                    // Rescan Comic Folders
+                    ListItem(
+                        headlineContent = { Text("Rescan Comic Folders") }, // TODO: Add to strings.xml (e.g., R.string.settings_data_rescan_folders_title)
+                        supportingContent = { Text("Forces a new scan of all monitored folders for comics.") }, // TODO: Add to strings.xml (e.g., R.string.settings_data_rescan_folders_desc)
+                        modifier = Modifier.clickable { onIntent?.invoke(SettingsIntent.RescanComicFoldersClicked) }
+                        // Optional: leadingContent = { Icon(Icons.Filled.Search, contentDescription = "Rescan Folders") }
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp.scaled()))
+            }
+
 
             // Privacy Settings / Ad Consent Section
             item {
@@ -421,7 +461,7 @@ fun SettingsScreenContent(
                                         )
                                         Toast.makeText(
                                             currentActivity,
-                                            "Error loading privacy settings: ${formError.errorCode} - ${formError.message}",
+                                            "Error loading privacy settings: ${formError.errorCode} - ${formError.message}", // TODO: Add to strings.xml
                                             Toast.LENGTH_LONG
                                         ).show()
                                     }
@@ -433,7 +473,7 @@ fun SettingsScreenContent(
                                 )
                                 Toast.makeText(
                                     context,
-                                    "Could not open privacy settings.",
+                                    "Could not open privacy settings.", // TODO: Add to strings.xml
                                     Toast.LENGTH_SHORT
                                 )
                                     .show()
@@ -545,13 +585,22 @@ fun ComicsFolderUriItem(
     onIntent: ((SettingsIntent) -> Unit)? = null
 ) {
     val path = remember(folderUri) { folderUri.path ?: "Unknown path" }
-    val decodedPath = remember(path) { Uri.decode(path) }
+    // Attempt to decode the path, but gracefully handle if it's already decoded or malformed
+    val decodedPath = remember(path) {
+        try {
+            Uri.decode(path)
+        } catch (e: IllegalArgumentException) {
+            TimberLogger.logW(tag, "Failed to decode path: $path", e)
+            path // Fallback to the original path if decoding fails
+        }
+    }
+
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { // Consider what happens on click for the whole item
-                onIntent?.invoke(SettingsIntent.OpenFolder(folderUri)) // Changed to OpenFolder
+            .clickable {
+                onIntent?.invoke(SettingsIntent.OpenFolder(folderUri))
             }
             .padding(vertical = 12.dp.scaled()),
         verticalAlignment = Alignment.CenterVertically,
@@ -563,7 +612,7 @@ fun ComicsFolderUriItem(
                 .weight(1f)
                 .padding(end = 8.dp.scaled()),
             overflow = TextOverflow.Ellipsis,
-            maxLines = 2,
+            maxLines = 2, // Allow up to 2 lines for longer paths
             style = MaterialTheme.typography.bodyMedium
         )
         IconButton(onClick = { onIntent?.invoke(SettingsIntent.RemoveFolderClicked(folderUri)) }) {
@@ -582,6 +631,7 @@ private fun openAppSettings(context: Context) {
     context.startActivity(intent)
 }
 
+// --- Previews ---
 @PreviewScreenSizes
 @Composable
 private fun SettingsScreenPreview() {
@@ -596,7 +646,7 @@ private fun SettingsScreenPreview() {
                     )
                 ),
                 comicsFolders = listOf("content://com.android.externalstorage.documents/tree/primary%3ADCIM".toUri()),
-                viewerPagesToPreloadAhead = 1 // Added for preview
+                viewerPagesToPreloadAhead = 1
             )
         )
     }
@@ -626,7 +676,7 @@ private fun SettingsScreenPreviewDark() {
                     "content://com.android.externalstorage.documents/tree/primary%3ADCIM".toUri(),
                     "content://com.android.externalstorage.documents/tree/primary%3APictures".toUri()
                 ),
-                viewerPagesToPreloadAhead = 2 // Added for preview
+                viewerPagesToPreloadAhead = 2
             )
         )
     }
@@ -641,7 +691,7 @@ private fun SettingsScreenPreviewEmpty() {
                 isLoading = false,
                 permissionDisplayStatuses = emptyMap(),
                 comicsFolders = emptyList(),
-                viewerPagesToPreloadAhead = 0 // Added for preview
+                viewerPagesToPreloadAhead = 0
             )
         )
     }
@@ -656,7 +706,7 @@ private fun SettingsScreenPreviewLoading() {
                 isLoading = true,
                 permissionDisplayStatuses = emptyMap(),
                 comicsFolders = emptyList(),
-                viewerPagesToPreloadAhead = 1 // Added for preview
+                viewerPagesToPreloadAhead = 1
             )
         )
     }

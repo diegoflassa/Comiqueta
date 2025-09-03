@@ -57,8 +57,7 @@ open class ViewerViewModel @Inject constructor(
         private const val TAG = "ViewerViewModel"
         private const val MIN_PRELOAD_COUNT_LOGIC = 0
         private const val MAX_PRELOAD_COUNT_LOGIC = 5
-        private const val MAX_SETTING_FOR_CACHE_INIT =
-            10 // Max setting value considered for initial cache sizing
+        private const val MAX_SETTING_FOR_CACHE_INIT = 10
     }
 
     init {
@@ -90,7 +89,12 @@ open class ViewerViewModel @Inject constructor(
                 .coerceAtLeast(MIN_PRELOAD_COUNT_LOGIC)
                 .coerceAtMost(MAX_PRELOAD_COUNT_LOGIC)
             _pagesToPreloadLogic.value = initialLogicPreload
-            _uiState.update { it.copy(pagesToPreloadLogic = initialLogicPreload, isLoadingPage = emptySet()) }
+            _uiState.update {
+                it.copy(
+                    pagesToPreloadLogic = initialLogicPreload,
+                    isLoadingPage = emptySet()
+                )
+            }
             TimberLogger.logI(TAG, "Initial logic preload count set to: $initialLogicPreload.")
 
             viewerPagesToPreloadAheadFlow
@@ -133,12 +137,14 @@ open class ViewerViewModel @Inject constructor(
                     dispatchLoadPages(nextPage)
                 }
             }
+
             is ViewerIntent.NavigatePreviousPage -> {
                 val prevPage = uiState.value.currentPage - 1
                 if (prevPage >= 0) {
                     dispatchLoadPages(prevPage)
                 }
             }
+
             is ViewerIntent.ToggleUiVisibility -> _uiState.update { it.copy(isUiVisible = !it.isUiVisible) }
             is ViewerIntent.ErrorShown -> _uiState.update { it.copy(error = null) }
         }
@@ -149,20 +155,25 @@ open class ViewerViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     comicTitle = "",
+                    comicPath = uri,
                     loadedPages = emptyMap(),
                     currentPage = 0, pageCount = 0,
                     fileType = null,
-                    isLoadingPage = emptySet(), // Will be populated by dispatchLoadPages
+                    isLoadingPage = emptySet(),
                     error = null,
-                    pagesToPreloadLogic = _pagesToPreloadLogic.value // Ensure this is set early
+                    pagesToPreloadLogic = _pagesToPreloadLogic.value
                 )
             }
             currentComicUri = uri
             if (::pageBitmapCache.isInitialized) {
                 pageBitmapCache.evictAll()
             } else {
-                TimberLogger.logE(TAG, "CRITICAL: Cache accessed in handleLoadComic before init completed!")
-                val fallbackPreload = _pagesToPreloadLogic.value.coerceAtMost(MAX_SETTING_FOR_CACHE_INIT)
+                TimberLogger.logE(
+                    TAG,
+                    "CRITICAL: Cache accessed in handleLoadComic before init completed!"
+                )
+                val fallbackPreload =
+                    _pagesToPreloadLogic.value.coerceAtMost(MAX_SETTING_FOR_CACHE_INIT)
                 pageBitmapCache = LruCache((1 + 2 * fallbackPreload).coerceAtLeast(1))
             }
             comicPageIdentifiers = emptyList()
@@ -178,24 +189,27 @@ open class ViewerViewModel @Inject constructor(
 
                 _uiState.update {
                     it.copy(
-                        comicTitle = comicInfo.title, pageCount = comicInfo.pageCount,
+                        comicTitle = comicInfo.title,
+                        comicPath = uri,
+                        pageCount = comicInfo.pageCount,
                         fileType = comicInfo.fileType
                         // isLoadingPage will be handled by dispatchLoadPages
                     )
                 }
 
                 if (comicInfo.pageCount > 0 && comicInfo.pageIdentifiers.isNotEmpty()) {
-                    dispatchLoadPages(0) // Load initial page
+                    dispatchLoadPages(0)
                 } else {
                     TimberLogger.logW(TAG, "LoadComic: Comic has no pages.")
                     _effect.send(ViewerEffect.ShowError("Comic has no pages or is empty."))
                 }
             } catch (cex: CancellationException) {
                 TimberLogger.logI(TAG, "LoadComic (getComicInfo) cancelled: ${cex.message}")
+                _uiState.update { it.copy(comicPath = Uri.EMPTY) }
             } catch (ex: Exception) {
                 TimberLogger.logE(TAG, "LoadComic (getComicInfo): Error loading comic $uri", ex)
                 val errorMessage = ex.localizedMessage ?: "Failed to load comic"
-                _uiState.update { it.copy(error = errorMessage) }
+                _uiState.update { it.copy(error = errorMessage, comicPath = Uri.EMPTY) }
                 _effect.send(ViewerEffect.ShowError(errorMessage))
             }
         }
@@ -209,15 +223,21 @@ open class ViewerViewModel @Inject constructor(
             return
         }
         if (currentComicUri == null || currentComicFileType == null || comicPageIdentifiers.isEmpty()) {
-            TimberLogger.logW(TAG, "dispatchLoadPages: Comic data not ready for page $targetPageIndex.")
-             if (uiState.value.pageCount == 0) { // Only show error if comic hasn't loaded at all
+            TimberLogger.logW(
+                TAG,
+                "dispatchLoadPages: Comic data not ready for page $targetPageIndex."
+            )
+            if (uiState.value.pageCount == 0) {
                 _uiState.update { it.copy(error = "Comic data not fully loaded.") }
             }
             return
         }
         val pageCount = uiState.value.pageCount
         if (targetPageIndex < 0 || targetPageIndex >= pageCount) {
-            TimberLogger.logW(TAG, "dispatchLoadPages: Invalid targetPageIndex $targetPageIndex for pageCount $pageCount")
+            TimberLogger.logW(
+                TAG,
+                "dispatchLoadPages: Invalid targetPageIndex $targetPageIndex for pageCount $pageCount"
+            )
             viewModelScope.launch { _effect.send(ViewerEffect.ShowError("Invalid page number: ${targetPageIndex + 1}")) }
             return
         }
@@ -228,7 +248,10 @@ open class ViewerViewModel @Inject constructor(
             if (targetPageIndex - offset >= 0) relevantPageIndices.add(targetPageIndex - offset)
             if (targetPageIndex + offset < pageCount) relevantPageIndices.add(targetPageIndex + offset)
         }
-        TimberLogger.logD(TAG, "Relevant indices for $targetPageIndex (preload $currentLogicPreload): $relevantPageIndices")
+        TimberLogger.logD(
+            TAG,
+            "Relevant indices for $targetPageIndex (preload $currentLogicPreload): $relevantPageIndices"
+        )
 
         // Cancel jobs for pages no longer relevant
         val jobsToCancel = pageLoadJobs.filterKeys { !relevantPageIndices.contains(it) }
@@ -261,11 +284,17 @@ open class ViewerViewModel @Inject constructor(
             relevantPageIndices.forEach { idx ->
                 if (newLoadedPagesFromCache.containsKey(idx)) {
                     finalLoadedPages[idx] = newLoadedPagesFromCache[idx]
-                } else if (pagesThatNeedNewLoadJob.contains(idx) || activeRelevantLoadJobIndices.contains(idx)) {
+                } else if (pagesThatNeedNewLoadJob.contains(idx) || activeRelevantLoadJobIndices.contains(
+                        idx
+                    )
+                ) {
                     finalIsLoadingPage.add(idx)
                 }
             }
-            TimberLogger.logD(TAG, "Updating UI: currentPage=$targetPageIndex, loadedPages=${finalLoadedPages.keys}, isLoadingPage=$finalIsLoadingPage")
+            TimberLogger.logD(
+                TAG,
+                "Updating UI: currentPage=$targetPageIndex, loadedPages=${finalLoadedPages.keys}, isLoadingPage=$finalIsLoadingPage"
+            )
             currentState.copy(
                 currentPage = targetPageIndex,
                 loadedPages = finalLoadedPages,
@@ -281,20 +310,31 @@ open class ViewerViewModel @Inject constructor(
                     val bitmap = loadPageBitmapInternal(pageToLoadIdx)
                     if (isActive && bitmap != null) {
                         _uiState.update { state ->
-                            val stillRelevant = (state.currentPage - pageToLoadIdx).let { diff -> diff == 0 || (diff !=0 && kotlin.math.abs(diff) <= state.pagesToPreloadLogic) } && pageToLoadIdx < state.pageCount
+                            val stillRelevant = (state.currentPage - pageToLoadIdx).let { diff ->
+                                diff == 0 || (kotlin.math.abs(diff) <= state.pagesToPreloadLogic)
+                            } && pageToLoadIdx < state.pageCount
                             if (stillRelevant) {
-                                TimberLogger.logD(TAG, "Page $pageToLoadIdx loaded, adding to loadedPages and removing from isLoadingPage.")
+                                TimberLogger.logD(
+                                    TAG,
+                                    "Page $pageToLoadIdx loaded, adding to loadedPages and removing from isLoadingPage."
+                                )
                                 state.copy(
                                     loadedPages = state.loadedPages + (pageToLoadIdx to bitmap),
                                     isLoadingPage = state.isLoadingPage - pageToLoadIdx
                                 )
                             } else {
-                                TimberLogger.logD(TAG, "Page $pageToLoadIdx loaded, but no longer relevant. Removing from isLoadingPage.")
+                                TimberLogger.logD(
+                                    TAG,
+                                    "Page $pageToLoadIdx loaded, but no longer relevant. Removing from isLoadingPage."
+                                )
                                 state.copy(isLoadingPage = state.isLoadingPage - pageToLoadIdx)
                             }
                         }
                     } else if (isActive && bitmap == null) {
-                        TimberLogger.logW(TAG, "Page $pageToLoadIdx: Load returned null. Removing from isLoadingPage.")
+                        TimberLogger.logW(
+                            TAG,
+                            "Page $pageToLoadIdx: Load returned null. Removing from isLoadingPage."
+                        )
                         _uiState.update { it.copy(isLoadingPage = it.isLoadingPage - pageToLoadIdx) }
                     }
                 } catch (cex: CancellationException) {
@@ -303,10 +343,13 @@ open class ViewerViewModel @Inject constructor(
                     TimberLogger.logE(TAG, "Error loading page $pageToLoadIdx", ex)
                 } finally {
                     if (isActive) {
-                         _uiState.update { it.copy(isLoadingPage = it.isLoadingPage - pageToLoadIdx) }
+                        _uiState.update { it.copy(isLoadingPage = it.isLoadingPage - pageToLoadIdx) }
                     }
                     pageLoadJobs.remove(pageToLoadIdx)
-                    TimberLogger.logD(TAG, "Page $pageToLoadIdx: Job finished. Removed from pageLoadJobs and ensured not in isLoadingPage.")
+                    TimberLogger.logD(
+                        TAG,
+                        "Page $pageToLoadIdx: Job finished. Removed from pageLoadJobs and ensured not in isLoadingPage."
+                    )
                 }
             }
         }
@@ -320,11 +363,17 @@ open class ViewerViewModel @Inject constructor(
         val localCurrentComicUri = currentComicUri
         val localCurrentComicFileType = currentComicFileType
         if (localCurrentComicUri == null || localCurrentComicFileType == null) {
-            TimberLogger.logW(TAG, "loadPageBitmapInternal($pageIndex): Aborted. Comic data not ready.")
+            TimberLogger.logW(
+                TAG,
+                "loadPageBitmapInternal($pageIndex): Aborted. Comic data not ready."
+            )
             throw IllegalStateException("Comic data (URI or FileType) not ready for page $pageIndex")
         }
         if (comicPageIdentifiers.isEmpty() || pageIndex < 0 || pageIndex >= comicPageIdentifiers.size) {
-            TimberLogger.logE(TAG, "loadPageBitmapInternal($pageIndex): Aborted. PageIndex out of bounds (0-${comicPageIdentifiers.size - 1}).")
+            TimberLogger.logE(
+                TAG,
+                "loadPageBitmapInternal($pageIndex): Aborted. PageIndex out of bounds (0-${comicPageIdentifiers.size - 1})."
+            )
             throw IndexOutOfBoundsException("Page index $pageIndex out of bounds for ${comicPageIdentifiers.size} pages")
         }
 
@@ -362,7 +411,11 @@ open class ViewerViewModel @Inject constructor(
         try {
             if (this.isActive) this.cancel(CancellationException(message))
         } catch (ex: Exception) {
-            TimberLogger.logE(TAG, "Exception during job cancellation: $message - ${ex.message}", ex)
+            TimberLogger.logE(
+                TAG,
+                "Exception during job cancellation: $message - ${ex.message}",
+                ex
+            )
         }
     }
 

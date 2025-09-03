@@ -7,6 +7,7 @@
     <string name="settings_permissions_none_required">No special permissions from this list are required for this version of Android.</string>
     <string name="settings_permission_read_external_storage_rationale_extended">The \'Read External Storage\' permission is required on older Android versions for the app to select your comic library folder and scan its contents. If you deny the permission, you won\'t be able to select a folder. You can always manage permissions from the App Settings.</string>
     <string name="settings_section_monitored_folders_title">Monitored Comic Folders</string>
+    <string name="settings_add_folder_button">Add Folder</string>
     <string name="settings_monitored_folders_empty">No comic folders are currently being monitored. Add folders from the main screen.</string>
     <string name="settings_permission_status_granted">Granted</string>
     <string name="settings_button_app_settings">Settings</string>
@@ -19,4 +20,20 @@
     <string name="settings_privacy_title">Privacy Settings</string>
     <string name="settings_privacy_description">Manage your ad preferences and data consent.</string>
     <string name="settings_privacy_icon_desc">Privacy settings icon</string>
+    <string name="settings_section_viewer_title">Viewer Settings</string>
+    <string name="settings_viewer_preload_title">Comic Page Pre-loading</string>
+    <string name="settings_viewer_preload_description">Pages to load ahead/behind current page (0-%1$d).</string>
+    <string name="settings_viewer_preload_decrease_desc">Decrease pre-load count</string>
+    <string name="settings_viewer_preload_increase_desc">Increase pre-load count</string>
+
+    <!-- Data Management Section -->
+    <string name="settings_section_data_management_title">Data Management</string>
+    <string name="settings_data_clear_db_title">Clear Local Database</string>
+    <string name="settings_data_clear_db_desc">Removes all locally stored comic information and settings.</string>
+    <string name="settings_data_rescan_folders_title">Rescan Comic Folders</string>
+    <string name="settings_data_rescan_folders_desc">Forces a new scan of all monitored folders for comics.</string>
+
+    <!-- Privacy Error Messages -->
+    <string name="settings_error_loading_privacy_settings">Error loading privacy settings: %1$s - %2$s</string>
+    <string name="settings_error_could_not_open_privacy_settings">Could not open privacy settings.</string>
 </resources>

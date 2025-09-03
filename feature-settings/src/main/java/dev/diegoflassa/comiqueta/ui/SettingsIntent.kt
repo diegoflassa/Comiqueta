@@ -15,9 +15,11 @@ sealed interface SettingsIntent {
 
     data class RemoveFolderClicked(val folderUri: Uri) : SettingsIntent
     data object OpenAppSettingsClicked : SettingsIntent
-    data object RequestAddFolder : SettingsIntent
+    data object AddFolderClicked : SettingsIntent
     data class FolderSelected(val uri: Uri) : SettingsIntent
     data class OpenFolder(val uri: Uri) : SettingsIntent
     data object NavigateToCategoriesClicked : SettingsIntent
-    data class UpdateViewerPagesToPreloadAhead(val count: Int) : SettingsIntent // Added
+    data class UpdateViewerPagesToPreloadAhead(val count: Int) : SettingsIntent
+    data object ClearLocalDatabaseClicked : SettingsIntent
+    data object RescanComicFoldersClicked : SettingsIntent
 }

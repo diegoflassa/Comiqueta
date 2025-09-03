@@ -1,8 +1,5 @@
-package dev.diegoflassa.comiqueta.viewer.ui.page
+package dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.os.Build
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.draw.DrawResult
@@ -20,13 +17,23 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
-import dev.diegoflassa.comiqueta.viewer.ui.page.utils.Polygon
-import dev.diegoflassa.comiqueta.viewer.ui.page.utils.lineLineIntersection
-import dev.diegoflassa.comiqueta.viewer.ui.page.utils.rotate
-import dev.diegoflassa.comiqueta.viewer.ui.page.config.PageCurlConfig
+import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.utils.Polygon
+import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.utils.lineLineIntersection
+import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.utils.rotate
+import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.config.PageCurlConfig
 import java.lang.Float.max
 import kotlin.math.atan2
 
+/**
+ * A [Modifier] that draws a page curl effect based on two anchor points [posA] and [posB].
+ * It clips the original content to simulate the uncurled part of the page and draws a
+ * mirrored and rotated representation for the curled back-page, including a shadow.
+ *
+ * @param config The [PageCurlConfig] to customize the appearance and behavior of the curl.
+ * @param posA The top anchor point of the curl line.
+ * @param posB The bottom anchor point of the curl line.
+ * @return A [Modifier] that applies the draw transformations for the curl effect.
+ */
 internal fun Modifier.drawCurl(
     config: PageCurlConfig,
     posA: Offset,
@@ -77,7 +84,8 @@ internal fun Modifier.drawCurl(
 }
 
 /**
- * The simple method to draw the whole unmodified content.
+ * Helper function to create a [DrawResult] that simply draws the original content.
+ * Used when the curl effect is not active or in edge cases.
  */
 private fun CacheDrawScope.drawOnlyContent(): DrawResult =
     onDrawWithContent {
@@ -85,13 +93,23 @@ private fun CacheDrawScope.drawOnlyContent(): DrawResult =
     }
 
 /**
- * The simple method to draw nothing.
+ * Helper function to create a [DrawResult] that draws nothing.
+ * Used when the page is fully curled (e.g., at the leftmost position).
  */
 private fun CacheDrawScope.drawNothing(): DrawResult =
     onDrawWithContent {
         /* Empty */
     }
 
+/**
+ * Prepares a drawing lambda to render the main content clipped by the curl line.
+ * The clipping path is a quadrilateral formed by the left edge of the content area
+ * and the intersection points of the curl line with the top and bottom edges.
+ *
+ * @param topCurlOffset The intersection point of the curl line with the top edge of the content area.
+ * @param bottomCurlOffset The intersection point of the curl line with the bottom edge of the content area.
+ * @return A lambda of type `ContentDrawScope.() -> Unit` that, when invoked, draws the clipped content.
+ */
 private fun CacheDrawScope.prepareClippedContent(
     topCurlOffset: Offset,
     bottomCurlOffset: Offset,
@@ -109,6 +127,16 @@ private fun CacheDrawScope.prepareClippedContent(
     }
 }
 
+/**
+ * Prepares a drawing lambda for the curled back-page.
+ * This involves creating a polygon for the curled portion, calculating the rotation angle,
+ * preparing the shadow, and then drawing the mirrored content with an overlay.
+ *
+ * @param config The [PageCurlConfig] for styling and behavior.
+ * @param topCurlOffset The top intersection point of the curl line.
+ * @param bottomCurlOffset The bottom intersection point of the curl line.
+ * @return A lambda of type `ContentDrawScope.() -> Unit` that draws the complete back-page curl effect.
+ */
 private fun CacheDrawScope.prepareCurl(
     config: PageCurlConfig,
     topCurlOffset: Offset,
@@ -179,6 +207,15 @@ private fun CacheDrawScope.prepareCurl(
     }
 }
 
+/**
+ * Prepares a drawing lambda for rendering the shadow of the curled back-page.
+ * If shadow is disabled in [config], it returns a no-op lambda.
+ *
+ * @param config The [PageCurlConfig] containing shadow parameters.
+ * @param polygon The [Polygon] defining the shape of the back-page curl, used to cast the shadow.
+ * @param angle The angle of the curl, used to offset the shadow correctly.
+ * @return A lambda of type `ContentDrawScope.() -> Unit` that draws the shadow.
+ */
 private fun CacheDrawScope.prepareShadow(
     config: PageCurlConfig,
     polygon: Polygon,
@@ -210,13 +247,18 @@ private fun CacheDrawScope.prepareShadow(
 
     // Hardware acceleration supports setShadowLayer() only on API 28 and above, thus to support previous API versions
     // draw a shadow to the bitmap instead
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        prepareShadowApi28(radius, paint, polygon)
-    } else {
-        prepareShadowImage(radius, paint, polygon)
-    }
+    return prepareShadowApi28(radius, paint, polygon)
 }
 
+/**
+ * Prepares a drawing lambda to render the shadow using a [Paint] object with a shadow layer.
+ * This method is specifically for API 28+ where hardware acceleration for shadow layers is robust.
+ *
+ * @param radius The blur radius of the shadow.
+ * @param paint The [Paint] object pre-configured with the shadow layer.
+ * @param polygon The [Polygon] shape (offset for the shadow) to draw with the shadow paint.
+ * @return A lambda of type `ContentDrawScope.() -> Unit` that draws the shadow path.
+ */
 private fun prepareShadowApi28(
     radius: Float,
     paint: Paint,
@@ -229,35 +271,5 @@ private fun prepareShadowApi28(
                 .asAndroidPath(),
             paint.asFrameworkPaint()
         )
-    }
-}
-
-private fun CacheDrawScope.prepareShadowImage(
-    radius: Float,
-    paint: Paint,
-    polygon: Polygon,
-): ContentDrawScope.() -> Unit {
-    // Increase the size a little bit so that shadow is not clipped
-    val bitmap = Bitmap.createBitmap(
-        (size.width + radius * 4).toInt(),
-        (size.height + radius * 4).toInt(),
-        Bitmap.Config.ARGB_8888
-    )
-    Canvas(bitmap).apply {
-        drawPath(
-            polygon
-                // As bitmap size is increased we should translate the polygon so that shadow remains in center
-                .translate(Offset(2 * radius, 2 * radius))
-                .offset(radius).toPath()
-                .asAndroidPath(),
-            paint.asFrameworkPaint()
-        )
-    }
-
-    return {
-        drawIntoCanvas {
-            // As bitmap size is increased we should shift the drawing so that shadow remains in center
-            it.nativeCanvas.drawBitmap(bitmap, -2 * radius, -2 * radius, null)
-        }
     }
 }

@@ -6,6 +6,7 @@
     <string name="settings_permissions_none_required">Für diese Android-Version sind keine speziellen Berechtigungen aus dieser Liste erforderlich.</string>
     <string name="settings_permission_read_external_storage_rationale_extended">Die Berechtigung \'Externen Speicher lesen\' wird auf älteren Android-Versionen benötigt, damit die App Ihren Comic-Bibliotheksordner auswählen und dessen Inhalt scannen kann. Wenn Sie die Berechtigung verweigern, können Sie keinen Ordner auswählen. Sie können Berechtigungen jederzeit in den App-Einstellungen verwalten.</string>
     <string name="settings_section_monitored_folders_title">Überwachte Comic-Ordner</string>
+    <string name="settings_add_folder_button">Ordner hinzufügen</string>
     <string name="settings_monitored_folders_empty">Derzeit werden keine Comic-Ordner überwacht. Fügen Sie Ordner über den Hauptbildschirm hinzu.</string>
     <string name="settings_permission_status_granted">Erteilt</string>
     <string name="settings_button_app_settings">Einstellungen</string>
@@ -18,4 +19,20 @@
     <string name="settings_privacy_title">Datenschutzeinstellungen</string>
     <string name="settings_privacy_description">Verwalten Sie Ihre Anzeigenpräferenzen und Dateneinwilligung.</string>
     <string name="settings_privacy_icon_desc">Symbol für Datenschutzeinstellungen</string>
+    <string name="settings_section_viewer_title">Viewer-Einstellungen</string>
+    <string name="settings_viewer_preload_title">Comic-Seiten-Vorabladen</string>
+    <string name="settings_viewer_preload_description">Seiten, die vor/nach der aktuellen Seite geladen werden sollen (0-%1$d).</string>
+    <string name="settings_viewer_preload_decrease_desc">Anzahl Vorabladen verringern</string>
+    <string name="settings_viewer_preload_increase_desc">Anzahl Vorabladen erhöhen</string>
+
+    <!-- Data Management Section -->
+    <string name="settings_section_data_management_title">Datenverwaltung</string>
+    <string name="settings_data_clear_db_title">Lokale Datenbank löschen</string>
+    <string name="settings_data_clear_db_desc">Entfernt alle lokal gespeicherten Comic-Informationen und Einstellungen.</string>
+    <string name="settings_data_rescan_folders_title">Comic-Ordner erneut scannen</string>
+    <string name="settings_data_rescan_folders_desc">Erzwingt einen neuen Scan aller überwachten Ordner nach Comics.</string>
+
+    <!-- Privacy Error Messages -->
+    <string name="settings_error_loading_privacy_settings">Fehler beim Laden der Datenschutzeinstellungen: %1$s - %2$s</string>
+    <string name="settings_error_could_not_open_privacy_settings">Datenschutzeinstellungen konnten nicht geöffnet werden.</string>
 </resources>

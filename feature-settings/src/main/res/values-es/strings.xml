@@ -7,6 +7,7 @@
     <string name="settings_permissions_none_required">No se requieren permisos especiales de esta lista para esta versión de Android.</string>
     <string name="settings_permission_read_external_storage_rationale_extended">El permiso \'Leer Almacenamiento Externo\' es necesario en versiones antiguas de Android para que la aplicación pueda seleccionar la carpeta de tu biblioteca de cómics y escanear su contenido. Si deniegas el permiso, no podrás seleccionar una carpeta. Siempre puedes gestionar los permisos desde los Ajustes de la Aplicación.</string>
     <string name="settings_section_monitored_folders_title">Carpetas de Cómics Supervisadas</string>
+    <string name="settings_add_folder_button">Añadir Carpeta</string>
     <string name="settings_monitored_folders_empty">Actualmente no se están supervisando carpetas de cómics. Añade carpetas desde la pantalla principal.</string>
     <string name="settings_permission_status_granted">Concedido</string>
     <string name="settings_button_app_settings">Ajustes</string>
@@ -19,4 +20,20 @@
     <string name="settings_privacy_title">Configuración de privacidad</string>
     <string name="settings_privacy_description">Gestiona tus preferencias de anuncios y tu consentimiento de datos.</string>
     <string name="settings_privacy_icon_desc">Icono de configuración de privacidad</string>
+    <string name="settings_section_viewer_title">Configuración del Visor</string>
+    <string name="settings_viewer_preload_title">Precarga de Páginas de Cómic</string>
+    <string name="settings_viewer_preload_description">Páginas a cargar antes/después de la página actual (0-%1$d).</string>
+    <string name="settings_viewer_preload_decrease_desc">Disminuir cantidad de precarga</string>
+    <string name="settings_viewer_preload_increase_desc">Aumentar cantidad de precarga</string>
+
+    <!-- Data Management Section -->
+    <string name="settings_section_data_management_title">Gestión de Datos</string>
+    <string name="settings_data_clear_db_title">Limpiar Base de Datos Local</string>
+    <string name="settings_data_clear_db_desc">Elimina toda la información de cómics y configuraciones almacenadas localmente.</string>
+    <string name="settings_data_rescan_folders_title">Reescanear Carpetas de Cómics</string>
+    <string name="settings_data_rescan_folders_desc">Fuerza un nuevo escaneo de todas las carpetas monitorizadas en busca de cómics.</string>
+
+    <!-- Privacy Error Messages -->
+    <string name="settings_error_loading_privacy_settings">Error al cargar la configuración de privacidad: %1$s - %2$s</string>
+    <string name="settings_error_could_not_open_privacy_settings">No se pudo abrir la configuración de privacidad.</string>
 </resources>

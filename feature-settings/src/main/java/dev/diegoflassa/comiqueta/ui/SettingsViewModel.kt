@@ -13,7 +13,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.diegoflassa.comiqueta.core.data.preferences.PreferencesKeys
+import dev.diegoflassa.comiqueta.core.data.repository.IComicsRepository
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
+import dev.diegoflassa.comiqueta.core.domain.usecase.IEnqueueSafFolderScanWorkerUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.IAddMonitoredFolderUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.IGetMonitoredFoldersUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.IRemoveMonitoredFolderUseCase
@@ -25,7 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch // Added
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -41,8 +43,14 @@ open class SettingsViewModel @Inject constructor(
     private val removeMonitoredFolderUseCase: IRemoveMonitoredFolderUseCase,
     getRelevantOsPermissionsUseCase: IGetRelevantOsPermissionsUseCase,
     private val refreshPermissionDisplayStatusUseCase: IRefreshPermissionDisplayStatusUseCase,
+    private val comicsRepository: IComicsRepository,
+    private val enqueueSafFolderScanWorkerUseCase: IEnqueueSafFolderScanWorkerUseCase,
     private val dataStore: DataStore<Preferences>
 ) : ViewModel() {
+
+    companion object {
+        private val tag = SettingsViewModel::class.simpleName
+    }
 
     private val _uiState = MutableStateFlow(SettingsUIState(isLoading = true))
     open val uiState: StateFlow<SettingsUIState> = _uiState.asStateFlow()
@@ -52,13 +60,15 @@ open class SettingsViewModel @Inject constructor(
 
     private val viewerPagesToPreloadAhead: Flow<Int> = dataStore.data
         .map { preferences ->
-            preferences[PreferencesKeys.VIEWER_PAGES_TO_PRELOAD_AHEAD] ?: PreferencesKeys.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
+            preferences[PreferencesKeys.VIEWER_PAGES_TO_PRELOAD_AHEAD]
+                ?: PreferencesKeys.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
         }
 
     // --- Implementation for Viewer Page Preloading ---
     suspend fun setViewerPagesToPreloadAhead(count: Int) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.VIEWER_PAGES_TO_PRELOAD_AHEAD] = count.coerceAtLeast(0) // Ensure non-negative
+            preferences[PreferencesKeys.VIEWER_PAGES_TO_PRELOAD_AHEAD] =
+                count.coerceAtLeast(0) // Ensure non-negative
         }
     }
 
@@ -81,7 +91,11 @@ open class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             viewerPagesToPreloadAhead
                 .catch { e ->
-                    TimberLogger.logE("SettingsViewModel", "Error observing viewerPagesToPreloadAhead", e)
+                    TimberLogger.logE(
+                        "SettingsViewModel",
+                        "Error observing viewerPagesToPreloadAhead",
+                        e
+                    )
                     // Optionally emit a default or error state to UI if needed
                 }
                 .collect { preloadCount ->
@@ -100,7 +114,11 @@ open class SettingsViewModel @Inject constructor(
                 }
             } catch (ex: Exception) {
                 ex.printStackTrace()
-                TimberLogger.logE("SettingsViewModel", "Error loading persisted folders via UseCase", ex)
+                TimberLogger.logE(
+                    "SettingsViewModel",
+                    "Error loading persisted folders via UseCase",
+                    ex
+                )
                 _uiState.update { it.copy(isLoading = false) }
                 viewModelScope.launch { _effect.send(SettingsEffect.ShowToast("Error loading folders: ${ex.message}")) }
             }
@@ -135,7 +153,7 @@ open class SettingsViewModel @Inject constructor(
                     _effect.send(SettingsEffect.NavigateToAppSettingsScreen)
                 }
 
-                is SettingsIntent.RequestAddFolder -> {
+                is SettingsIntent.AddFolderClicked -> { // Changed from RequestAddFolder
                     _effect.send(SettingsEffect.LaunchFolderPicker)
                 }
 
@@ -151,16 +169,38 @@ open class SettingsViewModel @Inject constructor(
                     _effect.send(SettingsEffect.NavigateToCategoriesScreen)
                 }
 
-                is SettingsIntent.UpdateViewerPagesToPreloadAhead -> { // Added handler
+                is SettingsIntent.UpdateViewerPagesToPreloadAhead -> {
                     try {
                         setViewerPagesToPreloadAhead(intent.count)
                         // UI state will update automatically due to the flow collection in init
                         _effect.send(SettingsEffect.ShowToast("Viewer prefetch setting updated."))
                     } catch (ex: Exception) {
                         ex.printStackTrace()
-                        TimberLogger.logE("SettingsViewModel", "Error updating viewerPagesToPreloadAhead", ex)
+                        TimberLogger.logE(
+                            "SettingsViewModel",
+                            "Error updating viewerPagesToPreloadAhead",
+                            ex
+                        )
                         _effect.send(SettingsEffect.ShowToast("Error updating setting: ${ex.message}"))
                     }
+                }
+
+                is SettingsIntent.ClearLocalDatabaseClicked -> {
+                    comicsRepository.clearAllComics()
+                    TimberLogger.logI(
+                        "SettingsViewModel",
+                        "ClearLocalDatabaseClicked intent received"
+                    )
+                    _effect.send(SettingsEffect.ShowToast("Clear Local Database: Tapped (Not implemented yet)"))
+                }
+
+                is SettingsIntent.RescanComicFoldersClicked -> {
+                    triggerGeneralScan()
+                    TimberLogger.logI(
+                        "SettingsViewModel",
+                        "RescanComicFoldersClicked intent received"
+                    )
+                    _effect.send(SettingsEffect.ShowToast("Rescan Comic Folders: Tapped (Not implemented yet)"))
                 }
             }
         }
@@ -173,7 +213,10 @@ open class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun handleOsPermissionResults(results: Map<String, PermissionDisplayStatus>, activity: Activity) {
+    private fun handleOsPermissionResults(
+        results: Map<String, PermissionDisplayStatus>,
+        activity: Activity
+    ) {
         _uiState.update { currentState ->
             val refreshedStatuses = refreshPermissionDisplayStatusUseCase(activity)
             currentState.copy(permissionDisplayStatuses = refreshedStatuses)
@@ -184,10 +227,16 @@ open class SettingsViewModel @Inject constructor(
         try {
             val success = removeMonitoredFolderUseCase(folderUri)
             if (success) {
-                TimberLogger.logD("SettingsViewModel", "Successfully removed folder via UseCase: $folderUri")
+                TimberLogger.logD(
+                    "SettingsViewModel",
+                    "Successfully removed folder via UseCase: $folderUri"
+                )
                 _effect.send(SettingsEffect.ShowToast("Folder '${Uri.decode(folderUri.toString())}' access removed."))
             } else {
-                TimberLogger.logW("SettingsViewModel", "Failed to remove folder via UseCase: $folderUri.")
+                TimberLogger.logW(
+                    "SettingsViewModel",
+                    "Failed to remove folder via UseCase: $folderUri."
+                )
                 _effect.send(
                     SettingsEffect.ShowToast(
                         "Could not remove access for folder '${
@@ -200,7 +249,11 @@ open class SettingsViewModel @Inject constructor(
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
-            TimberLogger.logE("SettingsViewModel", "Error removing folder $folderUri via UseCase", ex)
+            TimberLogger.logE(
+                "SettingsViewModel",
+                "Error removing folder $folderUri via UseCase",
+                ex
+            )
             _effect.send(SettingsEffect.ShowToast("Error removing folder: ${ex.message}"))
         } finally {
             loadPersistedFolders()
@@ -211,7 +264,10 @@ open class SettingsViewModel @Inject constructor(
         try {
             val success = addMonitoredFolderUseCase(uri)
             if (success) {
-                TimberLogger.logD("SettingsViewModel", "Successfully added folder via UseCase: $uri")
+                TimberLogger.logD(
+                    "SettingsViewModel",
+                    "Successfully added folder via UseCase: $uri"
+                )
                 _effect.send(SettingsEffect.ShowToast("Folder '${Uri.decode(uri.toString())}' added."))
             } else {
                 TimberLogger.logW("SettingsViewModel", "Failed to add folder via UseCase: $uri.")
@@ -230,7 +286,20 @@ open class SettingsViewModel @Inject constructor(
             TimberLogger.logE("SettingsViewModel", "Error adding folder $uri via UseCase", ex)
             _effect.send(SettingsEffect.ShowToast("Error adding folder: ${ex.message}"))
         } finally {
-            loadPersistedFolders() 
+            loadPersistedFolders()
+        }
+    }
+
+    private fun triggerGeneralScan() {
+        viewModelScope.launch {
+            try {
+                enqueueSafFolderScanWorkerUseCase.invoke(null)
+                _effect.send(SettingsEffect.ShowToast("General folder scan enqueued."))
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                TimberLogger.logE(tag, "Failed to enqueue general folder scan worker", ex)
+                _effect.send(SettingsEffect.ShowToast("Error starting general scan: ${ex.message}"))
+            }
         }
     }
 }

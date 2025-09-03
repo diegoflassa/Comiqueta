@@ -1,15 +1,30 @@
-package dev.diegoflassa.comiqueta.viewer.ui.page
+package dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip
 
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.input.pointer.pointerInput
-import dev.diegoflassa.comiqueta.viewer.ui.page.config.PageCurlConfig
-import dev.diegoflassa.comiqueta.viewer.ui.page.config.PageCurlConfig.DragInteraction.PointerBehavior
-import dev.diegoflassa.comiqueta.viewer.ui.page.utils.multiply
+import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.config.PageCurlConfig
+import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.config.PageCurlConfig.DragInteraction.PointerBehavior
+import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.utils.multiply
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+/**
+ * A [Modifier] that enables drag gestures for page curling based on defined target areas.
+ * This gesture handler initiates a page curl (forward or backward) when a drag starts within
+ * specified rectangular target zones and moves in the appropriate direction.
+ *
+ * @param dragInteraction The [PageCurlConfig.GestureDragInteraction] configuration, defining target
+ *                        rectangles for forward and backward drag initiation, and pointer behavior.
+ * @param state The [PageCurlState.InternalState] managing the current animation and edge positions.
+ * @param enabledForward True if forward page curling via drag is enabled, false otherwise.
+ * @param enabledBackward True if backward page curling via drag is enabled, false otherwise.
+ * @param scope The [CoroutineScope] for launching coroutines, e.g., for state resets or animations.
+ * @param onChange A lambda function invoked when a drag gesture successfully completes a page turn.
+ *                 It receives an integer indicating the direction: `+1` for forward, `-1` for backward.
+ * @return A [Modifier] that processes drag gestures for page curling.
+ */
 internal fun Modifier.dragGesture(
     dragInteraction: PageCurlConfig.GestureDragInteraction,
     state: PageCurlState.InternalState,
