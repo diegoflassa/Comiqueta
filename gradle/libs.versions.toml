@@ -1,7 +1,7 @@
 [versions]
 
 #Common
-gradle = "8.12.2"
+gradle = "8.13.0"
 kotlin = "2.2.10"
 
 #Project build.gradle
@@ -19,7 +19,7 @@ perf-plugin = "2.0.1"
 
 #Common
 core-ktx = "1.17.0"
-material = "1.12.0"
+material = "1.13.0"
 ui-text-google-fonts = "1.9.0"
 
 #Common Testing
@@ -155,7 +155,7 @@ io-coil-kt-coil-compose = "2.7.0"
 
 #Plugins
 #Root build.gradle
-com-osacky-doctor = "0.12.0"
+com-osacky-doctor = "0.12.1"
 org-jetbrains-kotlinx-kover = "0.9.1"
 
 #Common

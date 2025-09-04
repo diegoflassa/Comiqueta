@@ -97,22 +97,22 @@ class ComicsRepository @Inject constructor(
     }
 
     override suspend fun insertComic(comic: Comic) {
-        comicsDao.insertComicAndFts(comic.asEntity()) // Updated to use transactional FTS method
+        comicsDao.insertComicAndFts(comic.asEntity())
     }
 
     override suspend fun insertComics(comics: List<ComicEntity>) {
-        comicsDao.insertComicsAndFts(comics) // Updated to use transactional FTS method
+        comicsDao.insertComicsAndFts(comics)
     }
 
     override suspend fun updateComic(comic: Comic) {
-        comicsDao.updateComicAndFts(comic.asEntity()) // Updated to use transactional FTS method
+        comicsDao.updateComicAndFts(comic.asEntity())
     }
 
     override suspend fun deleteComicByFilePath(filePath: Uri) {
-        comicsDao.deleteComicByFilePathAndFts(filePath) // Updated to use transactional FTS method
+        comicsDao.deleteComicByFilePathAndFts(filePath)
     }
 
     override suspend fun clearAllComics() {
-        comicsDao.clearAllComicsAndFts() // Updated to use transactional FTS method
+        comicsDao.clearAllComicsAndFts()
     }
 }
