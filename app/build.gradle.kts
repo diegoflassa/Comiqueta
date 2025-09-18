@@ -1,4 +1,5 @@
 import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
+import io.gitlab.arturbosch.detekt.Detekt
 import org.gradle.kotlin.dsl.project
 import java.util.Properties
 
@@ -25,6 +26,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt.android.gradle.plugin)
     alias(libs.plugins.firebase.appdistribution.gradle)
+    alias(libs.plugins.arturbosch.detekt)
 }
 
 // Configure Firebase App Distribution
@@ -32,14 +34,16 @@ firebaseAppDistribution {
     // Attempt to load appId and testers from properties file if it exists (for local convenience)
     if (firebasePropsFile.exists()) {
         appId = firebaseAppDistributionProps.getProperty("firebase.appdistribution.appId") ?: ""
-        val configuredTesters = firebaseAppDistributionProps.getProperty("firebase.appdistribution.testers") ?: ""
+        val configuredTesters =
+            firebaseAppDistributionProps.getProperty("firebase.appdistribution.testers") ?: ""
         if (configuredTesters.isNotEmpty()) {
             testers = configuredTesters
         }
     }
 
     val googleAppCredentials = System.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    val ciProjectPropertyCredentialsFile = project.properties["comiqueta.ci.serviceCredentialsFile"]?.toString()
+    val ciProjectPropertyCredentialsFile =
+        project.properties["comiqueta.ci.serviceCredentialsFile"]?.toString()
 
     if (googleAppCredentials != null && googleAppCredentials.isNotBlank()) {
         serviceCredentialsFile = googleAppCredentials
@@ -53,6 +57,22 @@ firebaseAppDistribution {
 
 kotlin {
     jvmToolchain(JavaVersion.VERSION_21.toString().toInt())
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = true
+    config.setFrom("$rootDir/config/detekt/detekt.yml")
+    //baseline = file("$projectDir/config/baseline.xml")
+}
+
+tasks.withType<Detekt>().configureEach {
+    reports {
+        html.required.set(true)
+        //checkstyle.required.set(true)
+        sarif.required.set(true)
+        md.required.set(true)
+    }
 }
 
 dependencies {
@@ -186,8 +206,6 @@ dependencies {
 
     //Other
     implementation(libs.com.microsoft.clarity.compose)
-
     implementation(libs.com.google.auto.value)
-
     implementation(libs.io.coil.kt.coil.compose)
 }

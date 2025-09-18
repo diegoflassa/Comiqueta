@@ -2,9 +2,7 @@ name: Android CI & Distribute
 
 on:
   push:
-    branches: [ main, develop ] # Distribute only on pushes to the main branch
-  # pull_request:
-  #   branches: [ main, develop ] # Keep PR builds if needed, but they won't distribute
+    branches: [ main, develop ]
 
 jobs:
   build_and_distribute:
@@ -31,7 +29,7 @@ jobs:
           echo "Attempting to create firebase_app_distribution.properties..."
           PROPERTIES_FILE_PATH="app/firebase_app_distribution.properties"
           if [ -n "$FIREBASE_APP_DISTRO_PROPERTIES_BASE64" ]; then
-            mkdir -p "$(dirname "$PROPERTIES_FILE_PATH")" # Ensure app directory exists
+            mkdir -p "$(dirname "$PROPERTIES_FILE_PATH")"
             echo "$FIREBASE_APP_DISTRO_PROPERTIES_BASE64" | base64 --decode > "$PROPERTIES_FILE_PATH"
             echo "firebase_app_distribution.properties created successfully at $PROPERTIES_FILE_PATH."
           else
@@ -45,19 +43,15 @@ jobs:
         run: |
           echo "Decoding Firebase service account key..."
           TEMP_SERVICE_ACCOUNT_FILE_PATH="${{ runner.temp }}/firebase_service_account.json"
-          WORKSPACE_RELATIVE_PATH="firebase_service_account_for_ci.json" # File name in workspace
+          WORKSPACE_RELATIVE_PATH="firebase_service_account_for_ci.json"
           ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH="${{ github.workspace }}/$WORKSPACE_RELATIVE_PATH"
-
           echo "Attempting to decode to temporary file: $TEMP_SERVICE_ACCOUNT_FILE_PATH"
           echo "$FIREBASE_SERVICE_ACCOUNT_KEY_BASE64" | base64 --decode > "$TEMP_SERVICE_ACCOUNT_FILE_PATH"
-          
           echo "Verifying temporary file: $TEMP_SERVICE_ACCOUNT_FILE_PATH"
           if [ -s "$TEMP_SERVICE_ACCOUNT_FILE_PATH" ]; then
             echo "Temporary service account JSON file created and is not empty."
-            
             echo "Copying temporary file to workspace at: $ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
             cp "$TEMP_SERVICE_ACCOUNT_FILE_PATH" "$ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
-            
             echo "Verifying workspace file: $ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH"
             if [ -s "$ABSOLUTE_SERVICE_ACCOUNT_FILE_PATH" ]; then
               echo "Workspace service account JSON file copied and is not empty."
@@ -94,9 +88,13 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: ./gradlew :app:bundleRelease
 
-      - name: Build Debug APK
+      - name: Build Release APK
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: ./gradlew :app:assembleRelease
+
+      - name: Build Debug AAB
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-        run: ./gradlew :app:assembleDebug
+        run: ./gradlew :app:bundleDebug
 
       - name: Upload to Firebase App Distribution (Release)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -110,10 +108,25 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.decode_sa_key.outputs.sa_file_path }}
         run: ./gradlew :app:appDistributionUploadDebug --stacktrace --scan
 
-    # Optional: Upload build artifacts (e.g., AAB/APK) to GitHub for archival
-    # - name: Upload Release AAB Artifact
-    #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: app-release-aab
-    #     path: app/build/outputs/bundle/release/*.aab # Adjust path as needed
+      - name: Upload to Google Play Internal Testing
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON_PLAY_STORE }}
+          packageName: ${{ secrets.PACKAGE_NAME }}
+          track: internal
+          appBundle: app/build/outputs/bundle/debug/*.aab # Using wildcard for debug AAB name
+
+      - name: Upload Release AAB Artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: app/build/outputs/bundle/release/*.aab
+
+      - name: Upload Release APK Artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: app/build/outputs/apk/release/*.apk

@@ -19,6 +19,8 @@ import dev.diegoflassa.comiqueta.core.navigation.Screen
 import dev.diegoflassa.comiqueta.ui.SettingsScreen
 import dev.diegoflassa.comiqueta.viewer.ui.ViewerScreen
 
+private const val TWEEN_DURATION = 300
+
 @Composable
 fun NavDisplay(modifier: Modifier, navigationViewModel: NavigationViewModel) {
     val backstack = navigationViewModel.state.collectAsStateWithLifecycle().value.backStack
@@ -26,7 +28,7 @@ fun NavDisplay(modifier: Modifier, navigationViewModel: NavigationViewModel) {
         backStack = backstack,
         modifier = modifier,
         transitionSpec = {
-            fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+            fadeIn(tween(TWEEN_DURATION)) togetherWith fadeOut(tween(TWEEN_DURATION))
         },
         entryDecorators = listOf(
             rememberSceneSetupNavEntryDecorator(),

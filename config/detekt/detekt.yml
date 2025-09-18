@@ -1,0 +1,17 @@
+complexity:
+  ComplexCondition:
+    active: true
+    threshold: 5
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
+
+naming:
+  FunctionNaming:
+    active: true
+    functionPattern: '[a-zA-Z][a-zA-Z0-9]*'
+
+style:
+  MaxLineLength:
+    active: false
