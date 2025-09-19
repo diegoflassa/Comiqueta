@@ -40,7 +40,7 @@ androidx-paging-common = "3.3.6"
 com-google-truth = "1.4.5"
 
 #Firebase
-firebase-bom = "34.2.0"
+firebase-bom = "34.3.0"
 
 #Timber
 com-jakewharton-timber = "5.0.1"
@@ -154,7 +154,7 @@ io-coil-kt-coil-compose = "2.7.0"
 #Plugins
 #Root build.gradle
 com-osacky-doctor = "0.12.1"
-org-jetbrains-kotlinx-kover = "0.9.1"
+org-jetbrains-kotlinx-kover = "0.9.2"
 jlleitschuh-ktlint = "13.1.0"
 arturbosch-detekt = "1.23.8"
 
