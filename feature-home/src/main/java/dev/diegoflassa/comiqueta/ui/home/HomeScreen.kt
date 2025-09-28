@@ -64,7 +64,7 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -215,7 +215,7 @@ fun HomeScreenContentForPreview(
     val isEmpty =
         (comics.isEmpty()) && uiState.searchQuery.isBlank() && uiState.selectedCategory == null && uiState.isLoading.not()
 
-    val topSystemBarInsetDp = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
+    val topSystemBarInsetDp = 32.dp//WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
 
     Scaffold(
         modifier = modifier.background(ComiquetaTheme.colorScheme.background),
@@ -360,7 +360,8 @@ fun HomeScreenContent(
                 title = {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth()
+                            .wrapContentHeight()
                             .padding(start = ComiquetaTheme.dimen.appBarHorizontalPadding),
                         contentAlignment = Alignment.CenterStart
                     ) {

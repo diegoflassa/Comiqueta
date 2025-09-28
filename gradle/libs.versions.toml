@@ -10,7 +10,7 @@ hilt-android-gradle-plugin = "2.57.1"
 #App
 firebase-perf-gradle = "2.0.1"
 firebase-appdistribution-gradle = "5.1.1"
-androidx-room = "2.8.0"
+androidx-room = "2.8.1"
 
 #Project build.gradle
 google-services = "4.4.3"
@@ -20,7 +20,7 @@ firebase-perf-plugin = "2.0.1"
 #Common
 core-ktx = "1.17.0"
 material = "1.13.0"
-ui-text-google-fonts = "1.9.1"
+ui-text-google-fonts = "1.9.2"
 
 #Common Testing
 junit = "4.13.2"
@@ -32,7 +32,7 @@ benchmark-macro-junit4 = "1.4.1"
 
 #Unit Tests
 org-jetbrains-kotlinx-coroutines-test = "1.10.2"
-org-mockito-core = "5.19.0"
+org-mockito-core = "5.20.0"
 org-mockito-inline = "5.2.0"
 org-mockito-kotlin = "6.0.0"
 app-cash-turbine = "1.2.1"
@@ -46,30 +46,30 @@ firebase-bom = "34.3.0"
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2025.09.00"
+compose-bom = "2025.09.01"
 ax-constraintlayout-compose = "1.1.1"
 ax-activity-compose = "1.11.0"
 lifecycle-viewmodel-compose = "2.9.4"
-ax-navigation-compose = "2.9.4"
+ax-navigation-compose = "2.9.5"
 kotlinx-serialization-json = "1.9.0"
 ax-paging-runtime-ktx = "3.3.6"
 ax-paging-compose = "3.3.6"
 
 #Compose Testing
-org-mockito-android = "5.19.0"
+org-mockito-android = "5.20.0"
 
 #Compose Navigation 3
-ax-navigation3-runtime = "1.0.0-alpha09"
-ax-navigation3-ui = "1.0.0-alpha09"
+ax-navigation3-runtime = "1.0.0-alpha10"
+ax-navigation3-ui = "1.0.0-alpha10"
 ax-navigation3-viewmodel = "1.0.0-alpha04"
 #ax-navigation3-adaptive = "1.0.0-SNAPSHOT"
 
 #Room
-room-runtime = "2.8.0"
-room-compiler = "2.8.0"
-room-ktx = "2.8.0"
-room-paging = "2.8.0"
-room-testing = "2.8.0"
+room-runtime = "2.8.1"
+room-compiler = "2.8.1"
+room-ktx = "2.8.1"
+room-paging = "2.8.1"
+room-testing = "2.8.1"
 
 #Dagger & Hilt
 hilt-android = "2.57.1"
@@ -105,7 +105,7 @@ ax-lifecycle-viewmodel-ktx = "2.9.4"
 ax-lifecycle-extensions = "2.2.0"
 
 #Work
-ax-work-runtime-ktx = "2.10.4"
+ax-work-runtime-ktx = "2.10.5"
 
 #Documenfile
 ax-documentfile = "1.1.0"
@@ -147,7 +147,7 @@ play-services-ads-api = "24.6.0"
 com-google-android-ump-messaging-platform = "3.2.0"
 
 #Other
-clarity-compose = "3.5.0"
+clarity-compose = "3.5.1"
 com-google-auto-value = "1.11.0"
 io-coil-kt-coil-compose = "2.7.0"
 
