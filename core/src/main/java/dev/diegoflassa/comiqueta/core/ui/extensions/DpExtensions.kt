@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package dev.diegoflassa.comiqueta.core.ui.extensions
 
 import androidx.compose.runtime.Composable

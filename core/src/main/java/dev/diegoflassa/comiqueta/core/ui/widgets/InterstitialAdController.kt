@@ -41,19 +41,21 @@ fun LoadInterstitialAd(
             return@LaunchedEffect
         }
 
-        TimberLogger.logI(TAG, "Requesting Interstitial Ad: \$adUnitId")
+        TimberLogger.logI(TAG, $$"Requesting Interstitial Ad: $adUnitId")
         InterstitialAd.load(
             context,
             adUnitId,
             adRequest,
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                    TimberLogger.logI(TAG, "Interstitial Ad loaded: \$adUnitId")
+                    TimberLogger.logI(TAG, $$"Interstitial Ad loaded: $adUnitId")
                     onAdLoaded(interstitialAd)
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    TimberLogger.logE(TAG, "Interstitial Ad failed to load: \$adUnitId, Error: \${loadAdError.message}")
+                    TimberLogger.logE(TAG,
+                        $$"Interstitial Ad failed to load: $adUnitId, Error: ${loadAdError.message}"
+                    )
                     onAdFailedToLoad(loadAdError)
                 }
             }

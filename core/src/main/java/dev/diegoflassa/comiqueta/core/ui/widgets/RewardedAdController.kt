@@ -41,19 +41,21 @@ fun LoadRewardedAd(
             return@LaunchedEffect
         }
 
-        TimberLogger.logI(TAG, "Requesting Rewarded Ad: \$adUnitId")
+        TimberLogger.logI(TAG, $$"Requesting Rewarded Ad: $adUnitId")
         RewardedAd.load(
             context,
             adUnitId,
             adRequest,
             object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
-                    TimberLogger.logI(TAG, "Rewarded Ad loaded: \$adUnitId")
+                    TimberLogger.logI(TAG, $$"Rewarded Ad loaded: $adUnitId")
                     onAdLoaded(rewardedAd)
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    TimberLogger.logE(TAG, "Rewarded Ad failed to load: \$adUnitId, Error: \${loadAdError.message}")
+                    TimberLogger.logE(TAG,
+                        $$"Rewarded Ad failed to load: $adUnitId, Error: ${loadAdError.message}"
+                    )
                     onAdFailedToLoad(loadAdError)
                 }
             }

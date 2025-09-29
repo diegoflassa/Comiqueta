@@ -13,7 +13,7 @@ object UriConverter {
 
     @TypeConverter
     @JvmStatic
-    fun toString(uri: Uri?): String? {
+    fun toString(uri: Uri?): String {
         return uri?.toString() ?: ""
     }
 }

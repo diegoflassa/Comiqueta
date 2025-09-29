@@ -233,7 +233,7 @@ open class ViewerViewModel @Inject constructor(
             return
         }
         val pageCount = uiState.value.pageCount
-        if (targetPageIndex < 0 || targetPageIndex >= pageCount) {
+        if (targetPageIndex !in 0..<pageCount) {
             TimberLogger.logW(
                 TAG,
                 "dispatchLoadPages: Invalid targetPageIndex $targetPageIndex for pageCount $pageCount"

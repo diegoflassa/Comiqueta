@@ -44,19 +44,21 @@ fun LoadAppOpenAd(
             return@LaunchedEffect
         }
 
-        TimberLogger.logI(TAG, "Requesting App Open Ad: \$adUnitId")
+        TimberLogger.logI(TAG, $$"Requesting App Open Ad: $adUnitId")
         AppOpenAd.load(
             context,
             adUnitId,
             adRequest,
             object : AppOpenAd.AppOpenAdLoadCallback() {
                 override fun onAdLoaded(appOpenAd: AppOpenAd) {
-                    TimberLogger.logI(TAG, "App Open Ad loaded: \$adUnitId")
+                    TimberLogger.logI(TAG, $$"App Open Ad loaded: $adUnitId")
                     onAdLoaded(appOpenAd)
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    TimberLogger.logE(TAG, "App Open Ad failed to load: \$adUnitId, Error: \${loadAdError.message}")
+                    TimberLogger.logE(TAG,
+                        $$"App Open Ad failed to load: $adUnitId, Error: ${loadAdError.message}"
+                    )
                     onAdFailedToLoad(loadAdError)
                 }
             }

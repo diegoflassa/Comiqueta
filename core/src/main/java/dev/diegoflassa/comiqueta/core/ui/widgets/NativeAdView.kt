@@ -88,30 +88,32 @@ fun NativeAdView(
             return@LaunchedEffect
         }
 
-        TimberLogger.logI(TAG, "Requesting Native Ad: \$adUnitId")
+        TimberLogger.logI(TAG, $$"Requesting Native Ad: $adUnitId")
 
         val loader = AdLoader.Builder(context, adUnitId)
             .forNativeAd { ad: NativeAd ->
-                TimberLogger.logI(TAG, "Native Ad loaded: \$adUnitId")
+                TimberLogger.logI(TAG, $$"Native Ad loaded: $adUnitId")
                 nativeAdState?.destroy()
                 nativeAdState = ad
             }
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    TimberLogger.logE(TAG, "Native Ad failed to load: \$adUnitId, Error: \${loadAdError.message}")
+                    TimberLogger.logE(TAG,
+                        $$"Native Ad failed to load: $adUnitId, Error: ${loadAdError.message}"
+                    )
                     nativeAdState = null
                     onAdFailedToLoad?.invoke(loadAdError)
                 }
 
                 override fun onAdImpression() {
                     super.onAdImpression()
-                    TimberLogger.logI(TAG, "Native Ad impression recorded: \$adUnitId")
+                    TimberLogger.logI(TAG, $$"Native Ad impression recorded: $adUnitId")
                     onAdImpression?.invoke()
                 }
 
                 override fun onAdClicked() {
                     super.onAdClicked()
-                    TimberLogger.logI(TAG, "Native Ad clicked: \$adUnitId")
+                    TimberLogger.logI(TAG, $$"Native Ad clicked: $adUnitId")
                     onAdClicked?.invoke()
                 }
             })
@@ -126,7 +128,7 @@ fun NativeAdView(
 
     DisposableEffect(Unit) {
         onDispose {
-            TimberLogger.logD(TAG, "Disposing NativeAdView, destroying ad: \$adUnitId")
+            TimberLogger.logD(TAG, $$"Disposing NativeAdView, destroying ad: $adUnitId")
             nativeAdState?.destroy()
             nativeAdState = null
         }

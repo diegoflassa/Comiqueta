@@ -4,14 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
-import dev.diegoflassa.comiqueta.core.domain.usecase.category.AddCategoryUseCase
-import dev.diegoflassa.comiqueta.core.domain.usecase.category.DeleteCategoryUseCase
-import dev.diegoflassa.comiqueta.core.domain.usecase.category.GetCategoriesUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.IAddCategoryUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.IDeleteCategoryUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.IGetCategoriesUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.IUpdateCategoryUseCase
-import dev.diegoflassa.comiqueta.core.domain.usecase.category.UpdateCategoryUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

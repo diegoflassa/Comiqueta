@@ -164,7 +164,7 @@ class PageCurlState(
      */
     internal fun setup(count: Int, constraints: Constraints) {
         max = count
-        if (current >= count && count > 0) {
+        if (count in 1..current) {
             current = (count - 1)
         } else if (count == 0) {
             current = 0
@@ -289,7 +289,7 @@ class PageCurlState(
             val targetIndex = target()
             if (max == 0 && targetIndex == 0) { // Allow animation to 0 if count is 0
                 // No specific handling needed here, proceed to animation
-            } else if (targetIndex < 0 || targetIndex >= max) {
+            } else if (targetIndex !in 0..<max) {
                 return // Invalid target
             }
 
