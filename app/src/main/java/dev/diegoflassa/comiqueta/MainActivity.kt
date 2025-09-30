@@ -134,7 +134,7 @@ class MainActivity : ComponentActivity() {
                         tag,
                         "MobileAds initialized. Status: ${initializationStatus.adapterStatusMap}"
                     )
-                    showAds = true // Update Compose state
+                    showAds = true
                 }
             } else {
                 // SDK already initialized, consent is still valid
@@ -149,7 +149,7 @@ class MainActivity : ComponentActivity() {
                 tag,
                 "Cannot request ads. Consent not obtained or SDK not ready. Ads hidden."
             )
-            showAds = false // Update Compose state
+            showAds = false
         }
     }
 }
