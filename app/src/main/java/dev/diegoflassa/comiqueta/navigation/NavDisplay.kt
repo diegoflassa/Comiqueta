@@ -8,8 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
-import androidx.navigation3.scene.rememberSceneSetupNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dev.diegoflassa.comiqueta.categories.ui.CategoriesScreen
 import dev.diegoflassa.comiqueta.ui.home.HomeScreen
@@ -29,10 +27,6 @@ fun NavDisplay(modifier: Modifier, navigationViewModel: NavigationViewModel) {
         transitionSpec = {
             fadeIn(tween(TWEEN_DURATION)) togetherWith fadeOut(tween(TWEEN_DURATION))
         },
-        entryDecorators = listOf(
-            rememberSceneSetupNavEntryDecorator(),
-            rememberSavedStateNavEntryDecorator(),
-        ),
         entryProvider = entryProvider {
             entry<Screen.Home> {
                 HomeScreen(navigationViewModel = navigationViewModel)
@@ -53,4 +47,3 @@ fun NavDisplay(modifier: Modifier, navigationViewModel: NavigationViewModel) {
         }
     )
 }
-
