@@ -30,7 +30,7 @@ plugins {
 }
 
 // Configure Firebase App Distribution
-firebaseAppDistribution {
+firebaseAppDistributionDefault {
     // Attempt to load appId and testers from properties file if it exists (for local convenience)
     if (firebasePropsFile.exists()) {
         appId = firebaseAppDistributionProps.getProperty("firebase.appdistribution.appId") ?: ""
