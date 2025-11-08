@@ -46,11 +46,11 @@ firebase-bom = "34.5.0"
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2025.10.01"
+compose-bom = "2025.11.00"
 ax-constraintlayout-compose = "1.1.1"
 ax-activity-compose = "1.11.0"
 lifecycle-viewmodel-compose = "2.9.4"
-ax-navigation-compose = "2.9.5"
+ax-navigation-compose = "2.9.6"
 kotlinx-serialization-json = "1.9.0"
 ax-paging-runtime-ktx = "3.3.6"
 ax-paging-compose = "3.3.6"
@@ -59,8 +59,8 @@ ax-paging-compose = "3.3.6"
 org-mockito-android = "5.20.0"
 
 #Compose Navigation 3
-ax-navigation3-runtime = "1.0.0-beta01"
-ax-navigation3-ui = "1.0.0-beta01"
+ax-navigation3-runtime = "1.0.0-rc01"
+ax-navigation3-ui = "1.0.0-rc01"
 ax-navigation3-viewmodel = "1.0.0-alpha04"
 #ax-navigation3-adaptive = "1.0.0-SNAPSHOT"
 
@@ -121,7 +121,7 @@ ax-swiperefreshlayout = "1.1.0"
 ax-datastore = "1.1.7"
 
 #Splashscreen
-ax-splashscreen = "1.0.1"
+ax-splashscreen = "1.2.0"
 
 #App Search
 ax-appsearch = "1.1.0"
