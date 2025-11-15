@@ -129,7 +129,7 @@ android {
             val apkName = "$baseName$dateTimeSuffix.apk"
             println("Set APK file name to: $apkName")
             val outputImpl = output as BaseVariantOutputImpl
-            outputImpl.setOutputFileName(apkName)
+            outputImpl.outputFileName = apkName
         }
 
         val capitalizedVariantName = variant.name.replaceFirstChar { it.uppercaseChar() }
