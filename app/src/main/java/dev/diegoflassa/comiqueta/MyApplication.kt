@@ -1,6 +1,7 @@
 package dev.diegoflassa.comiqueta
 
 import android.app.Application
+import android.os.StrictMode
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
@@ -13,6 +14,7 @@ import com.microsoft.clarity.Clarity
 import com.microsoft.clarity.Clarity.getCurrentSessionUrl
 import com.microsoft.clarity.ClarityConfig
 import dev.diegoflassa.comiqueta.core.data.config.IConfig
+import dev.diegoflassa.comiqueta.core.data.extensions.modoDebugHabilitado
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -31,6 +33,7 @@ class MyApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         inicializarClarity()
+        habilitarStrictMode()
         FirebaseApp.initializeApp(this)
         TimberManager.inicializar(this)
         TimberLogger.logI(TAG, "onCreate")
@@ -40,6 +43,23 @@ class MyApplication : Application(), Configuration.Provider {
             .setWorkerFactory(workerFactory)
             .build()
         WorkManager.initialize(this, hiltWorkManagerConfiguration)
+    }
+
+    private fun habilitarStrictMode(){
+        if (modoDebugHabilitado()) {
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build()
+            )
+            StrictMode.setVmPolicy(
+                StrictMode.VmPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build()
+            )
+        }
     }
 
     private fun inicializarClarity() {
