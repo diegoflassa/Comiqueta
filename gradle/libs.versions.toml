@@ -10,7 +10,7 @@ hilt-android-gradle-plugin = "2.57.2"
 #App
 firebase-perf-gradle = "2.0.2"
 firebase-appdistribution-gradle = "5.2.0"
-androidx-room = "2.8.3"
+androidx-room = "2.8.4"
 
 #Project build.gradle
 google-services = "4.4.4"
@@ -20,7 +20,7 @@ firebase-perf-plugin = "2.0.2"
 #Common
 core-ktx = "1.17.0"
 material = "1.13.0"
-ui-text-google-fonts = "1.9.4"
+ui-text-google-fonts = "1.9.5"
 
 #Common Testing
 junit = "4.13.2"
@@ -46,10 +46,10 @@ firebase-bom = "34.6.0"
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2025.11.00"
+compose-bom = "2025.11.01"
 ax-constraintlayout-compose = "1.1.1"
-ax-activity-compose = "1.11.0"
-lifecycle-viewmodel-compose = "2.9.4"
+ax-activity-compose = "1.12.0"
+lifecycle-viewmodel-compose = "2.10.0"
 ax-navigation-compose = "2.9.6"
 kotlinx-serialization-json = "1.9.0"
 ax-paging-runtime-ktx = "3.3.6"
@@ -59,17 +59,17 @@ ax-paging-compose = "3.3.6"
 org-mockito-android = "5.20.0"
 
 #Compose Navigation 3
-ax-navigation3-runtime = "1.0.0-rc01"
-ax-navigation3-ui = "1.0.0-rc01"
-ax-navigation3-viewmodel = "1.0.0-alpha04"
+ax-navigation3-runtime = "1.0.0"
+ax-navigation3-ui = "1.0.0"
+ax-navigation3-viewmodel = "2.10.0"
 #ax-navigation3-adaptive = "1.0.0-SNAPSHOT"
 
 #Room
-room-runtime = "2.8.3"
-room-compiler = "2.8.3"
-room-ktx = "2.8.3"
-room-paging = "2.8.3"
-room-testing = "2.8.3"
+room-runtime = "2.8.4"
+room-compiler = "2.8.4"
+room-ktx = "2.8.4"
+room-paging = "2.8.4"
+room-testing = "2.8.4"
 
 #Dagger & Hilt
 hilt-android = "2.57.2"
@@ -81,7 +81,7 @@ hilt-work = "1.3.0"
 hilt-android-testing = "2.57.2"
 
 #OkHttp
-okhttp-bom = "5.3.0"
+okhttp-bom = "5.3.1"
 
 #Moshi
 moshi-kotlin = "1.15.2"
@@ -94,12 +94,12 @@ retrofit2-converter-moshi = "3.0.0"
 retrofit2-converter-gson = "3.0.0"
 
 #Lifecycle
-ax-lifecycle-runtime-ktx = "2.9.4"
-ax-lifecycle-common = "2.9.4"
-ax-lifecycle-common-java8 = "2.9.4"
-ax-lifecycle-viewmodel-savedstate = "2.9.4"
-ax-lifecycle-livedata-ktx = "2.9.4"
-ax-lifecycle-viewmodel-ktx = "2.9.4"
+ax-lifecycle-runtime-ktx = "2.10.0"
+ax-lifecycle-common = "2.10.0"
+ax-lifecycle-common-java8 = "2.10.0"
+ax-lifecycle-viewmodel-savedstate = "2.10.0"
+ax-lifecycle-livedata-ktx = "2.10.0"
+ax-lifecycle-viewmodel-ktx = "2.10.0"
 
 #Lifecycle Extensions
 ax-lifecycle-extensions = "2.2.0"
@@ -118,7 +118,7 @@ ax-recyclerview-selection = "1.2.0"
 ax-swiperefreshlayout = "1.1.0"
 
 #DataStore
-ax-datastore = "1.1.7"
+ax-datastore = "1.2.0"
 
 #Splashscreen
 ax-splashscreen = "1.2.0"
@@ -148,14 +148,14 @@ com-google-android-ump-messaging-platform = "4.0.0"
 
 #Other
 clarity-compose = "3.6.1"
-com-google-auto-value = "1.11.0"
+com-google-auto-value = "1.11.1"
 io-coil-kt-coil-compose = "2.7.0"
 
 #Plugins
 #Root build.gradle
 com-osacky-doctor = "0.12.1"
 org-jetbrains-kotlinx-kover = "0.9.3"
-jlleitschuh-ktlint = "13.1.0"
+jlleitschuh-ktlint = "14.0.1"
 arturbosch-detekt = "1.23.8"
 
 #Common

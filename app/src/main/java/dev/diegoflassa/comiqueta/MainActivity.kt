@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.ump.ConsentDebugSettings
@@ -25,6 +26,9 @@ import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.navigation.NavDisplay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 
 @AndroidEntryPoint
@@ -90,39 +94,46 @@ class MainActivity : ComponentActivity() {
             }
         }.build()
 
-        consentInformation = UserMessagingPlatform.getConsentInformation(this)
-        consentInformation.requestConsentInfoUpdate(
-            this,
-            params,
-            {
-                TimberLogger.logI(
-                    tag,
-                    "Consent info updated. Status: ${consentInformation.consentStatus}, CanRequestAds: ${consentInformation.canRequestAds()}"
-                )
-                UserMessagingPlatform.loadAndShowConsentFormIfRequired(this@MainActivity) { loadAndShowError ->
-                    if (loadAndShowError != null) {
-                        TimberLogger.logE(
-                            tag,
-                            "Consent form load/show error: ${loadAndShowError.message}"
-                        )
-                    } else {
-                        TimberLogger.logI(tag, "Consent form shown (or not required).")
+        lifecycleScope.launch {
+            consentInformation = withContext(Dispatchers.IO) {
+                UserMessagingPlatform.getConsentInformation(this@MainActivity)
+            }
+            consentInformation.requestConsentInfoUpdate(
+                this@MainActivity,
+                params,
+                {
+                    TimberLogger.logI(
+                        tag,
+                        "Consent info updated. Status: ${consentInformation.consentStatus}, CanRequestAds: ${consentInformation.canRequestAds()}"
+                    )
+                    UserMessagingPlatform.loadAndShowConsentFormIfRequired(this@MainActivity) { loadAndShowError ->
+                        if (loadAndShowError != null) {
+                            TimberLogger.logE(
+                                tag,
+                                "Consent form load/show error: ${loadAndShowError.message}"
+                            )
+                        } else {
+                            TimberLogger.logI(tag, "Consent form shown (or not required).")
+                        }
+                        initializeMobileAdsSdkIfNeeded()
                     }
+                },
+                { requestConsentError ->
+                    TimberLogger.logE(
+                        tag,
+                        "Consent info update error: ${requestConsentError.message}"
+                    )
                     initializeMobileAdsSdkIfNeeded()
                 }
-            },
-            { requestConsentError ->
-                TimberLogger.logE(tag, "Consent info update error: ${requestConsentError.message}")
+            )
+            // Initial check in case UMP doesn't need to show a form and consent is already there.
+            // The callbacks above are the primary triggers.
+            if (::consentInformation.isInitialized && consentInformation.canRequestAds() &&
+                (consentInformation.consentStatus == ConsentInformation.ConsentStatus.OBTAINED ||
+                        consentInformation.consentStatus == ConsentInformation.ConsentStatus.NOT_REQUIRED)
+            ) {
                 initializeMobileAdsSdkIfNeeded()
             }
-        )
-        // Initial check in case UMP doesn't need to show a form and consent is already there.
-        // The callbacks above are the primary triggers.
-        if (::consentInformation.isInitialized && consentInformation.canRequestAds() &&
-            (consentInformation.consentStatus == ConsentInformation.ConsentStatus.OBTAINED ||
-                    consentInformation.consentStatus == ConsentInformation.ConsentStatus.NOT_REQUIRED)
-        ) {
-            initializeMobileAdsSdkIfNeeded()
         }
     }
 
