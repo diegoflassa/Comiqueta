@@ -2,7 +2,9 @@
 /.gradle
 /.idea
 /.kotlin
+/.vscode
 /build
+/build-logic/bin
 comiqueta-app-firebase-adminsdk-dv6x1-1a5daa7e1e.json
 firebase_app_distribution.properties
 local.properties
