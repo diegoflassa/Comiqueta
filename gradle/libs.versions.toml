@@ -1,7 +1,7 @@
 [versions]
 
 #Common
-gradle = "8.13.1"
+gradle = "8.13.2"
 kotlin = "2.2.21"
 
 #Project build.gradle
@@ -32,7 +32,7 @@ benchmark-macro-junit4 = "1.4.1"
 
 #Unit Tests
 org-jetbrains-kotlinx-coroutines-test = "1.10.2"
-org-mockito-core = "5.20.0"
+org-mockito-core = "5.21.0"
 org-mockito-inline = "5.2.0"
 org-mockito-kotlin = "6.1.0"
 app-cash-turbine = "1.2.1"
@@ -40,7 +40,7 @@ androidx-paging-common = "3.3.6"
 com-google-truth = "1.4.5"
 
 #Firebase
-firebase-bom = "34.6.0"
+firebase-bom = "34.7.0"
 
 #Timber
 com-jakewharton-timber = "5.0.1"
@@ -56,7 +56,7 @@ ax-paging-runtime-ktx = "3.3.6"
 ax-paging-compose = "3.3.6"
 
 #Compose Testing
-org-mockito-android = "5.20.0"
+org-mockito-android = "5.21.0"
 
 #Compose Navigation 3
 ax-navigation3-runtime = "1.0.0"
@@ -141,7 +141,7 @@ org-github-junrar = "7.5.7"
 com-google-android-play-app-update = "2.1.0"
 
 #Ads
-play-services-ads-api = "24.8.0"
+play-services-ads-api = "24.9.0"
 
 #Messaging Platform
 com-google-android-ump-messaging-platform = "4.0.0"
@@ -154,7 +154,7 @@ io-coil-kt-coil-compose = "2.7.0"
 #Plugins
 #Root build.gradle
 com-osacky-doctor = "0.12.1"
-org-jetbrains-kotlinx-kover = "0.9.3"
+org-jetbrains-kotlinx-kover = "0.9.4"
 jlleitschuh-ktlint = "14.0.1"
 arturbosch-detekt = "1.23.8"
 
