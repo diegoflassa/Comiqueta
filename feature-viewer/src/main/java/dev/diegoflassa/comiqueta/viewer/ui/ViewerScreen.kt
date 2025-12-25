@@ -38,7 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -115,7 +115,7 @@ fun ViewerScreenContent(
 ) {
     BackHandler { navigationViewModel?.goBack() }
 
-    var globalIsPinchZoomActive by remember { mutableStateOf(false) }
+    var globalIsPinchZoomActive by retain { mutableStateOf(false) }
     val pageCurlState = rememberPageCurlState(initialCurrent = uiState.currentPage)
 
     Scaffold(
@@ -214,9 +214,9 @@ fun ViewerScreenContent(
                             tag,
                             "PZ_DEBUG: PageCurl Item recomposing for page $pageIndexInCurl, CUR=${pageCurlState.current}"
                         )
-                        var itemScale by remember(pageIndexInCurl) { mutableFloatStateOf(1f) }
-                        var itemOffsetX by remember(pageIndexInCurl) { mutableFloatStateOf(0f) }
-                        var itemOffsetY by remember(pageIndexInCurl) { mutableFloatStateOf(0f) }
+                        var itemScale by retain(pageIndexInCurl) { mutableFloatStateOf(1f) }
+                        var itemOffsetX by retain(pageIndexInCurl) { mutableFloatStateOf(0f) }
+                        var itemOffsetY by retain(pageIndexInCurl) { mutableFloatStateOf(0f) }
 
                         LaunchedEffect(pageCurlState.current, pageIndexInCurl, itemScale) {
                             if (pageIndexInCurl == pageCurlState.current) {
@@ -238,7 +238,7 @@ fun ViewerScreenContent(
                             val isThisPageActuallyLoading: Boolean =
                                 uiState.isLoadingPage.contains(pageIndexInCurl)
 
-                            val imageDisplayModifier = remember(
+                            val imageDisplayModifier = retain(
                                 pageIndexInCurl,
                                 currentBitmap != null,
                                 pageCurlState.current

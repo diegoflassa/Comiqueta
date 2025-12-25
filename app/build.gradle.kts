@@ -1,4 +1,3 @@
-import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
 import io.gitlab.arturbosch.detekt.Detekt
 import org.gradle.kotlin.dsl.project
 import java.util.Properties
@@ -149,6 +148,9 @@ dependencies {
     kspTest(libs.com.google.dagger.hilt.android.compiler)
     androidTestImplementation(libs.com.google.dagger.hilt.android.testing)
     kspAndroidTest(libs.com.google.dagger.hilt.android.compiler)
+
+    //Metadata. TODO: Remover quanto atualizar hilt
+    ksp(libs.org.jetbrains.kotlin.metadata.jvm)
 
     //OkHttp
     implementation(platform(libs.com.squareup.okhttp3.bom))
