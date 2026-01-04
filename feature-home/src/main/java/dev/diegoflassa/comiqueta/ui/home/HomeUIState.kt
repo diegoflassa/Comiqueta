@@ -12,9 +12,13 @@ data class HomeUIState(
     val selectedCategory: CategoryEntity? = null,
     val viewMode: ViewMode = ViewMode.GRID,
     val flags: Set<ComicFlags> = emptySet(),
-    val categories: List<CategoryEntity> = emptyList(),
+    val categories: ImmutableList<CategoryEntity> = ImmutableList(emptyList()),
     val generalStoragePermissionGranted: Boolean = false, // Renamed from isLegacyPermissionGranted
     val currentBottomNavItem: BottomNavItems = BottomNavItems.HOME,
     val isScanningFolders: Boolean = false // Added
 )
+
+@androidx.compose.runtime.Immutable
+data class ImmutableList<T>(val items: List<T> = emptyList()) : List<T> by items
+
 

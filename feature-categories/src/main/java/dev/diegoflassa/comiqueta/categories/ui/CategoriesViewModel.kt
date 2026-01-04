@@ -1,8 +1,11 @@
 package dev.diegoflassa.comiqueta.categories.ui
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.diegoflassa.comiqueta.categories.R
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.IAddCategoryUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.IDeleteCategoryUseCase
@@ -24,7 +27,8 @@ class CategoriesViewModel @Inject constructor(
     private val getCategoriesUseCase: IGetCategoriesUseCase,
     private val addCategoryUseCase: IAddCategoryUseCase,
     private val updateCategoryUseCase: IUpdateCategoryUseCase,
-    private val deleteCategoryUseCase: IDeleteCategoryUseCase
+    private val deleteCategoryUseCase: IDeleteCategoryUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CategoriesUIState())
@@ -94,7 +98,7 @@ class CategoriesViewModel @Inject constructor(
             getCategoriesUseCase()
                 .catch { e ->
                     _uiState.update { it.copy(isLoading = false, error = e.message) }
-                    _effect.send(CategoriesEffect.ShowToast("Error loading categories: ${e.message}"))
+                    _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.error_loading_categories, e.message)))
                 }
                 .collect { categories ->
                     _uiState.update {
@@ -111,7 +115,7 @@ class CategoriesViewModel @Inject constructor(
     private suspend fun saveCategory() {
         val currentName = uiState.value.newCategoryName.trim()
         if (currentName.isEmpty()) {
-            _effect.send(CategoriesEffect.ShowToast("Category name cannot be empty."))
+            _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.category_name_empty)))
             return
         }
 
@@ -120,15 +124,15 @@ class CategoriesViewModel @Inject constructor(
             val categoryToEdit = uiState.value.categoryToEdit
             if (categoryToEdit == null) {
                 addCategoryUseCase(currentName)
-                _effect.send(CategoriesEffect.ShowToast("Category '$currentName' added."))
+                _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.category_added, currentName)))
             } else {
                 updateCategoryUseCase(categoryToEdit.copy(name = currentName))
-                _effect.send(CategoriesEffect.ShowToast("Category '$currentName' updated."))
+                _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.category_updated, currentName)))
             }
             _effect.send(CategoriesEffect.NavigateBack)
         } catch (ex: Exception) {
             ex.printStackTrace()
-            _effect.send(CategoriesEffect.ShowToast("Error saving category: ${ex.message}"))
+            _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.error_saving_category, ex.message)))
         }
         // No finally block to set isLoading to false, as loadCategories will be called by SaveCategory success/failure observation in UI if needed
         // or rely on the loadCategories flow to update the list and loading state.
@@ -147,10 +151,10 @@ class CategoriesViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true) }
         try {
             deleteCategoryUseCase(category)
-            _effect.send(CategoriesEffect.ShowToast("Category '${category.name}' deleted."))
+            _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.category_deleted_named, category.name)))
         } catch (ex: Exception) {
             ex.printStackTrace()
-            _effect.send(CategoriesEffect.ShowToast("Error deleting category: ${ex.message}"))
+            _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.error_deleting_category, ex.message)))
         }
         _uiState.update { it.copy(isLoading = false) }
     }
@@ -159,10 +163,10 @@ class CategoriesViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true) }
         try {
             deleteCategoryUseCase.byId(categoryId)
-            _effect.send(CategoriesEffect.ShowToast("Category deleted."))
+            _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.category_deleted_generic)))
         } catch (ex: Exception) {
             ex.printStackTrace()
-            _effect.send(CategoriesEffect.ShowToast("Error deleting category: ${ex.message}"))
+            _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.error_deleting_category, ex.message)))
         }
         _uiState.update { it.copy(isLoading = false) }
     }

@@ -21,5 +21,7 @@ sealed interface SettingsIntent {
     data object NavigateToCategoriesClicked : SettingsIntent
     data class UpdateViewerPagesToPreloadAhead(val count: Int) : SettingsIntent
     data object ClearLocalDatabaseClicked : SettingsIntent
+    data object ConfirmClearLocalDatabase : SettingsIntent
     data object RescanComicFoldersClicked : SettingsIntent
+    data object ConfirmRescanComicFolders : SettingsIntent
 }

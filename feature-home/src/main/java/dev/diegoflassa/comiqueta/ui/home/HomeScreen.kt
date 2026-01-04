@@ -112,12 +112,7 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     TimberLogger.logI(tag, "HomeScreen")
-    val test = rememberPreviewLazyPagingItems(sampleComics)
-    if (test.itemCount > 0) {
-        TimberLogger.logD(tag, "Test items found: ${test.itemCount}")
-    } else {
-        TimberLogger.logD(tag, "No test items found")
-    }
+
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
@@ -237,7 +232,7 @@ fun HomeScreenContentForPreview(
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Text(
-                            "Comiqueta",
+                            stringResource(R.string.app_name),
                             style = ComiquetaTheme.typography.comiquetaTitleText.scaled()
                         )
                     }
@@ -254,7 +249,7 @@ fun HomeScreenContentForPreview(
                                 modifier = Modifier.size(ComiquetaTheme.dimen.iconSettings.scaled()),
                                 painter = painterResource(id = dev.diegoflassa.comiqueta.core.R.drawable.ic_settings),
                                 tint = ComiquetaTheme.colorScheme.settingIconTint,
-                                contentDescription = "Settings"
+                                contentDescription = stringResource(R.string.top_bar_settings_icon_desc)
                             )
                         }
                     }
@@ -366,7 +361,7 @@ fun HomeScreenContent(
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Text(
-                            "Comiqueta",
+                            stringResource(R.string.app_name),
                             style = ComiquetaTheme.typography.comiquetaTitleText.scaled()
                         )
                     }
@@ -383,7 +378,7 @@ fun HomeScreenContent(
                                 modifier = Modifier.size(ComiquetaTheme.dimen.iconSettings.scaled()),
                                 imageVector = Icons.Outlined.Settings,
                                 tint = ComiquetaTheme.colorScheme.settingIconTint,
-                                contentDescription = "Settings"
+                                contentDescription = stringResource(R.string.top_bar_settings_icon_desc)
                             )
                         }
                     }
@@ -1001,7 +996,7 @@ private fun HomeScreenContentWithComicsGridPreviewPhone() {
             favoriteComics = sampleComics.filter { it.isFavorite },
             uiState = HomeUIState(
                 isLoading = false,
-                categories = sampleCategories,
+                categories = ImmutableList(sampleCategories),
                 selectedCategory = sampleCategories.first()
             ), onIntent = {})
     }
@@ -1025,7 +1020,7 @@ private fun HomeScreenContentWithComicsListPreviewPhone() {
             uiState = HomeUIState(
                 isLoading = false,
                 viewMode = ViewMode.LIST,
-                categories = sampleCategories,
+                categories = ImmutableList(sampleCategories),
                 selectedCategory = sampleCategories.first()
             ), onIntent = {})
     }
@@ -1048,7 +1043,7 @@ private fun HomeScreenContentWithComicsGridPreviewFoldable() {
             favoriteComics = sampleComics.filter { it.isFavorite },
             uiState = HomeUIState(
                 isLoading = false,
-                categories = sampleCategories,
+                categories = ImmutableList(sampleCategories),
                 selectedCategory = sampleCategories.first()
             ), onIntent = {})
     }
@@ -1072,7 +1067,7 @@ private fun HomeScreenContentWithComicsListPreviewFoldable() {
             uiState = HomeUIState(
                 isLoading = false,
                 viewMode = ViewMode.LIST,
-                categories = sampleCategories,
+                categories = ImmutableList(sampleCategories),
                 selectedCategory = sampleCategories.first()
             ), onIntent = {})
     }
@@ -1095,7 +1090,7 @@ private fun HomeScreenContentWithComicsGridPreviewTablet() {
             favoriteComics = sampleComics.filter { it.isFavorite },
             uiState = HomeUIState(
                 isLoading = false,
-                categories = sampleCategories,
+                categories = ImmutableList(sampleCategories),
                 selectedCategory = sampleCategories.first()
             ), onIntent = {})
     }
@@ -1119,7 +1114,7 @@ private fun HomeScreenContentWithComicsListPreviewTablet() {
             uiState = HomeUIState(
                 isLoading = false,
                 viewMode = ViewMode.LIST,
-                categories = sampleCategories,
+                categories = ImmutableList(sampleCategories),
                 selectedCategory = sampleCategories.first()
             ), onIntent = {})
     }
@@ -1162,12 +1157,12 @@ private fun HomeScreenContentEmptyPreview() {
             favoriteComics = emptyList(),
             uiState = HomeUIState(
                 isLoading = false,
-                categories = listOf(
+                categories = ImmutableList(listOf(
                     CategoryEntity(
                         id = 1L,
                         name = "All"
                     )
-                ),
+                )),
             ), onIntent = {})
     }
 }

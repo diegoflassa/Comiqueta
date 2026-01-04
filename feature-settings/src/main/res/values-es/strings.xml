@@ -34,6 +34,38 @@
     <string name="settings_data_rescan_folders_desc">Fuerza un nuevo escaneo de todas las carpetas monitorizadas en busca de cómics.</string>
 
     <!-- Privacy Error Messages -->
-    <string name="settings_error_loading_privacy_settings">Error al cargar la configuración de privacidad: %1$s - %2$s</string>
+    <string name="settings_error_loading_privacy_settings">Error al cargar la configuración de privacidad: %1$d - %2$s</string>
     <string name="settings_error_could_not_open_privacy_settings">No se pudo abrir la configuración de privacidad.</string>
+
+    <!-- Permissions -->
+    <string name="permission_storage_access_title">Acceso al Almacenamiento</string>
+    <string name="permission_storage_access_desc">Permite a la aplicación leer tus archivos de cómics del almacenamiento compartido.</string>
+    <string name="permission_required_desc">Necesario para el funcionamiento de la aplicación.</string>
+    <string name="permission_storage_access_rationale">Esta aplicación necesita acceso al almacenamiento de tu dispositivo para encontrar y mostrar tus cómics. Por favor, concede este permiso para seleccionar tu biblioteca.</string>
+    <string name="permission_important_rationale">Este permiso es importante para que ciertas funciones funcionen correctamente.</string>
+
+    <!-- Toasts / Messages -->
+    <string name="error_loading_folders">Error al cargar carpetas: %1$s</string>
+    <string name="viewer_prefetch_updated">Configuración de precarga del visor actualizada.</string>
+    <string name="error_updating_setting">Error al actualizar la configuración: %1$s</string>
+    <string name="clear_db_tapped">Limpiar BD Local: Tocado (Aún no implementado)</string>
+    <string name="rescan_folders_tapped">Reescanear Carpetas: Tocado (Aún no implementado)</string>
+    <string name="folder_access_removed">Acceso a carpeta \'%1$s\' eliminado.</string>
+    <string name="folder_access_remove_failed">No se pudo eliminar el acceso a la carpeta \'%1$s\'.</string>
+    <string name="error_removing_folder">Error al eliminar carpeta: %1$s</string>
+    <string name="folder_added">Carpeta \'%1$s\' añadida.</string>
+    <string name="folder_add_failed">No se pudo guardar el acceso a la carpeta \'%1$s\'.</string>
+    <string name="error_adding_folder">Error al añadir carpeta: %1$s</string>
+    <string name="general_scan_enqueued">Escaneo general de carpetas encolado.</string>
+    <string name="error_starting_scan">Error al iniciar escaneo general: %1$s</string>
+
+    <!-- Confirmation Dialogs -->
+    <string name="confirm_clear_database_title">¿Borrar Base de Datos?</string>
+    <string name="confirm_clear_database_message">Esto eliminará toda la información de cómics de la base de datos local. Esta acción no se puede deshacer.</string>
+    <string name="database_cleared">Base de datos borrada exitosamente.</string>
+    <string name="confirm_rescan_folders_title">¿Reescanear Carpetas?</string>
+    <string name="confirm_rescan_folders_message">Esto escaneará todas las carpetas monitoreadas nuevamente en busca de cómics. Esto puede tomar algún tiempo.</string>
+    <string name="rescan_started">Reescaneo de carpetas iniciado.</string>
+    <string name="action_confirm">Confirmar</string>
+    <string name="action_cancel">Cancelar</string>
 </resources>

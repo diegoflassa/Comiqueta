@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,7 @@ import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
+import dev.diegoflassa.comiqueta.categories.R
 
 private const val tag = "CategoriesScreen"
 
@@ -70,17 +72,17 @@ private fun CategoriesScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Manage Categories") },
+                title = { Text(stringResource(R.string.manage_categories_title)) },
                 navigationIcon = {
                     IconButton(onClick = { onIntent?.invoke(CategoriesIntent.NavigateBack) }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back))
                     }
                 }
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { onIntent?.invoke(CategoriesIntent.CategoryAdd) }) {
-                Icon(Icons.Filled.Add, contentDescription = "Add Category")
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_category_desc))
             }
         }
     ) { paddingValues ->
@@ -122,7 +124,7 @@ fun CategoriesContent(
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else if (error != null) {
             Text(
-                "Error: $error",
+                stringResource(R.string.error_prefix, error),
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(16.dp),
@@ -130,7 +132,7 @@ fun CategoriesContent(
             )
         } else if (categories.isEmpty()) {
             Text(
-                "No categories found. Click '+' to add.",
+                stringResource(R.string.no_categories_found),
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(16.dp)
@@ -162,10 +164,10 @@ fun CategoryItem(
     ) {
         Text(category.name, modifier = Modifier.weight(1f))
         IconButton(onClick = { onIntent?.invoke(CategoriesIntent.CategoryEdit(category)) }) {
-            Icon(Icons.Filled.Edit, contentDescription = "Edit Category")
+            Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.edit_category_desc))
         }
         IconButton(onClick = { onIntent?.invoke(CategoriesIntent.CategoryDelete(category)) }) {
-            Icon(Icons.Filled.Delete, contentDescription = "Delete Category")
+            Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete_category_desc))
         }
     }
 }
@@ -181,12 +183,12 @@ fun CategoryEditDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (category == null) "Add New Category" else "Edit Category") },
+        title = { Text(if (category == null) stringResource(R.string.dialog_add_category_title) else stringResource(R.string.dialog_edit_category_title)) },
         text = {
             OutlinedTextField(
                 value = currentName,
                 onValueChange = onNameChange,
-                label = { Text("Category Name") },
+                label = { Text(stringResource(R.string.category_name_label)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -196,12 +198,12 @@ fun CategoryEditDialog(
                 onClick = onSave,
                 enabled = currentName.isNotBlank()
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
             Button(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         }
     )

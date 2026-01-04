@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items // Added for comicsFolders
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Remove
 // import androidx.compose.material.icons.filled.Search // Example for Rescan
 // import androidx.compose.material.icons.filled.DeleteSweep // Example for Clear DB
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,11 +47,14 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -77,9 +82,10 @@ import dev.diegoflassa.comiqueta.data.model.PermissionDisplayStatus
 private const val tag = "SettingsScreen"
 private const val MAX_PRELOAD_PAGES = 5
 
+@Composable
 private fun getPermissionFriendlyNameSettings(permission: String): String {
     return when (permission) {
-        Manifest.permission.READ_EXTERNAL_STORAGE -> "Storage Access"
+        Manifest.permission.READ_EXTERNAL_STORAGE -> stringResource(R.string.permission_storage_access_title)
         else -> permission.substringAfterLast('.').replace('_', ' ').let {
             it.lowercase()
                 .replaceFirstChar { char -> if (char.isLowerCase()) char.titlecase() else char.toString() }
@@ -87,17 +93,19 @@ private fun getPermissionFriendlyNameSettings(permission: String): String {
     }
 }
 
+@Composable
 private fun getPermissionDescriptionSettings(permission: String): String {
     return when (permission) {
-        Manifest.permission.READ_EXTERNAL_STORAGE -> "Allows the app to read your comic files from shared storage."
-        else -> "Required for app functionality."
+        Manifest.permission.READ_EXTERNAL_STORAGE -> stringResource(R.string.permission_storage_access_desc)
+        else -> stringResource(R.string.permission_required_desc)
     }
 }
 
+@Composable
 private fun getPermissionRationaleSettings(permission: String): String {
     return when (permission) {
-        Manifest.permission.READ_EXTERNAL_STORAGE -> "This app needs access to your device's storage to find and display your comic book files. Please grant this permission to select your comic library."
-        else -> "This permission is important for certain features to work correctly."
+        Manifest.permission.READ_EXTERNAL_STORAGE -> stringResource(R.string.permission_storage_access_rationale)
+        else -> stringResource(R.string.permission_important_rationale)
     }
 }
 
@@ -138,7 +146,8 @@ fun SettingsScreen(
             )
         }
     }
-
+    
+    val folderAddFailedTemplate = stringResource(R.string.folder_add_failed)
     val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri: Uri? ->
@@ -155,13 +164,17 @@ fun SettingsScreen(
                 TimberLogger.logE(tag, "Failed to take persistable URI permission for $uri", se)
                 Toast.makeText(
                     context,
-                    "Failed to get persistent access to the folder.",
+                    folderAddFailedTemplate.format(uri.toString()),
                     Toast.LENGTH_LONG
                 ).show()
             }
         }
     }
     val noAppToOpenFolder = stringResource(R.string.no_app_to_open_folder)
+    
+    // Confirmation Dialog State - must be declared before LaunchedEffect that uses it
+    var confirmationDialogState by remember { mutableStateOf<SettingsEffect.ShowConfirmationDialog?>(null) }
+    
     LaunchedEffect(key1 = settingsViewModel) {
         settingsViewModel.effect.collect { effect ->
             when (effect) {
@@ -206,8 +219,36 @@ fun SettingsScreen(
                 is SettingsEffect.NavigateToCategoriesScreen -> {
                     navigationViewModel?.navigateToCategories()
                 }
+
+                is SettingsEffect.ShowConfirmationDialog -> {
+                    confirmationDialogState = effect
+                }
             }
         }
+    }
+
+    // Display Confirmation Dialog
+    confirmationDialogState?.let { dialog ->
+        AlertDialog(
+            onDismissRequest = { confirmationDialogState = null },
+            title = { Text(dialog.title) },
+            text = { Text(dialog.message) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmationDialogState = null
+                        settingsViewModel.processIntent(dialog.confirmIntent)
+                    }
+                ) {
+                    Text(stringResource(R.string.action_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmationDialogState = null }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            }
+        )
     }
 
 
@@ -258,241 +299,37 @@ fun SettingsScreenContent(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp.scaled()),
         ) {
-            item { // Permissions Section Title
-                Text(
-                    text = stringResource(R.string.settings_section_permissions_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
-                )
-            }
-            if (uiState.permissionDisplayStatuses.isEmpty()) {
-                item {
-                    Text(
-                        stringResource(R.string.settings_permissions_none_required),
-                        modifier = Modifier.padding(vertical = 8.dp.scaled()),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            } else {
-                uiState.permissionDisplayStatuses.forEach { (permission, status) ->
-                    item {
-                        PermissionItem(
-                            permission = permission,
-                            status = status,
-                            onRequestPermissionClick = {
-                                onIntent?.invoke(
-                                    SettingsIntent.RequestPermission(permission)
-                                )
-                            },
-                            onOpenSettingsClick = { onIntent?.invoke(SettingsIntent.OpenAppSettingsClicked) }
-                        )
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp.scaled()))
-                    }
-                }
-                if (uiState.permissionDisplayStatuses.keys.any { it == Manifest.permission.READ_EXTERNAL_STORAGE }) {
-                    item {
-                        Text(
-                            stringResource(R.string.settings_permission_read_external_storage_rationale_extended),
-                            style = MaterialTheme.typography.bodySmall,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(
-                                top = 8.dp.scaled(),
-                                bottom = 16.dp.scaled()
-                            )
-                        )
-                    }
-                }
-            }
+            permissionsSection(
+                uiState = uiState,
+                onIntent = onIntent,
+                getPermissionFriendlyName = { getPermissionFriendlyNameSettings(it) },
+                getPermissionDescription = { getPermissionDescriptionSettings(it) },
+                getPermissionRationale = { getPermissionRationaleSettings(it) }
+            )
 
-            item { // Monitored Folders Section Title
-                Text(
-                    text = stringResource(R.string.settings_section_monitored_folders_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
-                )
-            }
-            // Button to add new folder
-            item {
-                Button(
-                    onClick = { onIntent?.invoke(SettingsIntent.AddFolderClicked) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.settings_add_folder_button))
-                }
-                Spacer(modifier = Modifier.height(8.dp.scaled()))
-            }
+            monitoredFoldersSection(
+                uiState = uiState,
+                onIntent = onIntent
+            )
 
-            if (uiState.comicsFolders.isEmpty()) {
-                item {
-                    Text(
-                        stringResource(R.string.settings_monitored_folders_empty),
-                        modifier = Modifier.padding(vertical = 8.dp.scaled()),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            } else {
-                items(
-                    uiState.comicsFolders, // Directly use the list
-                    key = { folderUri -> folderUri.toString() }
-                ) { folderUri ->
-                    ComicsFolderUriItem(
-                        folderUri = folderUri,
-                        onIntent = onIntent
-                    )
-                    HorizontalDivider()
-                }
-            }
             item { Spacer(modifier = Modifier.height(16.dp.scaled())) }
 
+            viewerSettingsSection(
+                uiState = uiState,
+                onIntent = onIntent
+            )
 
-            // Viewer Settings Section
-            item {
-                Text(
-                    text = stringResource(R.string.settings_section_viewer_title), // Changed to use string resource
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
-                )
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.settings_viewer_preload_title)) }, // Changed
-                        supportingContent = { Text(stringResource(R.string.settings_viewer_preload_description, MAX_PRELOAD_PAGES)) }, // Changed
-                        trailingContent = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                IconButton(
-                                    onClick = {
-                                        val currentCount = uiState.viewerPagesToPreloadAhead
-                                        if (currentCount > 0) {
-                                            onIntent?.invoke(SettingsIntent.UpdateViewerPagesToPreloadAhead(currentCount - 1))
-                                        }
-                                    },
-                                    enabled = uiState.viewerPagesToPreloadAhead > 0
-                                ) {
-                                    Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.settings_viewer_preload_decrease_desc)) // Changed
-                                }
-                                Text(
-                                    text = uiState.viewerPagesToPreloadAhead.toString(),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.padding(horizontal = 8.dp.scaled())
-                                )
-                                IconButton(
-                                    onClick = {
-                                        val currentCount = uiState.viewerPagesToPreloadAhead
-                                        if (currentCount < MAX_PRELOAD_PAGES) {
-                                            onIntent?.invoke(SettingsIntent.UpdateViewerPagesToPreloadAhead(currentCount + 1))
-                                        }
-                                    },
-                                    enabled = uiState.viewerPagesToPreloadAhead < MAX_PRELOAD_PAGES
-                                ) {
-                                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.settings_viewer_preload_increase_desc)) // Changed
-                                }
-                            }
-                        }
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp.scaled()))
-            }
+            manageCategoriesSection(
+                onIntent = onIntent
+            )
 
-            // Manage Categories Section
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onIntent?.invoke(SettingsIntent.NavigateToCategoriesClicked) },
-                ) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.settings_manage_categories_title)) },
-                        supportingContent = { Text(stringResource(R.string.settings_manage_categories_description)) },
-                        leadingContent = {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ListAlt,
-                                contentDescription = stringResource(R.string.settings_manage_categories_icon_desc)
-                            )
-                        }
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp.scaled()))
-            }
+            dataManagementSection(
+                onIntent = onIntent
+            )
 
-            // Data Management Section - ADDED
-            item {
-                Text(
-                    text = "Data Management", // TODO: Add to strings.xml (e.g., R.string.settings_section_data_management_title)
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
-                )
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    // Clear Local Database
-                    ListItem(
-                        headlineContent = { Text("Clear Local Database") }, // TODO: Add to strings.xml (e.g., R.string.settings_data_clear_db_title)
-                        supportingContent = { Text("Removes all locally stored comic information and settings.") }, // TODO: Add to strings.xml (e.g., R.string.settings_data_clear_db_desc)
-                        modifier = Modifier.clickable { onIntent?.invoke(SettingsIntent.ClearLocalDatabaseClicked) }
-                        // Optional: leadingContent = { Icon(Icons.Filled.DeleteSweep, contentDescription = "Clear Database") }
-                    )
-                    HorizontalDivider()
-                    // Rescan Comic Folders
-                    ListItem(
-                        headlineContent = { Text("Rescan Comic Folders") }, // TODO: Add to strings.xml (e.g., R.string.settings_data_rescan_folders_title)
-                        supportingContent = { Text("Forces a new scan of all monitored folders for comics.") }, // TODO: Add to strings.xml (e.g., R.string.settings_data_rescan_folders_desc)
-                        modifier = Modifier.clickable { onIntent?.invoke(SettingsIntent.RescanComicFoldersClicked) }
-                        // Optional: leadingContent = { Icon(Icons.Filled.Search, contentDescription = "Rescan Folders") }
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp.scaled()))
-            }
-
-
-            // Privacy Settings / Ad Consent Section
-            item {
-                val context = LocalContext.current
-                val activity = context as? Activity
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            activity?.let { currentActivity ->
-                                TimberLogger.logD(tag, "Showing privacy options form.")
-                                UserMessagingPlatform.showPrivacyOptionsForm(currentActivity) { formError ->
-                                    if (formError != null) {
-                                        TimberLogger.logE(
-                                            tag,
-                                            "Error showing privacy options form: ${formError.message}",
-                                            Exception("${formError.errorCode}-${formError.message}")
-                                        )
-                                        Toast.makeText(
-                                            currentActivity,
-                                            "Error loading privacy settings: ${formError.errorCode} - ${formError.message}", // TODO: Add to strings.xml
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }
-                                }
-                            } ?: run {
-                                TimberLogger.logW(
-                                    tag,
-                                    "Activity context not available for showing privacy options form."
-                                )
-                                Toast.makeText(
-                                    context,
-                                    "Could not open privacy settings.", // TODO: Add to strings.xml
-                                    Toast.LENGTH_SHORT
-                                )
-                                    .show()
-                            }
-                        },
-                ) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.settings_privacy_title)) },
-                        supportingContent = { Text(stringResource(R.string.settings_privacy_description)) },
-                        leadingContent = {
-                            Icon(
-                                Icons.Default.Policy,
-                                contentDescription = stringResource(R.string.settings_privacy_icon_desc)
-                            )
-                        }
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp.scaled())) // Space at the end
-            }
+            privacySection(
+                onIntent = onIntent
+            )
 
             // Handle initial loading state for the whole screen
             if (uiState.isLoading && uiState.permissionDisplayStatuses.isEmpty() && uiState.comicsFolders.isEmpty()) {
@@ -506,12 +343,275 @@ fun SettingsScreenContent(
     }
 }
 
+private fun LazyListScope.permissionsSection(
+    uiState: SettingsUIState,
+    onIntent: ((SettingsIntent) -> Unit)?,
+    getPermissionFriendlyName: @Composable (String) -> String,
+    getPermissionDescription: @Composable (String) -> String,
+    getPermissionRationale: @Composable (String) -> String
+) {
+    item { // Permissions Section Title
+        Text(
+            text = stringResource(R.string.settings_section_permissions_title),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
+        )
+    }
+    if (uiState.permissionDisplayStatuses.isEmpty()) {
+        item {
+            Text(
+                stringResource(R.string.settings_permissions_none_required),
+                modifier = Modifier.padding(vertical = 8.dp.scaled()),
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        uiState.permissionDisplayStatuses.forEach { (permission, status) ->
+            item {
+                PermissionItem(
+                    permission = permission,
+                    status = status,
+                    onRequestPermissionClick = {
+                        onIntent?.invoke(
+                            SettingsIntent.RequestPermission(permission)
+                        )
+                    },
+                    onOpenSettingsClick = { onIntent?.invoke(SettingsIntent.OpenAppSettingsClicked) },
+                    friendlyName = getPermissionFriendlyName(permission),
+                    description = getPermissionDescription(permission),
+                    rationale = getPermissionRationale(permission)
+                )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp.scaled()))
+            }
+        }
+        if (uiState.permissionDisplayStatuses.keys.any { it == Manifest.permission.READ_EXTERNAL_STORAGE }) {
+            item {
+                Text(
+                    stringResource(R.string.settings_permission_read_external_storage_rationale_extended),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(
+                        top = 8.dp.scaled(),
+                        bottom = 16.dp.scaled()
+                    )
+                )
+            }
+        }
+    }
+}
+
+private fun LazyListScope.monitoredFoldersSection(
+    uiState: SettingsUIState,
+    onIntent: ((SettingsIntent) -> Unit)?
+) {
+    item { // Monitored Folders Section Title
+        Text(
+            text = stringResource(R.string.settings_section_monitored_folders_title),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
+        )
+    }
+    // Button to add new folder
+    item {
+        Button(
+            onClick = { onIntent?.invoke(SettingsIntent.AddFolderClicked) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.settings_add_folder_button))
+        }
+        Spacer(modifier = Modifier.height(8.dp.scaled()))
+    }
+
+    if (uiState.comicsFolders.isEmpty()) {
+        item {
+            Text(
+                stringResource(R.string.settings_monitored_folders_empty),
+                modifier = Modifier.padding(vertical = 8.dp.scaled()),
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        items(
+            uiState.comicsFolders, // Directly use the list
+            key = { folderUri -> folderUri.toString() }
+        ) { folderUri ->
+            ComicsFolderUriItem(
+                folderUri = folderUri,
+                onIntent = onIntent
+            )
+            HorizontalDivider()
+        }
+    }
+}
+
+private fun LazyListScope.viewerSettingsSection(
+    uiState: SettingsUIState,
+    onIntent: ((SettingsIntent) -> Unit)?
+) {
+    item {
+        Text(
+            text = stringResource(R.string.settings_section_viewer_title),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
+        )
+        Card(modifier = Modifier.fillMaxWidth()) {
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.settings_viewer_preload_title)) },
+                supportingContent = { Text(stringResource(R.string.settings_viewer_preload_description, MAX_PRELOAD_PAGES)) },
+                trailingContent = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            onClick = {
+                                val currentCount = uiState.viewerPagesToPreloadAhead
+                                if (currentCount > 0) {
+                                    onIntent?.invoke(SettingsIntent.UpdateViewerPagesToPreloadAhead(currentCount - 1))
+                                }
+                            },
+                            enabled = uiState.viewerPagesToPreloadAhead > 0
+                        ) {
+                            Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.settings_viewer_preload_decrease_desc))
+                        }
+                        Text(
+                            text = uiState.viewerPagesToPreloadAhead.toString(),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(horizontal = 8.dp.scaled())
+                        )
+                        IconButton(
+                            onClick = {
+                                val currentCount = uiState.viewerPagesToPreloadAhead
+                                if (currentCount < MAX_PRELOAD_PAGES) {
+                                    onIntent?.invoke(SettingsIntent.UpdateViewerPagesToPreloadAhead(currentCount + 1))
+                                }
+                            },
+                            enabled = uiState.viewerPagesToPreloadAhead < MAX_PRELOAD_PAGES
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.settings_viewer_preload_increase_desc))
+                        }
+                    }
+                }
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp.scaled()))
+    }
+}
+
+private fun LazyListScope.manageCategoriesSection(
+    onIntent: ((SettingsIntent) -> Unit)?
+) {
+    item {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onIntent?.invoke(SettingsIntent.NavigateToCategoriesClicked) },
+        ) {
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.settings_manage_categories_title)) },
+                supportingContent = { Text(stringResource(R.string.settings_manage_categories_description)) },
+                leadingContent = {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ListAlt,
+                        contentDescription = stringResource(R.string.settings_manage_categories_icon_desc)
+                    )
+                }
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp.scaled()))
+    }
+}
+
+private fun LazyListScope.dataManagementSection(
+    onIntent: ((SettingsIntent) -> Unit)?
+) {
+    item {
+        Text(
+            text = stringResource(R.string.settings_section_data_management_title),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
+        )
+        Card(modifier = Modifier.fillMaxWidth()) {
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.settings_data_clear_db_title)) },
+                supportingContent = { Text(stringResource(R.string.settings_data_clear_db_desc)) },
+                modifier = Modifier.clickable { onIntent?.invoke(SettingsIntent.ClearLocalDatabaseClicked) }
+            )
+            HorizontalDivider()
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.settings_data_rescan_folders_title)) },
+                supportingContent = { Text(stringResource(R.string.settings_data_rescan_folders_desc)) },
+                modifier = Modifier.clickable { onIntent?.invoke(SettingsIntent.RescanComicFoldersClicked) }
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp.scaled()))
+    }
+}
+
+private fun LazyListScope.privacySection(
+    onIntent: ((SettingsIntent) -> Unit)?
+) {
+    item {
+        val context = LocalContext.current
+        val activity = context as? Activity
+        val errorLoadingPrivacyTemplate = stringResource(R.string.settings_error_loading_privacy_settings)
+        val errorCouldNotOpenPrivacy = stringResource(R.string.settings_error_could_not_open_privacy_settings)
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    activity?.let { currentActivity ->
+                        TimberLogger.logD(tag, "Showing privacy options form.")
+                        UserMessagingPlatform.showPrivacyOptionsForm(currentActivity) { formError ->
+                            if (formError != null) {
+                                TimberLogger.logE(
+                                    tag,
+                                    "Error showing privacy options form: ${formError.message}",
+                                    Exception("${formError.errorCode}-${formError.message}")
+                                )
+                                Toast.makeText(
+                                    currentActivity,
+                                    errorLoadingPrivacyTemplate.format(formError.errorCode, formError.message),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    } ?: run {
+                        TimberLogger.logW(
+                            tag,
+                            "Activity context not available for showing privacy options form."
+                        )
+                        Toast.makeText(
+                            context,
+                            errorCouldNotOpenPrivacy,
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                },
+        ) {
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.settings_privacy_title)) },
+                supportingContent = { Text(stringResource(R.string.settings_privacy_description)) },
+                leadingContent = {
+                    Icon(
+                        Icons.Default.Policy,
+                        contentDescription = stringResource(R.string.settings_privacy_icon_desc)
+                    )
+                }
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp.scaled()))
+    }
+}
+
 @Composable
 fun PermissionItem(
     permission: String,
     status: PermissionDisplayStatus,
     onRequestPermissionClick: () -> Unit,
-    onOpenSettingsClick: () -> Unit
+    onOpenSettingsClick: () -> Unit,
+    friendlyName: String,
+    description: String,
+    rationale: String
 ) {
     val isEffectivelyPermanentlyDenied = !status.isGranted && !status.shouldShowRationale
 
@@ -527,12 +627,12 @@ fun PermissionItem(
                     .padding(end = 8.dp.scaled())
             ) {
                 Text(
-                    text = getPermissionFriendlyNameSettings(permission),
+                    text = friendlyName,
                     fontWeight = FontWeight.Medium,
                     fontSize = 16.sp.scaled()
                 )
                 Text(
-                    text = getPermissionDescriptionSettings(permission),
+                    text = description,
                     fontSize = 12.sp.scaled(),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -555,7 +655,7 @@ fun PermissionItem(
 
         if (status.shouldShowRationale) {
             Text(
-                text = getPermissionRationaleSettings(permission),
+                text = rationale,
                 fontSize = 12.sp.scaled(),
                 color = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(

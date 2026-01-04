@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import dev.diegoflassa.comiqueta.core.R
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
+import dev.diegoflassa.comiqueta.ui.home.ImmutableList
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
@@ -44,7 +45,7 @@ private const val tag = "CategoriesSection"
 
 @Composable
 fun CategoriesSection(
-    categories: List<CategoryEntity>,
+    categories: ImmutableList<CategoryEntity>,
     selectedCategory: CategoryEntity?,
     onCategoryClicked: (CategoryEntity) -> Unit
 ) {
@@ -159,7 +160,7 @@ private fun CategoriesSectionAllSelectedPreview() {
     ComiquetaThemeContent {
         Surface {
             CategoriesSection(
-                categories = sampleCategoriesForPreview,
+                categories = ImmutableList(sampleCategoriesForPreview),
                 selectedCategory = sampleCategoriesForPreview.find { it.name == "All" },
                 onCategoryClicked = {}
             )
@@ -179,7 +180,7 @@ private fun CategoriesSectionComedySelectedPreview() {
     ComiquetaThemeContent {
         Surface {
             CategoriesSection(
-                categories = sampleCategoriesForPreview,
+                categories = ImmutableList(sampleCategoriesForPreview),
                 selectedCategory = sampleCategoriesForPreview.find { it.name == "Comedy" },
                 onCategoryClicked = {}
             )
@@ -199,7 +200,7 @@ private fun CategoriesSectionNoSelectionPreview() {
     ComiquetaThemeContent {
         Surface {
             CategoriesSection(
-                categories = sampleCategoriesForPreview,
+                categories = ImmutableList(sampleCategoriesForPreview),
                 selectedCategory = null,
                 onCategoryClicked = {}
             )
@@ -219,7 +220,7 @@ private fun CategoriesSectionEmptyPreview() {
     ComiquetaThemeContent {
         Surface {
             CategoriesSection(
-                categories = emptyList(),
+                categories = ImmutableList(emptyList()),
                 selectedCategory = null,
                 onCategoryClicked = {}
             )

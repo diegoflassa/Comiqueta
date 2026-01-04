@@ -53,4 +53,26 @@
     <string name="bottom_nav_library">Biblioteca</string>
     <string name="home_section_collapse">Contraer sección</string>
     <string name="home_section_expand">Expandir sección</string>
+
+    <!-- Permission & Storage -->
+    <string name="storage_permission_needed_add_folders">Se necesita permiso de almacenamiento para añadir carpetas.</string>
+    <string name="storage_permission_recommended">Se recomienda permiso de almacenamiento para funcionalidad completa.</string>
+    <string name="storage_permission_granted">¡Permiso de almacenamiento concedido!</string>
+    <string name="storage_permission_denied_limited">Permiso denegado. Algunas funciones pueden estar limitadas.</string>
+    <string name="failed_secure_access_folder">Fallo al asegurar acceso a la carpeta.</string>
+
+    <!-- Scan Status -->
+    <string name="background_scan_started">Escaneo en segundo plano iniciado para carpeta %s.</string>
+    <string name="general_scan_enqueued">Escaneo general de carpetas en cola.</string>
+    <string name="error_starting_scan">Error al iniciar escaneo general: %s</string>
+    <string name="scan_complete_refreshing">Escaneo completo. Actualizando...</string>
+    <string name="scan_failed">Escaneo fallido.</string>
+    <string name="scan_cancelled">Escaneo cancelado.</string>
+
+    <!-- Error Messages -->
+    <string name="error_loading_latest_comics_message">Error al cargar últimos cómics: %s</string>
+    <string name="error_loading_favorite_comics_message">Error al cargar cómics favoritos: %s</string>
+    <string name="error_loading_categories_message">Error al cargar categorías: %s</string>
+    <string name="failed_load_categories">Fallo al cargar categorías: %s</string>
+    <string name="error_unexpected_message">Ocurrió un error inesperado: %s</string>
 </resources>

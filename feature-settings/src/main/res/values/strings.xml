@@ -34,6 +34,38 @@
     <string name="settings_data_rescan_folders_desc">Forces a new scan of all monitored folders for comics.</string>
 
     <!-- Privacy Error Messages -->
-    <string name="settings_error_loading_privacy_settings">Error loading privacy settings: %1$s - %2$s</string>
+    <string name="settings_error_loading_privacy_settings">Error loading privacy settings: %1$d - %2$s</string>
     <string name="settings_error_could_not_open_privacy_settings">Could not open privacy settings.</string>
+
+    <!-- Permissions -->
+    <string name="permission_storage_access_title">Storage Access</string>
+    <string name="permission_storage_access_desc">Allows the app to read your comic files from shared storage.</string>
+    <string name="permission_required_desc">Required for app functionality.</string>
+    <string name="permission_storage_access_rationale">This app needs access to your device\'s storage to find and display your comic book files. Please grant this permission to select your comic library.</string>
+    <string name="permission_important_rationale">This permission is important for certain features to work correctly.</string>
+
+    <!-- Toasts / Messages -->
+    <string name="error_loading_folders">Error loading folders: %1$s</string>
+    <string name="viewer_prefetch_updated">Viewer prefetch setting updated.</string>
+    <string name="error_updating_setting">Error updating setting: %1$s</string>
+    <string name="clear_db_tapped">Clear Local Database: Tapped (Not implemented yet)</string>
+    <string name="rescan_folders_tapped">Rescan Comic Folders: Tapped (Not implemented yet)</string>
+    <string name="folder_access_removed">Folder \'%1$s\' access removed.</string>
+    <string name="folder_access_remove_failed">Could not remove access for folder \'%1$s\'.</string>
+    <string name="error_removing_folder">Error removing folder: %1$s</string>
+    <string name="folder_added">Folder \'%1$s\' added.</string>
+    <string name="folder_add_failed">Could not save access for folder \'%1$s\'.</string>
+    <string name="error_adding_folder">Error adding folder: %1$s</string>
+    <string name="general_scan_enqueued">General folder scan enqueued.</string>
+    <string name="error_starting_scan">Error starting general scan: %1$s</string>
+    
+    <!-- Confirmation Dialogs -->
+    <string name="confirm_clear_database_title">Clear Database?</string>
+    <string name="confirm_clear_database_message">This will delete all comic information from the local database. This action cannot be undone.</string>
+    <string name="database_cleared">Database cleared successfully.</string>
+    <string name="confirm_rescan_folders_title">Rescan Folders?</string>
+    <string name="confirm_rescan_folders_message">This will scan all monitored folders again for comics. This may take some time.</string>
+    <string name="rescan_started">Folder rescan started.</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_cancel">Cancel</string>
 </resources>

@@ -15,6 +15,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.diegoflassa.comiqueta.home.R
 import dev.diegoflassa.comiqueta.core.data.config.IConfig
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
@@ -86,6 +87,7 @@ class HomeViewModel @Inject constructor(
             permission
         ) == PackageManager.PERMISSION_GRANTED
     }
+
 
     fun reduce(intent: HomeIntent) {
         viewModelScope.launch {
@@ -240,7 +242,13 @@ class HomeViewModel @Inject constructor(
                 is HomeIntent.AddFolderClicked -> {
                     TimberLogger.logD(tag, "Intent: AddFolderClicked received.")
                     if (!hasGeneralStoragePermission()) {
-                        _effect.send(HomeEffect.ShowToast("Storage permission needed to add folders."))
+                        _effect.send(
+                            HomeEffect.ShowToast(
+                                applicationContext.getString(
+                                    R.string.storage_permission_needed_add_folders
+                                )
+                            )
+                        )
                         _effect.send(HomeEffect.RequestGeneralStoragePermission)
                         return@launch
                     }
@@ -253,9 +261,11 @@ class HomeViewModel @Inject constructor(
                     _uiState.update { it.copy(generalStoragePermissionGranted = isGranted) }
                     if (!isGranted) {
                         TimberLogger.logI(tag, "Initial storage permission check: NOT granted.")
-                        _effect.send(HomeEffect.ShowToast("Storage permission is recommended for full functionality."))
-                        // Optionally, prompt for permission immediately:
-                        // _effect.send(HomeEffect.RequestGeneralStoragePermission)
+                        _effect.send(
+                            HomeEffect.ShowToast(
+                                applicationContext.getString(R.string.storage_permission_recommended)
+                            )
+                        )
                     } else {
                         TimberLogger.logI(tag, "Initial storage permission check: GRANTED.")
                     }
@@ -279,10 +289,18 @@ class HomeViewModel @Inject constructor(
                     )
                     _uiState.update { it.copy(generalStoragePermissionGranted = intent.isGranted) }
                     if (intent.isGranted) {
-                        _effect.send(HomeEffect.ShowToast("Storage permission granted!"))
+                        _effect.send(
+                            HomeEffect.ShowToast(
+                                applicationContext.getString(R.string.storage_permission_granted)
+                            )
+                        )
                         _effect.send(HomeEffect.OpenFolderPicker)
                     } else {
-                        _effect.send(HomeEffect.ShowToast("Storage permission denied. Some features might be limited."))
+                        _effect.send(
+                            HomeEffect.ShowToast(
+                                applicationContext.getString(R.string.storage_permission_denied_limited)
+                            )
+                        )
                     }
                 }
 
@@ -310,50 +328,92 @@ class HomeViewModel @Inject constructor(
                         categoryId
                     }
 
+                // Main Comics
                 async {
-                    getPaginatedComicsUseCase(
-                        PaginatedComicsParams(
-                            categoryId = sanitizedCategory,
-                            flags = flags,
-                            searchQuery = searchQuery
+                    runCatching {
+                        getPaginatedComicsUseCase(
+                            PaginatedComicsParams(
+                                categoryId = sanitizedCategory,
+                                flags = flags,
+                                searchQuery = searchQuery
+                            )
                         )
-                    )
-                        .cachedIn(viewModelScope)
-                        .catch { e ->
-                            TimberLogger.logE(tag, "Error loading main comics", e)
-                            _effect.send(HomeEffect.ShowToast("Error loading comics: ${e.message}"))
-                            emit(PagingData.empty())
-                        }.collectLatest {
-                            _comicsFlow.value = it
-                        }
+                            .cachedIn(viewModelScope)
+                            .catch { e ->
+                                val msg = applicationContext.getString(
+                                    R.string.error_loading_comics_message,
+                                    e.message
+                                )
+                                TimberLogger.logE(tag, msg, e)
+                                _effect.send(HomeEffect.ShowToast(msg))
+                                emit(PagingData.empty())
+                            }.collectLatest {
+                                _comicsFlow.value = it
+                            }
+                    }.onFailure { e ->
+                        val msg = applicationContext.getString(
+                            R.string.error_loading_comics_message,
+                            e.message
+                        )
+                        TimberLogger.logE(tag, msg, e)
+                        _effect.send(HomeEffect.ShowToast(msg))
+                    }
                 }
 
+                // Latest Comics
                 async {
-                    getPaginatedComicsUseCase(
-                        PaginatedComicsParams(flags = setOf(ComicFlags.NEW))
-                    )
-                        .cachedIn(viewModelScope)
-                        .catch { e ->
-                            TimberLogger.logE(tag, "Error loading latest comics", e)
-                            _effect.send(HomeEffect.ShowToast("Error loading latest comics: ${e.message}"))
-                            emit(PagingData.empty())
-                        }.collectLatest {
-                            _latestComicsFlow.value = it
-                        }
+                    runCatching {
+                        getPaginatedComicsUseCase(
+                            PaginatedComicsParams(flags = setOf(ComicFlags.NEW))
+                        )
+                            .cachedIn(viewModelScope)
+                            .catch { e ->
+                                val msg = applicationContext.getString(
+                                    R.string.error_loading_latest_comics_message,
+                                    e.message
+                                )
+                                TimberLogger.logE(tag, msg, e)
+                                _effect.send(HomeEffect.ShowToast(msg))
+                                emit(PagingData.empty())
+                            }.collectLatest {
+                                _latestComicsFlow.value = it
+                            }
+                    }.onFailure { e ->
+                        val msg = applicationContext.getString(
+                            R.string.error_loading_latest_comics_message,
+                            e.message
+                        )
+                        TimberLogger.logE(tag, msg, e)
+                        _effect.send(HomeEffect.ShowToast(msg))
+                    }
                 }
 
+                // Favorite Comics
                 async {
-                    getPaginatedComicsUseCase(
-                        PaginatedComicsParams(flags = setOf(ComicFlags.FAVORITE))
-                    )
-                        .cachedIn(viewModelScope)
-                        .catch { e ->
-                            TimberLogger.logE(tag, "Error loading favorite comics", e)
-                            _effect.send(HomeEffect.ShowToast("Error loading favorite comics: ${e.message}"))
-                            emit(PagingData.empty())
-                        }.collectLatest {
-                            _favoriteComicsFlow.value = it
-                        }
+                    runCatching {
+                        getPaginatedComicsUseCase(
+                            PaginatedComicsParams(flags = setOf(ComicFlags.FAVORITE))
+                        )
+                            .cachedIn(viewModelScope)
+                            .catch { e ->
+                                val msg = applicationContext.getString(
+                                    R.string.error_loading_favorite_comics_message,
+                                    e.message
+                                )
+                                TimberLogger.logE(tag, msg, e)
+                                _effect.send(HomeEffect.ShowToast(msg))
+                                emit(PagingData.empty())
+                            }.collectLatest {
+                                _favoriteComicsFlow.value = it
+                            }
+                    }.onFailure { e ->
+                        val msg = applicationContext.getString(
+                            R.string.error_loading_favorite_comics_message,
+                            e.message
+                        )
+                        TimberLogger.logE(tag, msg, e)
+                        _effect.send(HomeEffect.ShowToast(msg))
+                    }
                 }
 
             } catch (ce: CancellationException) {
@@ -363,8 +423,9 @@ class HomeViewModel @Inject constructor(
             } catch (ex: Exception) {
                 ex.printStackTrace()
                 TimberLogger.logE(tag, "Unexpected error during combined comics loading", ex)
-                _effect.send(HomeEffect.ShowToast("An unexpected error occurred: ${ex.message}"))
-                _uiState.update { it.copy(error = ex.message, isLoading = false) }
+                val msg = applicationContext.getString(R.string.error_unexpected_message, ex.message)
+                _effect.send(HomeEffect.ShowToast(msg))
+                _uiState.update { it.copy(error = msg, isLoading = false) }
                 _comicsFlow.value = PagingData.empty()
                 _latestComicsFlow.value = PagingData.empty()
                 _favoriteComicsFlow.value = PagingData.empty()
@@ -378,15 +439,25 @@ class HomeViewModel @Inject constructor(
 
     private fun loadCategories() {
         viewModelScope.launch {
-            //isLoading for categories is handled within loadPaginatedComics or a separate state variable
             loadCategoriesUseCase()
                 .catch { e ->
-                    TimberLogger.logE(tag, "Error loading categories", e)
-                    _effect.send(HomeEffect.ShowToast("Error loading categories: ${e.message}"))
-                    _uiState.update { it.copy(error = "Failed to load categories: ${e.message}") }
+                    val msg = applicationContext.getString(
+                        R.string.error_loading_categories_message,
+                        e.message
+                    )
+                    TimberLogger.logE(tag, msg, e)
+                    _effect.send(HomeEffect.ShowToast(msg))
+                    _uiState.update {
+                        it.copy(
+                            error = applicationContext.getString(
+                                R.string.failed_load_categories,
+                                e.message
+                            )
+                        )
+                    }
                 }
                 .collectLatest { fetchedCategories ->
-                    _uiState.update { it.copy(categories = fetchedCategories) }
+                    _uiState.update { it.copy(categories = ImmutableList(fetchedCategories)) }
                 }
         }
     }
@@ -401,10 +472,21 @@ class HomeViewModel @Inject constructor(
             Intent.FLAG_GRANT_READ_URI_PERMISSION
         )
         if (success) {
-            _effect.send(HomeEffect.ShowToast("Background scan for folder $uri started."))
+            _effect.send(
+                HomeEffect.ShowToast(
+                    applicationContext.getString(
+                        R.string.background_scan_started,
+                        uri
+                    )
+                )
+            )
             triggerGeneralScan()
         } else {
-            _effect.send(HomeEffect.ShowToast("Failed to secure access to folder."))
+            _effect.send(
+                HomeEffect.ShowToast(
+                    applicationContext.getString(R.string.failed_secure_access_folder)
+                )
+            )
         }
     }
 
@@ -413,12 +495,23 @@ class HomeViewModel @Inject constructor(
             try {
                 val workRequestId =
                     enqueueSafFolderScanWorkerUseCase.invoke(null)
-                _effect.send(HomeEffect.ShowToast("General folder scan enqueued."))
+                _effect.send(
+                    HomeEffect.ShowToast(
+                        applicationContext.getString(R.string.general_scan_enqueued)
+                    )
+                )
                 observeScanWorker(workRequestId)
             } catch (ex: Exception) {
                 ex.printStackTrace()
                 TimberLogger.logE(tag, "Failed to enqueue general folder scan worker", ex)
-                _effect.send(HomeEffect.ShowToast("Error starting general scan: ${ex.message}"))
+                _effect.send(
+                    HomeEffect.ShowToast(
+                        applicationContext.getString(
+                            R.string.error_starting_scan,
+                            ex.message
+                        )
+                    )
+                )
             }
         }
     }
@@ -440,7 +533,11 @@ class HomeViewModel @Inject constructor(
                                     tag,
                                     "Folder scan SUCCEEDED for $workRequestId. Refreshing comics."
                                 )
-                                _effect.send(HomeEffect.ShowToast("Scan complete. Refreshing..."))
+                                _effect.send(
+                                    HomeEffect.ShowToast(
+                                        applicationContext.getString(R.string.scan_complete_refreshing)
+                                    )
+                                )
                                 loadPaginatedComics()
                             }
 
@@ -453,12 +550,22 @@ class HomeViewModel @Inject constructor(
                                 )
                                 FirebaseCrashlytics.getInstance()
                                     .recordException(Exception("Worker FAILED ($workRequestId): ${errorMessage ?: "No message"}"))
-                                _effect.send(HomeEffect.ShowToast(errorMessage ?: "Scan failed."))
+                                _effect.send(
+                                    HomeEffect.ShowToast(
+                                        errorMessage ?: applicationContext.getString(
+                                            R.string.scan_failed
+                                        )
+                                    )
+                                )
                             }
 
                             WorkInfo.State.CANCELLED -> {
                                 TimberLogger.logI(tag, "Folder scan CANCELLED for $workRequestId.")
-                                _effect.send(HomeEffect.ShowToast("Scan cancelled."))
+                                _effect.send(
+                                    HomeEffect.ShowToast(
+                                        applicationContext.getString(R.string.scan_cancelled)
+                                    )
+                                )
                             }
 
                             else -> {

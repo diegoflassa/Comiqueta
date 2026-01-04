@@ -1,2 +1,25 @@
 <resources>
+    <!-- UI Strings -->
+    <string name="manage_categories_title">Kategorien verwalten</string>
+    <string name="action_back">Zurück</string>
+    <string name="add_category_desc">Kategorie hinzufügen</string>
+    <string name="edit_category_desc">Kategorie bearbeiten</string>
+    <string name="delete_category_desc">Kategorie löschen</string>
+    <string name="no_categories_found">Keine Kategorien gefunden. Klicken Sie auf \'+\', um eine hinzuzufügen.</string>
+    <string name="error_prefix">Fehler: %1$s</string>
+    <string name="dialog_add_category_title">Neue Kategorie hinzufügen</string>
+    <string name="dialog_edit_category_title">Kategorie bearbeiten</string>
+    <string name="category_name_label">Kategoriename</string>
+    <string name="action_save">Speichern</string>
+    <string name="action_cancel">Abbrechen</string>
+
+    <!-- ViewModel / Toast Strings -->
+    <string name="error_loading_categories">Fehler beim Laden von Kategorien: %1$s</string>
+    <string name="category_name_empty">Kategoriename darf nicht leer sein.</string>
+    <string name="category_added">Kategorie \'%1$s\' hinzugefügt.</string>
+    <string name="category_updated">Kategorie \'%1$s\' aktualisiert.</string>
+    <string name="error_saving_category">Fehler beim Speichern der Kategorie: %1$s</string>
+    <string name="category_deleted_named">Kategorie \'%1$s\' gelöscht.</string>
+    <string name="error_deleting_category">Fehler beim Löschen der Kategorie: %1$s</string>
+    <string name="category_deleted_generic">Kategorie gelöscht.</string>
 </resources>

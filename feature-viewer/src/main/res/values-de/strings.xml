@@ -3,4 +3,9 @@
     <string name="comic_page_description">Seite: %1$s</string>
     <string name="no_comic_loaded_title">Kein Titel</string>
     <string name="no_comic_loaded_subtitle">Kein Untertitel</string>
+
+    <string name="back_icon_description">Zurück</string>
+    <string name="page_count_format">%1$d / %2$d</string>
+    <string name="loading_comic_title">Lade Comic...</string>
+    <string name="error_comic_title">Comic-Fehler</string>
 </resources>

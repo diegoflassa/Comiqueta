@@ -55,4 +55,26 @@
     <string name="home_section_collapse">Recolher seção</string>
     <string name="home_section_expand">Expandir seção</string>
 
+
+    <!-- Permission & Storage -->
+    <string name="storage_permission_needed_add_folders">Permissão de armaz. necessária para adicionar pastas.</string>
+    <string name="storage_permission_recommended">Permissão de armaz. recomendada para funcionalidade completa.</string>
+    <string name="storage_permission_granted">Permissão de armazenamento concedida!</string>
+    <string name="storage_permission_denied_limited">Permissão negada. Alguns recursos podem ser limitados.</string>
+    <string name="failed_secure_access_folder">Falha ao garantir acesso à pasta.</string>
+
+    <!-- Scan Status -->
+    <string name="background_scan_started">Varredura em segundo plano iniciada para a pasta %s.</string>
+    <string name="general_scan_enqueued">Varredura geral de pastas enfileirada.</string>
+    <string name="error_starting_scan">Erro ao iniciar varredura geral: %s</string>
+    <string name="scan_complete_refreshing">Varredura completa. Atualizando...</string>
+    <string name="scan_failed">Falha na varredura.</string>
+    <string name="scan_cancelled">Varredura cancelada.</string>
+
+    <!-- Error Messages -->
+    <string name="error_loading_latest_comics_message">Erro ao carregar últimos quadrinhos: %s</string>
+    <string name="error_loading_favorite_comics_message">Erro ao carregar quadrinhos favoritos: %s</string>
+    <string name="error_loading_categories_message">Erro ao carregar categorias: %s</string>
+    <string name="failed_load_categories">Falha ao carregar categorias: %s</string>
+    <string name="error_unexpected_message">Ocorreu um erro inesperado: %s</string>
 </resources>

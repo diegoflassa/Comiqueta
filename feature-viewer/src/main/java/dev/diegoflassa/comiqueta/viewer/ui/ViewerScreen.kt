@@ -125,7 +125,7 @@ fun ViewerScreenContent(
                     title = { Text(uiState.comicTitle) },
                     navigationIcon = {
                         IconButton(onClick = { navigationViewModel?.goBack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back_icon_description))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -144,7 +144,7 @@ fun ViewerScreenContent(
                     containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
                 ) {
                     Text(
-                        text = "${uiState.currentPage + 1} / ${uiState.pageCount}",
+                        text = stringResource(R.string.page_count_format, uiState.currentPage + 1, uiState.pageCount),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium
@@ -210,10 +210,7 @@ fun ViewerScreenContent(
                         state = pageCurlState,
                         config = pageCurlConfig,
                     ) { pageIndexInCurl ->
-                        TimberLogger.logI(
-                            tag,
-                            "PZ_DEBUG: PageCurl Item recomposing for page $pageIndexInCurl, CUR=${pageCurlState.current}"
-                        )
+
                         var itemScale by retain(pageIndexInCurl) { mutableFloatStateOf(1f) }
                         var itemOffsetX by retain(pageIndexInCurl) { mutableFloatStateOf(0f) }
                         var itemOffsetY by retain(pageIndexInCurl) { mutableFloatStateOf(0f) }
@@ -337,37 +334,20 @@ fun ViewerScreenContent(
                                                                 }
                                                                 changes.forEach { it.consume() }
                                                             } else {
-                                                                TimberLogger.logI(
-                                                                    tag,
-                                                                    "PZ_DEBUG: Page $pageIndexInCurl (CUR=${pageCurlState.current}) In zoom loop. Not enough changes (${changes.size}) and not zoomed (oldScale=$oldLocalItemScale)."
-                                                                )
+
                                                             }
                                                         }
                                                     } catch (e: CancellationException) {
-                                                        TimberLogger.logE(
-                                                            tag,
-                                                            "PZ_DEBUG: Page $pageIndexInCurl (CUR=${pageCurlState.current}) CANCELLATION in awaitPointerEventScope's while loop",
-                                                            e
-                                                        )
+
                                                         throw e
                                                     } catch (e: Throwable) {
-                                                        TimberLogger.logE(
-                                                            tag,
-                                                            "PZ_DEBUG: Page $pageIndexInCurl (CUR=${pageCurlState.current}) EXCEPTION in awaitPointerEventScope's while loop",
-                                                            e
-                                                        )
+
                                                     } finally {
-                                                        TimberLogger.logI(
-                                                            tag,
-                                                            "PZ_DEBUG: Page $pageIndexInCurl (CUR=${pageCurlState.current}) FINALLY block of awaitPointerEventScope's try."
-                                                        )
+
                                                     }
                                                 }
                                             } else {
-                                                TimberLogger.logI(
-                                                    tag,
-                                                    "PZ_DEBUG: Page $pageIndexInCurl (CUR=${pageCurlState.current}) currentBitmap IS NULL. SKIPPING awaitPointerEventScope."
-                                                )
+
                                             }
                                         } else {
                                             if (itemScale > 1f) {
@@ -416,7 +396,7 @@ fun ViewerScreenContent(
                                         CircularProgressIndicator()
                                     } else {
                                         Text(
-                                            "Page ${pageIndexInCurl + 1}",
+                                            stringResource(R.string.comic_page_description, pageIndexInCurl + 1),
                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
                                                 alpha = 0.7f
                                             )
@@ -497,7 +477,7 @@ private fun ViewerScreenPreviewLoadingInitial() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
-                comicTitle = "Loading Comic...",
+                comicTitle = stringResource(R.string.loading_comic_title),
                 loadedPages = emptyMap(),
                 currentPage = 0,
                 pageCount = 0,
@@ -556,7 +536,7 @@ private fun ViewerScreenPreviewWithError() {
     ComiquetaThemeContent {
         ViewerScreenContent(
             uiState = ViewerUIState(
-                comicTitle = "Error Comic",
+                comicTitle = stringResource(R.string.error_comic_title),
                 loadedPages = emptyMap(),
                 currentPage = 0,
                 pageCount = 0,

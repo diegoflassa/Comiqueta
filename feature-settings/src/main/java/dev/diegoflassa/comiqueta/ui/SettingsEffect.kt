@@ -12,4 +12,9 @@ sealed interface SettingsEffect {
     data object LaunchFolderPicker : SettingsEffect
     data class LaunchViewFolderIntent(val folderUri: Uri) : SettingsEffect
     data object NavigateToCategoriesScreen : SettingsEffect // Added this line
+    data class ShowConfirmationDialog(
+        val title: String,
+        val message: String,
+        val confirmIntent: SettingsIntent
+    ) : SettingsEffect
 }

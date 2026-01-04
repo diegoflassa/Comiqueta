@@ -55,4 +55,26 @@
     <string name="bottom_nav_library">Bibliothek</string>
     <string name="home_section_collapse">Bereich einklappen</string>
     <string name="home_section_expand">Bereich ausklappen</string>
+
+    <!-- Permission & Storage -->
+    <string name="storage_permission_needed_add_folders">Speicherberechtigung zum Hinzufügen von Ordnern erforderlich.</string>
+    <string name="storage_permission_recommended">Speicherberechtigung wird für volle Funktionalität empfohlen.</string>
+    <string name="storage_permission_granted">Speicherberechtigung erteilt!</string>
+    <string name="storage_permission_denied_limited">Berechtigung verweigert. Einige Funktionen könnten eingeschränkt sein.</string>
+    <string name="failed_secure_access_folder">Zugriff auf Ordner fehlgeschlagen.</string>
+
+    <!-- Scan Status -->
+    <string name="background_scan_started">Hintergrundscan für Ordner %s gestartet.</string>
+    <string name="general_scan_enqueued">Allgemeiner Ordnerscan eingereiht.</string>
+    <string name="error_starting_scan">Fehler beim Starten des allgemeinen Scans: %s</string>
+    <string name="scan_complete_refreshing">Scan abgeschlossen. Aktualisiere...</string>
+    <string name="scan_failed">Scan fehlgeschlagen.</string>
+    <string name="scan_cancelled">Scan abgebrochen.</string>
+
+    <!-- Error Messages -->
+    <string name="error_loading_latest_comics_message">Fehler beim Laden der neuesten Comics: %s</string>
+    <string name="error_loading_favorite_comics_message">Fehler beim Laden der Favoriten: %s</string>
+    <string name="error_loading_categories_message">Fehler beim Laden der Kategorien: %s</string>
+    <string name="failed_load_categories">Laden der Kategorien fehlgeschlagen: %s</string>
+    <string name="error_unexpected_message">Ein unerwarteter Fehler ist aufgetreten: %s</string>
 </resources>

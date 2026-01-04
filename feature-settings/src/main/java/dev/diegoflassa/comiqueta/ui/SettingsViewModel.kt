@@ -22,6 +22,7 @@ import dev.diegoflassa.comiqueta.core.domain.usecase.folder.IRemoveMonitoredFold
 import dev.diegoflassa.comiqueta.core.domain.usecase.permission.IGetRelevantOsPermissionsUseCase
 import dev.diegoflassa.comiqueta.data.model.PermissionDisplayStatus
 import dev.diegoflassa.comiqueta.domain.usecase.IRefreshPermissionDisplayStatusUseCase
+import dev.diegoflassa.comiqueta.settings.R
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +38,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 open class SettingsViewModel @Inject constructor(
-    @param:ApplicationContext private val applicationContext: Context,
+    @ApplicationContext private val context: Context,
     private val getMonitoredFoldersUseCase: IGetMonitoredFoldersUseCase,
     private val addMonitoredFolderUseCase: IAddMonitoredFolderUseCase,
     private val removeMonitoredFolderUseCase: IRemoveMonitoredFolderUseCase,
@@ -79,7 +80,7 @@ open class SettingsViewModel @Inject constructor(
         val initialGrantStatuses = initialPermissions.associateWith { permission ->
             PermissionDisplayStatus(
                 isGranted = ContextCompat.checkSelfPermission(
-                    applicationContext,
+                    context,
                     permission
                 ) == PackageManager.PERMISSION_GRANTED,
                 shouldShowRationale = false
@@ -120,7 +121,7 @@ open class SettingsViewModel @Inject constructor(
                     ex
                 )
                 _uiState.update { it.copy(isLoading = false) }
-                viewModelScope.launch { _effect.send(SettingsEffect.ShowToast("Error loading folders: ${ex.message}")) }
+                viewModelScope.launch { _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_loading_folders, ex.message))) }
             }
         }
     }
@@ -173,7 +174,7 @@ open class SettingsViewModel @Inject constructor(
                     try {
                         setViewerPagesToPreloadAhead(intent.count)
                         // UI state will update automatically due to the flow collection in init
-                        _effect.send(SettingsEffect.ShowToast("Viewer prefetch setting updated."))
+                        _effect.send(SettingsEffect.ShowToast(context.getString(R.string.viewer_prefetch_updated)))
                     } catch (ex: Exception) {
                         ex.printStackTrace()
                         TimberLogger.logE(
@@ -181,26 +182,46 @@ open class SettingsViewModel @Inject constructor(
                             "Error updating viewerPagesToPreloadAhead",
                             ex
                         )
-                        _effect.send(SettingsEffect.ShowToast("Error updating setting: ${ex.message}"))
+                        _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_updating_setting, ex.message)))
                     }
                 }
 
                 is SettingsIntent.ClearLocalDatabaseClicked -> {
+                    _effect.send(
+                        SettingsEffect.ShowConfirmationDialog(
+                            title = context.getString(R.string.confirm_clear_database_title),
+                            message = context.getString(R.string.confirm_clear_database_message),
+                            confirmIntent = SettingsIntent.ConfirmClearLocalDatabase
+                        )
+                    )
+                }
+
+                is SettingsIntent.ConfirmClearLocalDatabase -> {
                     comicsRepository.clearAllComics()
                     TimberLogger.logI(
                         "SettingsViewModel",
-                        "ClearLocalDatabaseClicked intent received"
+                        "Database cleared by user confirmation"
                     )
-                    _effect.send(SettingsEffect.ShowToast("Clear Local Database: Tapped (Not implemented yet)"))
+                    _effect.send(SettingsEffect.ShowToast(context.getString(R.string.database_cleared)))
                 }
 
                 is SettingsIntent.RescanComicFoldersClicked -> {
+                    _effect.send(
+                        SettingsEffect.ShowConfirmationDialog(
+                            title = context.getString(R.string.confirm_rescan_folders_title),
+                            message = context.getString(R.string.confirm_rescan_folders_message),
+                            confirmIntent = SettingsIntent.ConfirmRescanComicFolders
+                        )
+                    )
+                }
+
+                is SettingsIntent.ConfirmRescanComicFolders -> {
                     triggerGeneralScan()
                     TimberLogger.logI(
                         "SettingsViewModel",
-                        "RescanComicFoldersClicked intent received"
+                        "Folder rescan started by user confirmation"
                     )
-                    _effect.send(SettingsEffect.ShowToast("Rescan Comic Folders: Tapped (Not implemented yet)"))
+                    _effect.send(SettingsEffect.ShowToast(context.getString(R.string.rescan_started)))
                 }
             }
         }
@@ -231,7 +252,7 @@ open class SettingsViewModel @Inject constructor(
                     "SettingsViewModel",
                     "Successfully removed folder via UseCase: $folderUri"
                 )
-                _effect.send(SettingsEffect.ShowToast("Folder '${Uri.decode(folderUri.toString())}' access removed."))
+                _effect.send(SettingsEffect.ShowToast(context.getString(R.string.folder_access_removed, Uri.decode(folderUri.toString()))))
             } else {
                 TimberLogger.logW(
                     "SettingsViewModel",
@@ -239,11 +260,7 @@ open class SettingsViewModel @Inject constructor(
                 )
                 _effect.send(
                     SettingsEffect.ShowToast(
-                        "Could not remove access for folder '${
-                            Uri.decode(
-                                folderUri.toString()
-                            )
-                        }'."
+                        context.getString(R.string.folder_access_remove_failed, Uri.decode(folderUri.toString()))
                     )
                 )
             }
@@ -254,7 +271,7 @@ open class SettingsViewModel @Inject constructor(
                 "Error removing folder $folderUri via UseCase",
                 ex
             )
-            _effect.send(SettingsEffect.ShowToast("Error removing folder: ${ex.message}"))
+            _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_removing_folder, ex.message)))
         } finally {
             loadPersistedFolders()
         }
@@ -268,23 +285,19 @@ open class SettingsViewModel @Inject constructor(
                     "SettingsViewModel",
                     "Successfully added folder via UseCase: $uri"
                 )
-                _effect.send(SettingsEffect.ShowToast("Folder '${Uri.decode(uri.toString())}' added."))
+                _effect.send(SettingsEffect.ShowToast(context.getString(R.string.folder_added, Uri.decode(uri.toString()))))
             } else {
                 TimberLogger.logW("SettingsViewModel", "Failed to add folder via UseCase: $uri.")
                 _effect.send(
                     SettingsEffect.ShowToast(
-                        "Could not save access for folder '${
-                            Uri.decode(
-                                uri.toString()
-                            )
-                        }'."
+                        context.getString(R.string.folder_add_failed, Uri.decode(uri.toString()))
                     )
                 )
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
             TimberLogger.logE("SettingsViewModel", "Error adding folder $uri via UseCase", ex)
-            _effect.send(SettingsEffect.ShowToast("Error adding folder: ${ex.message}"))
+            _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_adding_folder, ex.message)))
         } finally {
             loadPersistedFolders()
         }
@@ -294,11 +307,11 @@ open class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 enqueueSafFolderScanWorkerUseCase.invoke(null)
-                _effect.send(SettingsEffect.ShowToast("General folder scan enqueued."))
+                _effect.send(SettingsEffect.ShowToast(context.getString(R.string.general_scan_enqueued)))
             } catch (ex: Exception) {
                 ex.printStackTrace()
                 TimberLogger.logE(tag, "Failed to enqueue general folder scan worker", ex)
-                _effect.send(SettingsEffect.ShowToast("Error starting general scan: ${ex.message}"))
+                _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_starting_scan, ex.message)))
             }
         }
     }

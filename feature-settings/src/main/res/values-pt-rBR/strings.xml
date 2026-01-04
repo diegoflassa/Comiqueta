@@ -33,6 +33,38 @@
     <string name="settings_data_rescan_folders_desc">Força uma nova varredura de todas as pastas monitoradas em busca de quadrinhos.</string>
 
     <!-- Privacy Error Messages -->
-    <string name="settings_error_loading_privacy_settings">Erro ao carregar configurações de privacidade: %1$s - %2$s</string>
+    <string name="settings_error_loading_privacy_settings">Erro ao carregar configurações de privacidade: %1$d - %2$s</string>
     <string name="settings_error_could_not_open_privacy_settings">Não foi possível abrir as configurações de privacidade.</string>
+
+    <!-- Permissions -->
+    <string name="permission_storage_access_title">Acesso ao Armazenamento</string>
+    <string name="permission_storage_access_desc">Permite que o app leia seus arquivos de quadrinhos do armazenamento compartilhado.</string>
+    <string name="permission_required_desc">Necessário para funcionalidade do app.</string>
+    <string name="permission_storage_access_rationale">Este app precisa de acesso ao armazenamento para encontrar e exibir seus quadrinhos. Por favor, conceda esta permissão para selecionar sua biblioteca.</string>
+    <string name="permission_important_rationale">Esta permissão é importante para o funcionamento correto de certos recursos.</string>
+
+    <!-- Toasts / Messages -->
+    <string name="error_loading_folders">Erro ao carregar pastas: %1$s</string>
+    <string name="viewer_prefetch_updated">Configuração de pré-carregamento atualizada.</string>
+    <string name="error_updating_setting">Erro ao atualizar configuração: %1$s</string>
+    <string name="clear_db_tapped">Limpar BD Local: Tocado (Ainda não implementado)</string>
+    <string name="rescan_folders_tapped">Reescanear Pastas: Tocado (Ainda não implementado)</string>
+    <string name="folder_access_removed">Acesso à pasta \'%1$s\' removido.</string>
+    <string name="folder_access_remove_failed">Não foi possível remover acesso à pasta \'%1$s\'.</string>
+    <string name="error_removing_folder">Erro ao remover pasta: %1$s</string>
+    <string name="folder_added">Pasta \'%1$s\' adicionada.</string>
+    <string name="folder_add_failed">Não foi possível salvar acesso à pasta \'%1$s\'.</string>
+    <string name="error_adding_folder">Erro ao adicionar pasta: %1$s</string>
+    <string name="general_scan_enqueued">Varredura geral de pastas enfileirada.</string>
+    <string name="error_starting_scan">Erro ao iniciar varredura geral: %1$s</string>
+
+    <!-- Confirmation Dialogs -->
+    <string name="confirm_clear_database_title">Limpar Banco de Dados?</string>
+    <string name="confirm_clear_database_message">Isso excluirá todas as informações de quadrinhos do banco de dados local. Esta ação não pode ser desfeita.</string>
+    <string name="database_cleared">Banco de dados limpo com sucesso.</string>
+    <string name="confirm_rescan_folders_title">Reescanear Pastas?</string>
+    <string name="confirm_rescan_folders_message">Isso irá escanear todas as pastas monitoradas novamente em busca de quadrinhos. Isso pode levar algum tempo.</string>
+    <string name="rescan_started">Reescaneamento de pastas iniciado.</string>
+    <string name="action_confirm">Confirmar</string>
+    <string name="action_cancel">Cancelar</string>
 </resources>
