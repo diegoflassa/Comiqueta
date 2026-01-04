@@ -76,13 +76,17 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
+      - name: Run Detekt and Ktlint
+        if: github.event_name == 'push'
+        run: ./gradlew detekt ktlintCheck
+
       - name: Run unit tests for Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: ./gradlew :app:testReleaseUnitTest
+        run: ./gradlew testReleaseUnitTest
 
       - name: Run unit tests for Debug
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-        run: ./gradlew :app:testDebugUnitTest
+        run: ./gradlew testDebugUnitTest
 
       - name: Build Release AAB
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
