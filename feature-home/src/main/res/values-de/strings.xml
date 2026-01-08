@@ -77,4 +77,5 @@
     <string name="error_loading_categories_message">Fehler beim Laden der Kategorien: %s</string>
     <string name="failed_load_categories">Laden der Kategorien fehlgeschlagen: %s</string>
     <string name="error_unexpected_message">Ein unerwarteter Fehler ist aufgetreten: %s</string>
+    <string name="retry">Erneut versuchen</string>
 </resources>

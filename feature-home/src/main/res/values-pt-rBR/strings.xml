@@ -77,4 +77,5 @@
     <string name="error_loading_categories_message">Erro ao carregar categorias: %s</string>
     <string name="failed_load_categories">Falha ao carregar categorias: %s</string>
     <string name="error_unexpected_message">Ocorreu um erro inesperado: %s</string>
+    <string name="retry">Tentar novamente</string>
 </resources>

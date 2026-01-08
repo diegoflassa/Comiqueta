@@ -22,5 +22,15 @@ data class ComiquetaDimen(
     val fabIconSize: Dp = 22.dp,
     val bottomBarHeight: Dp = 50.dp,
     val bottomAppBarIconSize: Dp = 20.dp,
-    val topAppBarHeight: Dp = 62.dp
+    val topAppBarHeight: Dp = 62.dp,
+    val paddingExtraSmall: Dp = 4.dp,
+    val paddingSmall: Dp = 8.dp,
+    val paddingMedium: Dp = 12.dp,
+    val paddingLarge: Dp = 16.dp,
+    val paddingExtraLarge: Dp = 32.dp,
+    val spacerSmall: Dp = 8.dp,
+    val spacerMedium: Dp = 16.dp,
+    val fabOffset: Dp = 17.dp,
+    val searchRoundedCorner: Dp = 8.dp,
+    val bannerHeight: Dp = 50.dp
 )

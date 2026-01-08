@@ -10,4 +10,5 @@ sealed interface HomeEffect {
     data class RequestStoragePermission(val permission: String) : HomeEffect
     data object RequestGeneralStoragePermission : HomeEffect
     data class NavigateToComicDetail(val comicPath: Uri?) : HomeEffect
+    data class ShowErrorWithRetry(val message: String, val onRetry: () -> Unit) : HomeEffect
 }

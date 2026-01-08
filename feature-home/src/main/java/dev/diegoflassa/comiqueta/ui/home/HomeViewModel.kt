@@ -70,6 +70,8 @@ class HomeViewModel @Inject constructor(
     private val _favoriteComicsFlow = MutableStateFlow<PagingData<Comic>>(PagingData.empty())
     val favoriteComicsFlow = _favoriteComicsFlow.asStateFlow()
 
+    private var lastRetryAction: (() -> Unit)? = null
+
     init {
         loadCategories()
         //loadPaginatedComics()
@@ -307,6 +309,10 @@ class HomeViewModel @Inject constructor(
                 is HomeIntent.FolderSelected -> {
                     handleFolderSelected(intent.uri)
                 }
+
+                is HomeIntent.RetryLoadComics -> {
+                    lastRetryAction?.invoke()
+                }
             }
         }
     }
@@ -316,10 +322,9 @@ class HomeViewModel @Inject constructor(
         flags: Set<ComicFlags> = _uiState.value.flags,
         searchQuery: String? = _uiState.value.searchQuery
     ) {
+        lastRetryAction = { loadPaginatedComics(categoryId, flags, searchQuery) }
         viewModelScope.launch {
-            if (categoryId == null && flags.isEmpty() && searchQuery.isNullOrEmpty()) {
-                _uiState.update { it.copy(isLoading = true, error = null) }
-            }
+            _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val sanitizedCategory =
                     if (categoryId == UserPreferencesKeys.DEFAULT_CATEGORY_ID_ALL) {
@@ -424,8 +429,10 @@ class HomeViewModel @Inject constructor(
                 ex.printStackTrace()
                 TimberLogger.logE(tag, "Unexpected error during combined comics loading", ex)
                 val msg = applicationContext.getString(R.string.error_unexpected_message, ex.message)
-                _effect.send(HomeEffect.ShowToast(msg))
                 _uiState.update { it.copy(error = msg, isLoading = false) }
+                _effect.send(HomeEffect.ShowErrorWithRetry(msg) {
+                    reduce(HomeIntent.RetryLoadComics)
+                })
                 _comicsFlow.value = PagingData.empty()
                 _latestComicsFlow.value = PagingData.empty()
                 _favoriteComicsFlow.value = PagingData.empty()

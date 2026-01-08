@@ -41,6 +41,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -128,6 +132,8 @@ fun HomeScreen(
             homeViewModel.reduce(HomeIntent.FolderPermissionResult(isGranted))
         })
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(Unit) {
         homeViewModel.reduce(HomeIntent.CheckInitialFolderPermission)
         homeViewModel.reduce(HomeIntent.LoadComics)
@@ -152,6 +158,17 @@ fun HomeScreen(
 
                 is HomeEffect.ShowToast -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                }
+
+                is HomeEffect.ShowErrorWithRetry -> {
+                    val result = snackbarHostState.showSnackbar(
+                        message = effect.message,
+                        actionLabel = context.getString(R.string.retry),
+                        duration = SnackbarDuration.Indefinite
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        effect.onRetry()
+                    }
                 }
 
                 HomeEffect.OpenFolderPicker -> {
@@ -190,6 +207,7 @@ fun HomeScreen(
         latestComics = latestComics,
         favoriteComics = favoriteComics,
         uiState = uiState,
+        snackbarHostState = snackbarHostState,
         onIntent = homeViewModel::reduce
     )
 }
@@ -308,7 +326,7 @@ fun HomeScreenContentForPreview(
                     .align(Alignment.BottomCenter)
                     .zIndex(1F)
                     .size(fabDiameter)
-                    .offset(y = -17.dp.scaled()),
+                    .offset(y = -ComiquetaTheme.dimen.fabOffset.scaled()),
                 onClick = { onIntent?.invoke(HomeIntent.AddFolderClicked) },
                 shape = CircleShape,
             ) {
@@ -331,6 +349,7 @@ fun HomeScreenContent(
     latestComics: LazyPagingItems<Comic>,
     favoriteComics: LazyPagingItems<Comic>,
     uiState: HomeUIState,
+    snackbarHostState: SnackbarHostState,
     onIntent: ((HomeIntent) -> Unit)? = null,
 ) {
     val fabDiameter = ComiquetaTheme.dimen.fabDiameter.scaled()
@@ -342,6 +361,7 @@ fun HomeScreenContent(
 
     Scaffold(
         modifier = modifier.background(ComiquetaTheme.colorScheme.background),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Spacer(
                 modifier = Modifier
@@ -434,9 +454,9 @@ fun HomeScreenContent(
             }
 
             val fabOffset = if (showAds) {
-                17.dp.scaled() + bannerAdExpectedHeight
+                ComiquetaTheme.dimen.fabOffset.scaled() + ComiquetaTheme.dimen.bannerHeight.scaled()
             } else {
-                17.dp.scaled()
+                ComiquetaTheme.dimen.fabOffset.scaled()
             }
 
             ExtendedFloatingActionButton(
@@ -513,7 +533,7 @@ fun ComicsContentForPreview(
                         end = ComiquetaTheme.dimen.searchHorizontalPadding
                     )
                     .height(ComiquetaTheme.dimen.inputHeight.scaled())
-                    .clip(RoundedCornerShape(8.dp.scaled())),
+                    .clip(RoundedCornerShape(ComiquetaTheme.dimen.searchRoundedCorner.scaled())),
                 colors = getOutlinedTextFieldDefaultsColors(),
                 singleLine = true
             )
@@ -531,7 +551,7 @@ fun ComicsContentForPreview(
             if (latestComicsExpanded) {
                 item {
                     HorizontalComicsRowForPreview(comics = latestComics, onIntent = onIntent)
-                    Spacer(modifier = Modifier.height(16.dp.scaled()))
+                    Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled()))
                 }
             }
         }
@@ -548,7 +568,7 @@ fun ComicsContentForPreview(
             if (favoriteComicsExpanded) {
                 item {
                     HorizontalComicsRowForPreview(comics = favoriteComics, onIntent = onIntent)
-                    Spacer(modifier = Modifier.height(16.dp.scaled()))
+                    Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled()))
                 }
             }
         }
@@ -610,7 +630,7 @@ fun ComicsContentForPreview(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(gridHeight)
-                                        .padding(horizontal = 16.dp.scaled()),
+                                        .padding(horizontal = ComiquetaTheme.dimen.paddingLarge.scaled()),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp.scaled()),
                                     verticalArrangement = Arrangement.spacedBy(8.dp.scaled()),
                                     contentPadding = PaddingValues(vertical = 8.dp.scaled())
@@ -626,7 +646,7 @@ fun ComicsContentForPreview(
                                         )
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(16.dp.scaled()))
+                                Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled()))
                             }
                         }
                     }
@@ -635,7 +655,7 @@ fun ComicsContentForPreview(
                         Text(
                             text = stringResource(R.string.no_comics_found_for_search),
                             modifier = Modifier
-                                .padding(16.dp.scaled())
+                                .padding(ComiquetaTheme.dimen.paddingLarge.scaled())
                                 .fillMaxWidth(),
                             textAlign = TextAlign.Center
                         )
@@ -706,7 +726,7 @@ fun ComicsContent(
                         end = ComiquetaTheme.dimen.searchHorizontalPadding
                     )
                     .height(ComiquetaTheme.dimen.inputHeight.scaled())
-                    .clip(RoundedCornerShape(8.dp.scaled())),
+                    .clip(RoundedCornerShape(ComiquetaTheme.dimen.searchRoundedCorner.scaled())),
                 colors = getOutlinedTextFieldDefaultsColors(),
                 singleLine = true
             )
@@ -724,7 +744,7 @@ fun ComicsContent(
             if (latestComicsExpanded) {
                 item {
                     HorizontalComicsRow(comics = latestComics, onIntent = onIntent)
-                    Spacer(modifier = Modifier.height(16.dp.scaled()))
+                    Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled()))
                 }
             }
         }
@@ -741,7 +761,7 @@ fun ComicsContent(
             if (favoriteComicsExpanded) {
                 item {
                     HorizontalComicsRow(comics = favoriteComics, onIntent = onIntent)
-                    Spacer(modifier = Modifier.height(16.dp.scaled()))
+                    Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled()))
                 }
             }
         }
@@ -806,7 +826,7 @@ fun ComicsContent(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(gridHeight)
-                                        .padding(horizontal = 16.dp.scaled()),
+                                        .padding(horizontal = ComiquetaTheme.dimen.paddingLarge.scaled()),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp.scaled()),
                                     verticalArrangement = Arrangement.spacedBy(8.dp.scaled()),
                                     contentPadding = PaddingValues(vertical = 8.dp.scaled())
@@ -823,7 +843,7 @@ fun ComicsContent(
                                         )
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(16.dp.scaled()))
+                                Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled()))
                             }
                         }
                     }
@@ -832,7 +852,7 @@ fun ComicsContent(
                         Text(
                             text = stringResource(R.string.no_comics_found_for_search),
                             modifier = Modifier
-                                .padding(16.dp.scaled())
+                                .padding(ComiquetaTheme.dimen.paddingLarge.scaled())
                                 .fillMaxWidth(),
                             textAlign = TextAlign.Center
                         )

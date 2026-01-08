@@ -63,4 +63,5 @@ sealed interface HomeIntent {
     // --- Intent for clearing search query ---
     data object ClearSearch : HomeIntent
 
+    data object RetryLoadComics : HomeIntent
 }

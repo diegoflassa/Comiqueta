@@ -297,7 +297,7 @@ fun SettingsScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp.scaled()),
+                .padding(horizontal = ComiquetaTheme.dimen.paddingLarge.scaled()),
         ) {
             permissionsSection(
                 uiState = uiState,
@@ -312,7 +312,7 @@ fun SettingsScreenContent(
                 onIntent = onIntent
             )
 
-            item { Spacer(modifier = Modifier.height(16.dp.scaled())) }
+            item { Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled())) }
 
             viewerSettingsSection(
                 uiState = uiState,
@@ -354,14 +354,14 @@ private fun LazyListScope.permissionsSection(
         Text(
             text = stringResource(R.string.settings_section_permissions_title),
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
+            modifier = Modifier.padding(top = ComiquetaTheme.dimen.paddingLarge.scaled(), bottom = ComiquetaTheme.dimen.paddingSmall.scaled())
         )
     }
     if (uiState.permissionDisplayStatuses.isEmpty()) {
         item {
             Text(
                 stringResource(R.string.settings_permissions_none_required),
-                modifier = Modifier.padding(vertical = 8.dp.scaled()),
+                modifier = Modifier.padding(vertical = ComiquetaTheme.dimen.paddingSmall.scaled()),
                 textAlign = TextAlign.Center
             )
         }
@@ -381,7 +381,7 @@ private fun LazyListScope.permissionsSection(
                     description = getPermissionDescription(permission),
                     rationale = getPermissionRationale(permission)
                 )
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp.scaled()))
+                HorizontalDivider(modifier = Modifier.padding(vertical = ComiquetaTheme.dimen.paddingSmall.scaled()))
             }
         }
         if (uiState.permissionDisplayStatuses.keys.any { it == Manifest.permission.READ_EXTERNAL_STORAGE }) {
@@ -392,8 +392,8 @@ private fun LazyListScope.permissionsSection(
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(
-                        top = 8.dp.scaled(),
-                        bottom = 16.dp.scaled()
+                        top = ComiquetaTheme.dimen.paddingSmall.scaled(),
+                        bottom = ComiquetaTheme.dimen.paddingLarge.scaled()
                     )
                 )
             }
@@ -409,7 +409,7 @@ private fun LazyListScope.monitoredFoldersSection(
         Text(
             text = stringResource(R.string.settings_section_monitored_folders_title),
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
+            modifier = Modifier.padding(top = ComiquetaTheme.dimen.paddingLarge.scaled(), bottom = ComiquetaTheme.dimen.paddingSmall.scaled())
         )
     }
     // Button to add new folder
@@ -427,7 +427,7 @@ private fun LazyListScope.monitoredFoldersSection(
         item {
             Text(
                 stringResource(R.string.settings_monitored_folders_empty),
-                modifier = Modifier.padding(vertical = 8.dp.scaled()),
+                modifier = Modifier.padding(vertical = ComiquetaTheme.dimen.paddingSmall.scaled()),
                 textAlign = TextAlign.Center
             )
         }
@@ -453,7 +453,7 @@ private fun LazyListScope.viewerSettingsSection(
         Text(
             text = stringResource(R.string.settings_section_viewer_title),
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
+            modifier = Modifier.padding(top = ComiquetaTheme.dimen.paddingLarge.scaled(), bottom = ComiquetaTheme.dimen.paddingSmall.scaled())
         )
         Card(modifier = Modifier.fillMaxWidth()) {
             ListItem(
@@ -475,7 +475,7 @@ private fun LazyListScope.viewerSettingsSection(
                         Text(
                             text = uiState.viewerPagesToPreloadAhead.toString(),
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(horizontal = 8.dp.scaled())
+                            modifier = Modifier.padding(horizontal = ComiquetaTheme.dimen.paddingSmall.scaled())
                         )
                         IconButton(
                             onClick = {
@@ -492,7 +492,7 @@ private fun LazyListScope.viewerSettingsSection(
                 }
             )
         }
-        Spacer(modifier = Modifier.height(16.dp.scaled()))
+        Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled()))
     }
 }
 
@@ -527,7 +527,7 @@ private fun LazyListScope.dataManagementSection(
         Text(
             text = stringResource(R.string.settings_section_data_management_title),
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = 16.dp.scaled(), bottom = 8.dp.scaled())
+            modifier = Modifier.padding(top = ComiquetaTheme.dimen.paddingLarge.scaled(), bottom = ComiquetaTheme.dimen.paddingSmall.scaled())
         )
         Card(modifier = Modifier.fillMaxWidth()) {
             ListItem(
@@ -615,7 +615,7 @@ fun PermissionItem(
 ) {
     val isEffectivelyPermanentlyDenied = !status.isGranted && !status.shouldShowRationale
 
-    Column(modifier = Modifier.padding(vertical = 8.dp.scaled())) {
+    Column(modifier = Modifier.padding(vertical = ComiquetaTheme.dimen.paddingSmall.scaled())) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -624,7 +624,7 @@ fun PermissionItem(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = 8.dp.scaled())
+                    .padding(end = ComiquetaTheme.dimen.paddingSmall.scaled())
             ) {
                 Text(
                     text = friendlyName,
@@ -643,7 +643,7 @@ fun PermissionItem(
                     stringResource(R.string.settings_permission_status_granted),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(end = 8.dp.scaled())
+                    modifier = Modifier.padding(end = ComiquetaTheme.dimen.paddingSmall.scaled())
                 )
                 Button(onClick = onOpenSettingsClick) { Text(stringResource(R.string.settings_button_app_settings)) }
             } else {
@@ -659,9 +659,9 @@ fun PermissionItem(
                 fontSize = 12.sp.scaled(),
                 color = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(
-                    top = 4.dp.scaled(),
-                    start = 8.dp.scaled(),
-                    end = 8.dp.scaled()
+                    top = ComiquetaTheme.dimen.paddingExtraSmall.scaled(),
+                    start = ComiquetaTheme.dimen.paddingSmall.scaled(),
+                    end = ComiquetaTheme.dimen.paddingSmall.scaled()
                 )
             )
         } else if (isEffectivelyPermanentlyDenied) {
@@ -670,9 +670,9 @@ fun PermissionItem(
                 fontSize = 12.sp.scaled(),
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(
-                    top = 4.dp.scaled(),
-                    start = 8.dp.scaled(),
-                    end = 8.dp.scaled()
+                    top = ComiquetaTheme.dimen.paddingExtraSmall.scaled(),
+                    start = ComiquetaTheme.dimen.paddingSmall.scaled(),
+                    end = ComiquetaTheme.dimen.paddingSmall.scaled()
                 )
             )
         }
@@ -702,7 +702,7 @@ fun ComicsFolderUriItem(
             .clickable {
                 onIntent?.invoke(SettingsIntent.OpenFolder(folderUri))
             }
-            .padding(vertical = 12.dp.scaled()),
+            .padding(vertical = ComiquetaTheme.dimen.paddingMedium.scaled()),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -710,7 +710,7 @@ fun ComicsFolderUriItem(
             text = decodedPath,
             modifier = Modifier
                 .weight(1f)
-                .padding(end = 8.dp.scaled()),
+                .padding(end = ComiquetaTheme.dimen.paddingSmall.scaled()),
             overflow = TextOverflow.Ellipsis,
             maxLines = 2, // Allow up to 2 lines for longer paths
             style = MaterialTheme.typography.bodyMedium
