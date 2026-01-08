@@ -1,48 +1,39 @@
 package dev.diegoflassa.comiqueta.ui.widgets
 
 import android.content.res.Configuration
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.diegoflassa.comiqueta.core.R
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
 import dev.diegoflassa.comiqueta.ui.home.ImmutableList
-import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.theme.tabSelectedText
 import dev.diegoflassa.comiqueta.core.theme.tabUnselectedText
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import kotlin.collections.indexOf
-import kotlin.collections.set
 
 private const val tag = "CategoriesSection"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesSection(
     categories: ImmutableList<CategoryEntity>,
@@ -53,40 +44,22 @@ fun CategoriesSection(
         return
     }
 
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val selectedTabIndex = remember(categories, selectedCategory) {
+        categories.indexOf(selectedCategory).let {
+            if (it == -1) 0 else it
+        }
+    }
 
-    val textWidths = remember { mutableStateMapOf<Int, Dp>() }
-    val density = LocalDensity.current
-
-    TabRow(
+    SecondaryTabRow(
         modifier = Modifier.padding(horizontal = ComiquetaTheme.dimen.tabHorizontalPadding),
         containerColor = ComiquetaTheme.colorScheme.background,
         selectedTabIndex = selectedTabIndex,
-        indicator = { tabPositions ->
-            selectedTabIndex = categories.indexOf(selectedCategory).let {
-                if (it == -1) 0 else it
-            }
-
-            if (tabPositions.isNotEmpty() && selectedTabIndex in tabPositions.indices) {
-                val currentTabPosition = tabPositions[selectedTabIndex]
-                val currentTextWidth = textWidths[selectedTabIndex] ?: 0.dp
-
-                if (currentTextWidth > 0.dp) {
-                    val mainIndicatorHeight = 2.dp.scaled()
-                    val mainIndicatorColor = ComiquetaTheme.colorScheme.tabSelectedText
-
-                    Box(
-                        Modifier
-                            .wrapContentSize(Alignment.BottomStart)
-                            .padding(start = currentTabPosition.left + 16.dp)
-                            .width(currentTextWidth)
-                            .background(mainIndicatorColor)
-                            .height(mainIndicatorHeight)
-                    )
-                }
-            } else {
-                Box(Modifier)
-            }
+        indicator = {
+            TabRowDefaults.SecondaryIndicator(
+                modifier = Modifier.tabIndicatorOffset(selectedTabIndex, matchContentSize = true),
+                color = ComiquetaTheme.colorScheme.tabSelectedText,
+                height = 2.dp.scaled()
+            )
         }) {
         categories.forEachIndexed { index, category ->
             val categoryText = if (category.name.equals(
@@ -115,21 +88,7 @@ fun CategoriesSection(
                             else
                                 ComiquetaTheme.colorScheme.tabUnselectedText,
                             textAlign = TextAlign.Start,
-                            maxLines = 1,
-                            onTextLayout = { textLayoutResult ->
-                                val lastVisibleLine = textLayoutResult.lineCount - 1
-                                val lastVisibleCharIndex =
-                                    textLayoutResult.getLineEnd(lastVisibleLine, visibleEnd = false)
-
-                                val lastCharRight = textLayoutResult.getHorizontalPosition(
-                                    lastVisibleCharIndex - 1,
-                                    usePrimaryDirection = true
-                                )
-
-                                val visibleWidth = with(density) { lastCharRight.toDp() }
-                                TimberLogger.logI(tag, "Visible width[$index]: $visibleWidth")
-                                textWidths[index] = visibleWidth
-                            }
+                            maxLines = 1
                         )
                     }
                 })
