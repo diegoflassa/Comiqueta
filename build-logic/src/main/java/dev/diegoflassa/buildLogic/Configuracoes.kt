@@ -9,7 +9,7 @@ object Configuracoes {
     const val APP_PREFIX = "cmqt"
     const val DIEGOFLASSA_ID = "dev.diegoflassa"
     const val APPLICATION_ID = "$DIEGOFLASSA_ID.comiqueta"
-    const val MINIMUM_SDK = 28
+    const val MINIMUM_SDK = 29
     const val COMPILE_SDK = 36
     const val TARGET_SDK = 36
     const val BUILD_TOOLS_VERSION = "36.1.0"

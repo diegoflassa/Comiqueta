@@ -6,7 +6,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.diegoflassa.comiqueta.core.data.extensions.modoDebugHabilitado
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.navigation.NavDisplay
@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
             ComiquetaThemeContent {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = ComiquetaTheme.colorScheme.background
                 ) {
                     NavDisplay(modifier = Modifier, navigationViewModel = navigationViewModel)
                 }

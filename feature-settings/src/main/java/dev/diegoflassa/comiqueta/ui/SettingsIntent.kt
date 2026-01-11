@@ -24,4 +24,7 @@ sealed interface SettingsIntent {
     data object ConfirmClearLocalDatabase : SettingsIntent
     data object RescanComicFoldersClicked : SettingsIntent
     data object ConfirmRescanComicFolders : SettingsIntent
+    data class UpdateWebtoonMode(val enabled: Boolean) : SettingsIntent
+    data class UpdateDoublePageView(val enabled: Boolean) : SettingsIntent
+    data class UpdatePageFlipSoundEnabled(val enabled: Boolean) : SettingsIntent
 }

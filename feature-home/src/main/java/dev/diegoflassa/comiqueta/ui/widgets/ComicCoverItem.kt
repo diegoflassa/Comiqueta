@@ -21,6 +21,17 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.home.R
@@ -41,18 +52,46 @@ fun ComicCoverItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp.scaled()),
         shape = RoundedCornerShape(8.dp.scaled())
     ) {
-        Image(
-            painter = rememberAsyncImagePainter(
-                model = comic?.coverPath.takeIf { it != Uri.EMPTY }
-                    ?: comic?.filePath.takeIf { it != Uri.EMPTY },
-                error = painterResource(id = R.drawable.ic_placeholder_comic),
-                placeholder = painterResource(id = R.drawable.ic_placeholder_comic)
-            ),
-            contentDescription = comic?.title
-                ?: stringResource(id = R.string.comic_cover_image_description),
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = rememberAsyncImagePainter(
+                    model = comic?.coverPath.takeIf { it != Uri.EMPTY }
+                        ?: comic?.filePath.takeIf { it != Uri.EMPTY },
+                    error = painterResource(id = R.drawable.ic_placeholder_comic),
+                    placeholder = painterResource(id = R.drawable.ic_placeholder_comic)
+                ),
+                contentDescription = comic?.title
+                    ?: stringResource(id = R.string.comic_cover_image_description),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // Progress bar
+            if (comic != null && comic.lastPageRead > 0 && comic.pageCount > 0 && !comic.hasBeenRead) {
+                val progress = (comic.lastPageRead + 1).toFloat() / comic.pageCount.toFloat()
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp.scaled())
+                        .align(Alignment.BottomCenter),
+                    color = ComiquetaTheme.colorScheme.primary,
+                    trackColor = ComiquetaTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                )
+            }
+
+            // Read badge
+            if (comic?.hasBeenRead == true) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = Color.Green,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp.scaled())
+                )
+            }
+        }
     }
 }
 

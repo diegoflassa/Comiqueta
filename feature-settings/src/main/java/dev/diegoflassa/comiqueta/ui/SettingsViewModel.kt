@@ -65,12 +65,39 @@ open class SettingsViewModel @Inject constructor(
                 ?: PreferencesKeys.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
         }
 
-    // --- Implementation for Viewer Page Preloading ---
+    private val isWebtoonMode: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.WEBTOON_MODE] ?: false
+        }
+
+    private val isDoublePageView: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.DOUBLE_PAGE_MODE] ?: false
+        }
+
+    private val isPageFlipSoundEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.PAGE_FLIP_SOUND_ENABLED] ?: false
+        }
+
+    // --- Implementation for Setting Persistence ---
     suspend fun setViewerPagesToPreloadAhead(count: Int) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.VIEWER_PAGES_TO_PRELOAD_AHEAD] =
                 count.coerceAtLeast(0) // Ensure non-negative
         }
+    }
+
+    suspend fun setWebtoonMode(enabled: Boolean) {
+        dataStore.edit { it[PreferencesKeys.WEBTOON_MODE] = enabled }
+    }
+
+    suspend fun setDoublePageView(enabled: Boolean) {
+        dataStore.edit { it[PreferencesKeys.DOUBLE_PAGE_MODE] = enabled }
+    }
+
+    suspend fun setPageFlipSoundEnabled(enabled: Boolean) {
+        dataStore.edit { it[PreferencesKeys.PAGE_FLIP_SOUND_ENABLED] = enabled }
     }
 
     init {
@@ -88,20 +115,36 @@ open class SettingsViewModel @Inject constructor(
         }
         _uiState.update { it.copy(permissionDisplayStatuses = initialGrantStatuses) }
 
-        // Observe viewer pages to preload setting
+        // Observe settings
         viewModelScope.launch {
-            viewerPagesToPreloadAhead
-                .catch { e ->
-                    TimberLogger.logE(
-                        "SettingsViewModel",
-                        "Error observing viewerPagesToPreloadAhead",
-                        e
-                    )
-                    // Optionally emit a default or error state to UI if needed
+            launch {
+                viewerPagesToPreloadAhead
+                    .catch { e ->
+                        TimberLogger.logE(
+                            "SettingsViewModel",
+                            "Error observing viewerPagesToPreloadAhead",
+                            e
+                        )
+                    }
+                    .collect { preloadCount ->
+                        _uiState.update { it.copy(viewerPagesToPreloadAhead = preloadCount) }
+                    }
+            }
+            launch {
+                isWebtoonMode.collect { enabled ->
+                    _uiState.update { it.copy(isWebtoonMode = enabled) }
                 }
-                .collect { preloadCount ->
-                    _uiState.update { it.copy(viewerPagesToPreloadAhead = preloadCount) }
+            }
+            launch {
+                isDoublePageView.collect { enabled ->
+                    _uiState.update { it.copy(isDoublePageView = enabled) }
                 }
+            }
+            launch {
+                isPageFlipSoundEnabled.collect { enabled ->
+                    _uiState.update { it.copy(isPageFlipSoundEnabled = enabled) }
+                }
+            }
         }
     }
 
@@ -222,6 +265,18 @@ open class SettingsViewModel @Inject constructor(
                         "Folder rescan started by user confirmation"
                     )
                     _effect.send(SettingsEffect.ShowToast(context.getString(R.string.rescan_started)))
+                }
+
+                is SettingsIntent.UpdateWebtoonMode -> {
+                    setWebtoonMode(intent.enabled)
+                }
+
+                is SettingsIntent.UpdateDoublePageView -> {
+                    setDoublePageView(intent.enabled)
+                }
+
+                is SettingsIntent.UpdatePageFlipSoundEnabled -> {
+                    setPageFlipSoundEnabled(intent.enabled)
                 }
             }
         }

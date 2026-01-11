@@ -22,6 +22,7 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
@@ -128,7 +129,7 @@ fun CategoriesContent(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(16.dp),
-                color = MaterialTheme.colorScheme.error
+                color = ComiquetaTheme.colorScheme.error
             )
         } else if (categories.isEmpty()) {
             Text(
@@ -217,16 +218,13 @@ val sampleCategoriesList = listOf(
     CategoryEntity(id = 5, name = "Horror Thriller Z")
 )
 
-// --- Previews Start ---
 
-// Previews - With Data
-@OptIn(ExperimentalMaterial3Api::class)
+// --- Previews - Main States ---
 @PreviewScreenSizes
 @Preview(
-    name = "ScreenMainState Dark - 1080x2560px",
-    group = "Previews - With Data",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
+    name = "Categories - Light - Main State",
+    group = "Categories",
+    showBackground = true
 )
 @Composable
 private fun CategoriesScreenPreviewMainState() {
@@ -238,13 +236,12 @@ private fun CategoriesScreenPreviewMainState() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @PreviewScreenSizes
 @Preview(
-    name = "ScreenWithDialog Dark - 1080x2560px",
-    group = "Previews - With Data",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
+    name = "Categories - Dark - With Dialog",
+    group = "Categories",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
 private fun CategoriesScreenPreviewWithDialog() {
@@ -261,33 +258,12 @@ private fun CategoriesScreenPreviewWithDialog() {
     }
 }
 
-@PreviewScreenSizes
+// --- Previews - Other States ---
 @Preview(
-    name = "ContentWithData Dark - 1080x2560px",
-    group = "Previews - With Data",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
-)
-@Composable
-private fun CategoriesContentPreviewWithData() {
-    ComiquetaThemeContent {
-        CategoriesContent(
-            categories = sampleCategoriesList,
-            isLoading = false,
-            error = null,
-            onIntent = {}
-        )
-    }
-}
-
-// Previews - Other States
-@OptIn(ExperimentalMaterial3Api::class)
-@PreviewScreenSizes
-@Preview(
-    name = "ScreenEmptyState Dark - 1080x2560px",
-    group = "Previews - Other States",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
+    name = "Categories - Dark - Empty",
+    group = "Categories",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
 private fun CategoriesScreenPreviewEmptyState() {
@@ -299,31 +275,11 @@ private fun CategoriesScreenPreviewEmptyState() {
     }
 }
 
-@PreviewScreenSizes
 @Preview(
-    name = "ContentEmpty Dark - 1080x2560px",
-    group = "Previews - Other States",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
-)
-@Composable
-private fun CategoriesContentPreviewEmpty() {
-    ComiquetaThemeContent {
-        CategoriesContent(
-            categories = emptyList(),
-            isLoading = false,
-            error = null,
-            onIntent = {},
-        )
-    }
-}
-
-@PreviewScreenSizes
-@Preview(
-    name = "ContentLoading Dark - 1080x2560px",
-    group = "Previews - Other States",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
+    name = "Categories - Dark - Loading",
+    group = "Categories",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
 private fun CategoriesContentPreviewLoading() {
@@ -337,12 +293,11 @@ private fun CategoriesContentPreviewLoading() {
     }
 }
 
-@PreviewScreenSizes
 @Preview(
-    name = "ContentError Dark - 1080x2560px",
-    group = "Previews - Other States",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
+    name = "Categories - Dark - Error",
+    group = "Categories",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
 private fun CategoriesContentPreviewError() {
@@ -356,13 +311,12 @@ private fun CategoriesContentPreviewError() {
     }
 }
 
-// Previews - Dialogs
-@PreviewScreenSizes
+// --- Previews - Dialogs ---
 @Preview(
-    name = "DialogAdd Dark - 1080x2560px",
-    group = "Previews - Dialogs",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
+    name = "Dialog - Add - Dark",
+    group = "Categories - Dialogs",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
 private fun CategoryEditDialogPreviewAdd() {
@@ -377,12 +331,11 @@ private fun CategoryEditDialogPreviewAdd() {
     }
 }
 
-@PreviewScreenSizes
 @Preview(
-    name = "DialogEdit Dark - 1080x2560px",
-    group = "Previews - Dialogs",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    device = "spec:width=1080px,height=2560px,dpi=440"
+    name = "Dialog - Edit - Dark",
+    group = "Categories - Dialogs",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
 private fun CategoryEditDialogPreviewEdit() {
@@ -396,4 +349,5 @@ private fun CategoryEditDialogPreviewEdit() {
         )
     }
 }
+// --- Previews End ---
 // --- Previews End ---

@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.paging.compose.LazyPagingItems
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
+import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.theme.trackBarThumbColor
 import dev.diegoflassa.comiqueta.core.theme.trackBarTrackColor
@@ -185,8 +186,8 @@ fun ScrollTrackIndicator(
     pageCount: Int,
     currentPage: Int,
     modifier: Modifier = Modifier,
-    trackColor: Color = MaterialTheme.colorScheme.trackBarTrackColor,
-    thumbColor: Color = MaterialTheme.colorScheme.trackBarThumbColor,
+    trackColor: Color = ComiquetaTheme.colorScheme.trackBarTrackColor,
+    thumbColor: Color = ComiquetaTheme.colorScheme.trackBarThumbColor,
     barHeight: Dp = 2.dp.scaled(),
     thumbIndicatorWidth: Dp = 23.dp.scaled()
 ) {
@@ -280,6 +281,7 @@ private val comicsWithNullsPreviewData: List<Comic?> =
     )
 
 
+
 @PreviewScreenSizes
 @Preview(
     name = "HorizontalComicsRow - Light - Default",
@@ -298,7 +300,6 @@ private fun HorizontalComicsRowPreviewLightDefault() {
     }
 }
 
-@PreviewScreenSizes
 @Preview(
     name = "HorizontalComicsRow - Dark - Default",
     group = "HorizontalComicsRow",
@@ -317,7 +318,6 @@ private fun HorizontalComicsRowPreviewDarkDefault() {
     }
 }
 
-@PreviewScreenSizes
 @Preview(
     name = "HorizontalComicsRow - Light - Few Items",
     group = "HorizontalComicsRow",
@@ -335,7 +335,6 @@ private fun HorizontalComicsRowPreviewLightFewItems() {
     }
 }
 
-@PreviewScreenSizes
 @Preview(
     name = "HorizontalComicsRow - Dark - Many Items",
     group = "HorizontalComicsRow",
@@ -354,7 +353,6 @@ private fun HorizontalComicsRowPreviewDarkManyItems() {
     }
 }
 
-@PreviewScreenSizes
 @Preview(
     name = "HorizontalComicsRow - Light - Empty List",
     group = "HorizontalComicsRow",
@@ -372,7 +370,6 @@ private fun HorizontalComicsRowPreviewLightEmpty() {
     }
 }
 
-@PreviewScreenSizes
 @Preview(
     name = "HorizontalComicsRow - Light - With Nulls (Loading)",
     group = "HorizontalComicsRow",

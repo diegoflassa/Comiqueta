@@ -44,21 +44,28 @@ class DecodeComicPageUseCase @Inject constructor(
         pageIndex: Int,
         pageIdentifier: String,
         comicUri: Uri,
-        fileType: ComicFileType
+        fileType: ComicFileType,
+        thumbnailWidth: Int?
     ): ImageBitmap? {
         return withContext(Dispatchers.IO) {
             TimberLogger.logI(
                 "DecodeComicPageUseCase",
-                "Decoding page index: $pageIndex, identifier: '$pageIdentifier' for $fileType from $comicUri"
+                "Decoding page index: $pageIndex, identifier: '$pageIdentifier' for $fileType from $comicUri (thumb: $thumbnailWidth)"
             )
             val context = application.applicationContext
             var pfd: ParcelFileDescriptor? = null
 
             try {
-                val bitmapOptions = BitmapFactory.Options().apply {
-                    inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
-                    // Consider adding inJustDecodeBounds for checking dimensions first if needed elsewhere
-                    // Consider adding inSampleSize for loading scaled down versions to save memory
+                fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int): Int {
+                    val width = options.outWidth
+                    var inSampleSize = 1
+                    if (width > reqWidth) {
+                        val halfWidth = width / 2
+                        while (halfWidth / inSampleSize >= reqWidth) {
+                            inSampleSize *= 2
+                        }
+                    }
+                    return inSampleSize
                 }
 
                 val loadedBitmap: android.graphics.Bitmap? = when (fileType) {
@@ -71,9 +78,18 @@ class DecodeComicPageUseCase @Inject constructor(
                                 throw IOException("Page index out of bounds for PDF. Index: $actualPageIndex, Count: ${renderer.pageCount}")
                             }
                             renderer.openPage(actualPageIndex).use { page ->
+                                val finalWidth: Int
+                                val finalHeight: Int
+                                if (thumbnailWidth != null && page.width > thumbnailWidth) {
+                                    finalWidth = thumbnailWidth
+                                    finalHeight = (page.height * (thumbnailWidth.toFloat() / page.width)).toInt()
+                                } else {
+                                    finalWidth = page.width
+                                    finalHeight = page.height
+                                }
                                 val bitmap = createBitmap(
-                                    page.width,
-                                    page.height,
+                                    finalWidth,
+                                    finalHeight,
                                     android.graphics.Bitmap.Config.ARGB_8888
                                 )
                                 page.render(
@@ -96,10 +112,26 @@ class DecodeComicPageUseCase @Inject constructor(
                                     var entry = ais.nextEntry
                                     while (entry != null) {
                                         if (entry.name == pageIdentifier && isImageFile(entry.name) && !entry.isDirectory) {
-                                            return@withContext BitmapFactory.decodeStream(
-                                                ais,
-                                                null,
-                                                bitmapOptions
+                                            val baos = ByteArrayOutputStream()
+                                            ais.copyTo(baos)
+                                            val imageBytes = baos.toByteArray()
+                                            
+                                            val options = BitmapFactory.Options().apply {
+                                                inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+                                            }
+                                            
+                                            if (thumbnailWidth != null) {
+                                                options.inJustDecodeBounds = true
+                                                BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
+                                                options.inSampleSize = calculateInSampleSize(options, thumbnailWidth)
+                                                options.inJustDecodeBounds = false
+                                            }
+                                            
+                                            return@withContext BitmapFactory.decodeByteArray(
+                                                imageBytes,
+                                                0,
+                                                imageBytes.size,
+                                                options
                                             )?.asImageBitmap()
                                         }
                                         entry = ais.nextEntry
@@ -134,11 +166,22 @@ class DecodeComicPageUseCase @Inject constructor(
                                             entryStream.copyTo(baos)
                                         }
                                         val imageBytes = baos.toByteArray()
+                                        val options = BitmapFactory.Options().apply {
+                                            inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+                                        }
+                                        
+                                        if (thumbnailWidth != null) {
+                                            options.inJustDecodeBounds = true
+                                            BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
+                                            options.inSampleSize = calculateInSampleSize(options, thumbnailWidth)
+                                            options.inJustDecodeBounds = false
+                                        }
+
                                         BitmapFactory.decodeByteArray(
                                             imageBytes,
                                             0,
                                             imageBytes.size,
-                                            bitmapOptions
+                                            options
                                         )
                                     }
                                 }
@@ -176,11 +219,23 @@ class DecodeComicPageUseCase @Inject constructor(
                                             if (read == -1) break
                                             currentOffset += read
                                         }
+                                        
+                                        val options = BitmapFactory.Options().apply {
+                                            inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+                                        }
+                                        
+                                        if (thumbnailWidth != null) {
+                                            options.inJustDecodeBounds = true
+                                            BitmapFactory.decodeByteArray(contentBytes, 0, contentBytes.size, options)
+                                            options.inSampleSize = calculateInSampleSize(options, thumbnailWidth)
+                                            options.inJustDecodeBounds = false
+                                        }
+
                                         return@withContext BitmapFactory.decodeByteArray(
                                             contentBytes,
                                             0,
                                             contentBytes.size,
-                                            bitmapOptions
+                                            options
                                         )?.asImageBitmap()
                                     }
                                     entry = sevenZFile.nextEntry
@@ -216,10 +271,26 @@ class DecodeComicPageUseCase @Inject constructor(
                                     var entry = ais.nextEntry
                                     while (entry != null) {
                                         if (entry.name == pageIdentifier && isImageFile(entry.name) && !entry.isDirectory) {
-                                            return@withContext BitmapFactory.decodeStream(
-                                                ais,
-                                                null,
-                                                bitmapOptions
+                                            val baos = ByteArrayOutputStream()
+                                            ais.copyTo(baos)
+                                            val imageBytes = baos.toByteArray()
+                                            
+                                            val options = BitmapFactory.Options().apply {
+                                                inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+                                            }
+                                            
+                                            if (thumbnailWidth != null) {
+                                                options.inJustDecodeBounds = true
+                                                BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
+                                                options.inSampleSize = calculateInSampleSize(options, thumbnailWidth)
+                                                options.inJustDecodeBounds = false
+                                            }
+                                            
+                                            return@withContext BitmapFactory.decodeByteArray(
+                                                imageBytes,
+                                                0,
+                                                imageBytes.size,
+                                                options
                                             )?.asImageBitmap()
                                         }
                                         entry = ais.nextEntry
@@ -231,24 +302,41 @@ class DecodeComicPageUseCase @Inject constructor(
                     }
 
                     ComicFileType.JPG, ComicFileType.JPEG, ComicFileType.PNG, ComicFileType.GIF, ComicFileType.WEBP -> {
-                        // For single images, pageIdentifier is the filename, but we decode directly from the URI
                         context.contentResolver.openInputStream(comicUri)?.use { inputStream ->
                             if (fileType != ComicFileType.GIF) {
                                 val source =
                                     ImageDecoder.createSource(context.contentResolver, comicUri)
-                                ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+                                ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
                                     decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
                                     decoder.isMutableRequired = true
+                                    if (thumbnailWidth != null && info.size.width > thumbnailWidth) {
+                                        val sample = (info.size.width / thumbnailWidth).coerceAtLeast(1)
+                                        decoder.setTargetSampleSize(sample)
+                                    }
                                 }
                             } else {
-                                BitmapFactory.decodeStream(inputStream, null, bitmapOptions)
+                                val options = BitmapFactory.Options().apply {
+                                    inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+                                }
+                                if (thumbnailWidth != null) {
+                                    // GIF decoding with BitmapFactory is limited, but we try sample size
+                                    options.inJustDecodeBounds = true
+                                    BitmapFactory.decodeStream(inputStream, null, options)
+                                    options.inSampleSize = calculateInSampleSize(options, thumbnailWidth)
+                                    options.inJustDecodeBounds = false
+                                    // Need to reopen stream for real decode
+                                    context.contentResolver.openInputStream(comicUri)?.use { bis ->
+                                         return@withContext BitmapFactory.decodeStream(bis, null, options)?.asImageBitmap()
+                                    }
+                                }
+                                BitmapFactory.decodeStream(inputStream, null, options)
                             }
                         }
                     }
                 }
                 TimberLogger.logD(
                     "DecodeComicPageUseCase",
-                    "Successfully decoded page index: $pageIndex, identifier: $pageIdentifier"
+                    "Successfully decoded page index: $pageIndex, identifier: $pageIdentifier (thumb: $thumbnailWidth)"
                 )
                 loadedBitmap?.asImageBitmap()
             } catch (ex: Exception) {

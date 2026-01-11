@@ -1,5 +1,6 @@
 package dev.diegoflassa.comiqueta.core.domain.usecase.folder
 
+import android.content.Intent
 import android.net.Uri
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
 import javax.inject.Inject
@@ -19,7 +20,7 @@ open class AddMonitoredFolderUseCase @Inject constructor(
         // Change to renaming repository method to e.g., "storeMonitoredFolderUri"
         return comicsFolderRepository.takePersistablePermission(
             uri,
-            0
-        ) // Flags might be irrelevant if UI handles it
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        )
     }
 }

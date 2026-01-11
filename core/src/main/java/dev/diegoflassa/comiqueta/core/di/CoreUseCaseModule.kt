@@ -19,6 +19,10 @@ import dev.diegoflassa.comiqueta.core.domain.usecase.folder.IRemoveMonitoredFold
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.RemoveMonitoredFolderUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.permission.GetRelevantOsPermissionsUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.permission.IGetRelevantOsPermissionsUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.comic.GetComicUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IGetComicUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IUpdateComicProgressUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.comic.UpdateComicProgressUseCase
 
 @Module
 @InstallIn(ViewModelComponent::class)
@@ -53,6 +57,18 @@ abstract class CoreUseCaseModule {
     abstract fun bindEnqueueSafFolderScanWorkerUseCase(
         enqueueSafFolderScanWorkerUseCase: EnqueueSafFolderScanWorkerUseCase
     ): IEnqueueSafFolderScanWorkerUseCase
+
+    @Binds
+    @ViewModelScoped
+    abstract fun bindGetComicUseCase(
+        getComicUseCase: GetComicUseCase
+    ): IGetComicUseCase
+
+    @Binds
+    @ViewModelScoped
+    abstract fun bindUpdateComicProgressUseCase(
+        updateComicProgressUseCase: UpdateComicProgressUseCase
+    ): IUpdateComicProgressUseCase
 
     companion object {
         @Provides

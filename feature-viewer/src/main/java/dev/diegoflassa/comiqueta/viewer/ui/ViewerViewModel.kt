@@ -12,6 +12,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.diegoflassa.comiqueta.core.data.preferences.PreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.model.ComicFileType
+import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IGetComicUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IUpdateComicProgressUseCase
 import dev.diegoflassa.comiqueta.viewer.domain.usecase.IDecodeComicPageUseCase
 import dev.diegoflassa.comiqueta.viewer.domain.usecase.IGetComicInfoUseCase
 import kotlinx.coroutines.Job
@@ -34,7 +36,9 @@ import kotlin.coroutines.cancellation.CancellationException
 open class ViewerViewModel @Inject constructor(
     private val getComicInfoUseCase: IGetComicInfoUseCase,
     private val decodeComicPageUseCase: IDecodeComicPageUseCase,
-    dataStore: DataStore<Preferences>
+    private val getComicUseCase: IGetComicUseCase,
+    private val updateComicProgressUseCase: IUpdateComicProgressUseCase,
+    private val dataStore: DataStore<Preferences>
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ViewerUIState())
@@ -48,7 +52,9 @@ open class ViewerViewModel @Inject constructor(
     private var currentComicFileType: ComicFileType? = null
 
     private lateinit var pageBitmapCache: LruCache<Int, ImageBitmap>
+    private lateinit var thumbnailBitmapCache: LruCache<Int, ImageBitmap>
     private val pageLoadJobs = mutableMapOf<Int, Job>()
+    private val thumbnailLoadJobs = mutableMapOf<Int, Job>()
 
     private val _pagesToPreloadLogic =
         MutableStateFlow(ViewerUIState.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD)
@@ -92,10 +98,41 @@ open class ViewerViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     pagesToPreloadLogic = initialLogicPreload,
-                    isLoadingPage = emptySet()
+                    isLoadingPage = emptySet(),
+                    isLoadingThumbnail = emptySet()
                 )
             }
+            thumbnailBitmapCache = LruCache(200) // Support up to 200 thumbnails
             TimberLogger.logI(TAG, "Initial logic preload count set to: $initialLogicPreload.")
+
+            val isMangaModeFlow: Flow<Boolean> = dataStore.data
+                .map {
+                    it[PreferencesKeys.MANGA_MODE] ?: false
+                }
+
+            launch {
+                isMangaModeFlow.collect { isMangaMode ->
+                    _uiState.update { it.copy(isMangaMode = isMangaMode) }
+                }
+            }
+
+            launch {
+                dataStore.data.map { it[PreferencesKeys.WEBTOON_MODE] ?: false }.collect { enabled ->
+                    _uiState.update { it.copy(isWebtoonMode = enabled) }
+                }
+            }
+
+            launch {
+                dataStore.data.map { it[PreferencesKeys.DOUBLE_PAGE_MODE] ?: false }.collect { enabled ->
+                    _uiState.update { it.copy(isDoublePageMode = enabled) }
+                }
+            }
+
+            launch {
+                dataStore.data.map { it[PreferencesKeys.PAGE_FLIP_SOUND_ENABLED] ?: false }.collect { enabled ->
+                    _uiState.update { it.copy(isPageFlipSoundEnabled = enabled) }
+                }
+            }
 
             viewerPagesToPreloadAheadFlow
                 .catch { e ->
@@ -147,41 +184,81 @@ open class ViewerViewModel @Inject constructor(
 
             is ViewerIntent.ToggleUiVisibility -> _uiState.update { it.copy(isUiVisible = !it.isUiVisible) }
             is ViewerIntent.ErrorShown -> _uiState.update { it.copy(error = null) }
+            is ViewerIntent.LoadThumbnail -> handleLoadThumbnail(intent.pageNumber)
+        }
+    }
+
+    private fun handleLoadThumbnail(pageIndex: Int) {
+        if (!::thumbnailBitmapCache.isInitialized) return
+        if (uiState.value.loadedThumbnails.containsKey(pageIndex)) return
+        if (uiState.value.isLoadingThumbnail.contains(pageIndex)) return
+        if (thumbnailLoadJobs.containsKey(pageIndex)) return
+
+        thumbnailLoadJobs[pageIndex] = viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoadingThumbnail = it.isLoadingThumbnail + pageIndex) }
+                val bitmap = loadPageBitmapInternal(pageIndex, thumbnailWidth = 300)
+                if (isActive && bitmap != null) {
+                    thumbnailBitmapCache.put(pageIndex, bitmap)
+                    _uiState.update { state ->
+                        state.copy(
+                            loadedThumbnails = state.loadedThumbnails + (pageIndex to bitmap),
+                            isLoadingThumbnail = state.isLoadingThumbnail - pageIndex
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                TimberLogger.logE(TAG, "Error loading thumbnail for page $pageIndex", e)
+            } finally {
+                _uiState.update { it.copy(isLoadingThumbnail = it.isLoadingThumbnail - pageIndex) }
+                thumbnailLoadJobs.remove(pageIndex)
+            }
         }
     }
 
     private fun handleLoadComic(uri: Uri) {
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    comicTitle = "",
-                    comicPath = uri,
-                    loadedPages = emptyMap(),
-                    currentPage = 0, pageCount = 0,
-                    fileType = null,
-                    isLoadingPage = emptySet(),
-                    error = null,
-                    pagesToPreloadLogic = _pagesToPreloadLogic.value
-                )
-            }
-            currentComicUri = uri
-            if (::pageBitmapCache.isInitialized) {
-                pageBitmapCache.evictAll()
-            } else {
-                TimberLogger.logE(
-                    TAG,
-                    "CRITICAL: Cache accessed in handleLoadComic before init completed!"
-                )
-                val fallbackPreload =
-                    _pagesToPreloadLogic.value.coerceAtMost(MAX_SETTING_FOR_CACHE_INIT)
-                pageBitmapCache = LruCache((1 + 2 * fallbackPreload).coerceAtLeast(1))
-            }
-            comicPageIdentifiers = emptyList()
-
-            pageLoadJobs.values.forEach { it.cancelJob("New comic load requested") }
-            pageLoadJobs.clear()
-
             try {
+                _uiState.update {
+                    it.copy(
+                        comicTitle = "",
+                        comicPath = uri,
+                        loadedPages = emptyMap(),
+                        currentPage = 0, pageCount = 0,
+                        fileType = null,
+                        isLoadingPage = emptySet(),
+                        error = null,
+                        pagesToPreloadLogic = _pagesToPreloadLogic.value
+                    )
+                }
+
+                val comic = getComicUseCase(uri)
+                val initialPage = comic?.lastPageRead ?: 0
+
+                currentComicUri = uri
+                if (::pageBitmapCache.isInitialized) {
+                    pageBitmapCache.evictAll()
+                } else {
+                    TimberLogger.logE(
+                        TAG,
+                        "CRITICAL: Cache accessed in handleLoadComic before init completed!"
+                    )
+                    val fallbackPreload =
+                        _pagesToPreloadLogic.value.coerceAtMost(MAX_SETTING_FOR_CACHE_INIT)
+                    pageBitmapCache = LruCache((1 + 2 * fallbackPreload).coerceAtLeast(1))
+                }
+
+                if (::thumbnailBitmapCache.isInitialized) {
+                    thumbnailBitmapCache.evictAll()
+                } else {
+                    thumbnailBitmapCache = LruCache(200)
+                }
+
+                comicPageIdentifiers = emptyList()
+
+                pageLoadJobs.values.forEach { it.cancelJob("New comic load requested") }
+                pageLoadJobs.clear()
+
                 TimberLogger.logI(TAG, "LoadComic: Starting for $uri")
                 val comicInfo = getComicInfoUseCase(currentComicUri!!)
                 comicPageIdentifiers = comicInfo.pageIdentifiers
@@ -193,12 +270,11 @@ open class ViewerViewModel @Inject constructor(
                         comicPath = uri,
                         pageCount = comicInfo.pageCount,
                         fileType = comicInfo.fileType
-                        // isLoadingPage will be handled by dispatchLoadPages
                     )
                 }
 
                 if (comicInfo.pageCount > 0 && comicInfo.pageIdentifiers.isNotEmpty()) {
-                    dispatchLoadPages(0)
+                    dispatchLoadPages(initialPage.coerceIn(0, comicInfo.pageCount - 1))
                 } else {
                     TimberLogger.logW(TAG, "LoadComic: Comic has no pages.")
                     _effect.send(ViewerEffect.ShowError("Comic has no pages or is empty."))
@@ -248,15 +324,10 @@ open class ViewerViewModel @Inject constructor(
             if (targetPageIndex - offset >= 0) relevantPageIndices.add(targetPageIndex - offset)
             if (targetPageIndex + offset < pageCount) relevantPageIndices.add(targetPageIndex + offset)
         }
-        TimberLogger.logD(
-            TAG,
-            "Relevant indices for $targetPageIndex (preload $currentLogicPreload): $relevantPageIndices"
-        )
 
         // Cancel jobs for pages no longer relevant
         val jobsToCancel = pageLoadJobs.filterKeys { !relevantPageIndices.contains(it) }
         jobsToCancel.forEach { (idx, job) ->
-            TimberLogger.logD(TAG, "Page $idx: No longer relevant. Cancelling job.")
             job.cancelJob("Page $idx no longer relevant for target $targetPageIndex")
             pageLoadJobs.remove(idx)
         }
@@ -291,10 +362,6 @@ open class ViewerViewModel @Inject constructor(
                     finalIsLoadingPage.add(idx)
                 }
             }
-            TimberLogger.logD(
-                TAG,
-                "Updating UI: currentPage=$targetPageIndex, loadedPages=${finalLoadedPages.keys}, isLoadingPage=$finalIsLoadingPage"
-            )
             currentState.copy(
                 currentPage = targetPageIndex,
                 loadedPages = finalLoadedPages,
@@ -303,8 +370,20 @@ open class ViewerViewModel @Inject constructor(
             )
         }
 
+        // Persist reading progress
+        viewModelScope.launch {
+            try {
+                updateComicProgressUseCase(
+                    filePath = currentComicUri ?: return@launch,
+                    lastPageRead = targetPageIndex,
+                    isCompleted = targetPageIndex >= pageCount - 1 && pageCount > 0
+                )
+            } catch (e: Exception) {
+                TimberLogger.logE(TAG, "Failed to update comic progress", e)
+            }
+        }
+
         pagesThatNeedNewLoadJob.forEach { pageToLoadIdx ->
-            TimberLogger.logD(TAG, "Page $pageToLoadIdx: Needs new load job. Launching.")
             pageLoadJobs[pageToLoadIdx] = viewModelScope.launch {
                 try {
                     val bitmap = loadPageBitmapInternal(pageToLoadIdx)
@@ -314,31 +393,18 @@ open class ViewerViewModel @Inject constructor(
                                 diff == 0 || (kotlin.math.abs(diff) <= state.pagesToPreloadLogic)
                             } && pageToLoadIdx < state.pageCount
                             if (stillRelevant) {
-                                TimberLogger.logD(
-                                    TAG,
-                                    "Page $pageToLoadIdx loaded, adding to loadedPages and removing from isLoadingPage."
-                                )
                                 state.copy(
                                     loadedPages = state.loadedPages + (pageToLoadIdx to bitmap),
                                     isLoadingPage = state.isLoadingPage - pageToLoadIdx
                                 )
                             } else {
-                                TimberLogger.logD(
-                                    TAG,
-                                    "Page $pageToLoadIdx loaded, but no longer relevant. Removing from isLoadingPage."
-                                )
                                 state.copy(isLoadingPage = state.isLoadingPage - pageToLoadIdx)
                             }
                         }
                     } else if (isActive && bitmap == null) {
-                        TimberLogger.logW(
-                            TAG,
-                            "Page $pageToLoadIdx: Load returned null. Removing from isLoadingPage."
-                        )
                         _uiState.update { it.copy(isLoadingPage = it.isLoadingPage - pageToLoadIdx) }
                     }
                 } catch (cex: CancellationException) {
-                    TimberLogger.logI(TAG, "Page $pageToLoadIdx loading cancelled: ${cex.message}")
                 } catch (ex: Exception) {
                     TimberLogger.logE(TAG, "Error loading page $pageToLoadIdx", ex)
                 } finally {
@@ -346,60 +412,47 @@ open class ViewerViewModel @Inject constructor(
                         _uiState.update { it.copy(isLoadingPage = it.isLoadingPage - pageToLoadIdx) }
                     }
                     pageLoadJobs.remove(pageToLoadIdx)
-                    TimberLogger.logD(
-                        TAG,
-                        "Page $pageToLoadIdx: Job finished. Removed from pageLoadJobs and ensured not in isLoadingPage."
-                    )
                 }
             }
         }
     }
 
-    private suspend fun loadPageBitmapInternal(pageIndex: Int): ImageBitmap? {
+    private suspend fun loadPageBitmapInternal(pageIndex: Int, thumbnailWidth: Int? = null): ImageBitmap? {
         if (!::pageBitmapCache.isInitialized) {
-            TimberLogger.logE(TAG, "loadPageBitmapInternal: Cache not ready for page $pageIndex!")
             throw IllegalStateException("Cache not initialized when trying to load page $pageIndex")
         }
         val localCurrentComicUri = currentComicUri
         val localCurrentComicFileType = currentComicFileType
         if (localCurrentComicUri == null || localCurrentComicFileType == null) {
-            TimberLogger.logW(
-                TAG,
-                "loadPageBitmapInternal($pageIndex): Aborted. Comic data not ready."
-            )
             throw IllegalStateException("Comic data (URI or FileType) not ready for page $pageIndex")
         }
         if (comicPageIdentifiers.isEmpty() || pageIndex < 0 || pageIndex >= comicPageIdentifiers.size) {
-            TimberLogger.logE(
-                TAG,
-                "loadPageBitmapInternal($pageIndex): Aborted. PageIndex out of bounds (0-${comicPageIdentifiers.size - 1})."
-            )
             throw IndexOutOfBoundsException("Page index $pageIndex out of bounds for ${comicPageIdentifiers.size} pages")
         }
 
-        pageBitmapCache.get(pageIndex)?.let {
-            TimberLogger.logI(TAG, "Page $pageIndex found in cache.")
-            return it
+        if (thumbnailWidth == null) {
+            pageBitmapCache.get(pageIndex)?.let { return it }
+        } else {
+            thumbnailBitmapCache.get(pageIndex)?.let { return it }
         }
 
-        TimberLogger.logD(TAG, "Page $pageIndex not in cache. Decoding.")
         val pageIdentifier = comicPageIdentifiers[pageIndex]
         return try {
             val bitmap = decodeComicPageUseCase(
                 pageIndex,
                 pageIdentifier,
                 localCurrentComicUri,
-                localCurrentComicFileType
+                localCurrentComicFileType,
+                thumbnailWidth
             )
             bitmap?.also {
-                TimberLogger.logD(TAG, "Successfully decoded page $pageIndex. Caching.")
-                if (::pageBitmapCache.isInitialized) pageBitmapCache.put(pageIndex, it)
-            } ?: run {
-                TimberLogger.logW(TAG, "decodeComicPageUseCase returned null for page $pageIndex.")
-                null
+                if (thumbnailWidth == null) {
+                    if (::pageBitmapCache.isInitialized) pageBitmapCache.put(pageIndex, it)
+                } else {
+                    if (::thumbnailBitmapCache.isInitialized) thumbnailBitmapCache.put(pageIndex, it)
+                }
             }
         } catch (cex: CancellationException) {
-            TimberLogger.logI(TAG, "Decoding cancelled for page $pageIndex: ${cex.message}")
             throw cex
         } catch (ex: Exception) {
             TimberLogger.logE(TAG, "Error during decodeComicPage for $pageIndex", ex)

@@ -41,4 +41,10 @@ sealed interface ViewerIntent {
      * Corresponds to ViewerViewModel's ErrorShown event.
      */
     data object ErrorShown : ViewerIntent
+
+    /**
+     * Intent to load a low-resolution thumbnail for a specific page.
+     * @param pageNumber The 0-based index of the page.
+     */
+    data class LoadThumbnail(val pageNumber: Int) : ViewerIntent
 }

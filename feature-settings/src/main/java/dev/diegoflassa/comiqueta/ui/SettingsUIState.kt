@@ -15,5 +15,8 @@ data class SettingsUIState(
     val comicsFolders: List<Uri> = emptyList(),
     val permissionDisplayStatuses: Map<String, PermissionDisplayStatus> = emptyMap(),
     val isLoading: Boolean = true,
-    val viewerPagesToPreloadAhead: Int = PreferencesKeys.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
+    val viewerPagesToPreloadAhead: Int = PreferencesKeys.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD,
+    val isWebtoonMode: Boolean = false,
+    val isDoublePageView: Boolean = false,
+    val isPageFlipSoundEnabled: Boolean = false
 )

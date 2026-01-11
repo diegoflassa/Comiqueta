@@ -25,6 +25,12 @@
     <string name="settings_viewer_preload_description">Páginas a cargar antes/después de la página actual (0-%1$d).</string>
     <string name="settings_viewer_preload_decrease_desc">Disminuir cantidad de precarga</string>
     <string name="settings_viewer_preload_increase_desc">Aumentar cantidad de precarga</string>
+    <string name="settings_webtoon_mode_title">Modo Webtoon</string>
+    <string name="settings_webtoon_mode_desc">Desplazamiento vertical continuo para webcomics modernos.</string>
+    <string name="settings_double_page_mode_title">Vista de Página Doble</string>
+    <string name="settings_double_page_mode_desc">Muestra dos páginas lado a lado (mejor en horizontal).</string>
+    <string name="settings_page_flip_sound_title">Sonido de Pasagem de Página</string>
+    <string name="settings_page_flip_sound_desc">Reproduce un efecto de sonido al pasar las páginas.</string>
 
     <!-- Data Management Section -->
     <string name="settings_section_data_management_title">Gestión de Datos</string>

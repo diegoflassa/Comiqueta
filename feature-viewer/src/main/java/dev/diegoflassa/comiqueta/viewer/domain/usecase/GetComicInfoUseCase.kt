@@ -4,6 +4,7 @@ import android.app.Application
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import android.util.Xml
 import androidx.documentfile.provider.DocumentFile
 import com.github.junrar.Archive as JunrarArchive
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
@@ -18,10 +19,12 @@ import org.apache.commons.compress.archivers.sevenz.SevenZFile
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
+import org.xmlpull.v1.XmlPullParser
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStream
 import java.util.Collections
 import java.util.Locale
 import javax.inject.Inject
@@ -65,13 +68,38 @@ class GetComicInfoUseCase @Inject constructor(
                 lowerName.endsWith(".webp") || lowerName.endsWith(".bmp")
     }
 
+    private fun parseComicInfoXml(inputStream: InputStream): Map<String, String> {
+        val metadata = mutableMapOf<String, String>()
+        try {
+            val parser = Xml.newPullParser()
+            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
+            parser.setInput(inputStream, null)
+            var eventType = parser.eventType
+            var currentTag = ""
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                if (eventType == XmlPullParser.START_TAG) {
+                    currentTag = parser.name
+                } else if (eventType == XmlPullParser.TEXT) {
+                    val text = parser.text.trim()
+                    if (text.isNotEmpty()) {
+                        metadata[currentTag] = text
+                    }
+                }
+                eventType = parser.next()
+            }
+        } catch (e: Exception) {
+            TimberLogger.logE("GetComicInfoUseCase", "Error parsing ComicInfo.xml", e)
+        }
+        return metadata
+    }
+
     override suspend operator fun invoke(uri: Uri): ComicInfo {
         return withContext(Dispatchers.IO) {
             val context = application.applicationContext
             val docFile = DocumentFile.fromSingleUri(context, uri)
                 ?: throw IOException("Could not access DocumentFile for URI: $uri")
             val fileName = docFile.name ?: "Unknown"
-            val title = fileName.substringBeforeLast(".")
+            var title = fileName.substringBeforeLast(".")
 
             var pfd: ParcelFileDescriptor? = null
             val pageIdentifiers = mutableListOf<String>()
@@ -82,20 +110,12 @@ class GetComicInfoUseCase @Inject constructor(
                 val mimeType = context.contentResolver.getType(uri)
                 val fileExtension =
                     fileName.substringAfterLast(".", "").takeIf { it.isNotEmpty() }
-                TimberLogger.logI(
-                    "GetComicInfoUseCase",
-                    "Attempting to determine file type for URI: $uri, MimeType: $mimeType, FileName: $fileName, Extension: $fileExtension"
-                )
-
+                
                 determinedFileType = ComicFileType.fromMimeTypeOrExtension(mimeType, fileExtension)
 
                 if (determinedFileType == null) {
-                    throw IOException("Unsupported file type or could not determine type for: $fileName (MIME: $mimeType, Ext: $fileExtension)")
+                    throw IOException("Unsupported file type or could not determine type for: $fileName")
                 }
-                TimberLogger.logI(
-                    "GetComicInfoUseCase",
-                    "Determined file type using ComicFileType enum: $determinedFileType"
-                )
 
                 when (determinedFileType) {
                     ComicFileType.PDF -> {
@@ -116,15 +136,22 @@ class GetComicInfoUseCase @Inject constructor(
                                         bis
                                     ) as ArchiveInputStream<out ArchiveEntry>
                                 archiveStreamForListing.use { ais ->
-                                    generateSequence { ais.nextEntry }
-                                        .filter { entry -> !entry.isDirectory && isImageFile(entry.name) }
-                                        .map { entry -> entry.name }
-                                        .toList()
-                                        .sortedWith(alphanumComparator)
-                                        .let {
-                                            pageIdentifiers.addAll(it)
-                                            pageCount = it.size
+                                    val entries = mutableListOf<ArchiveEntry>()
+                                    var entry = ais.nextEntry
+                                    while (entry != null) {
+                                        if (!entry.isDirectory) {
+                                            if (isImageFile(entry.name)) {
+                                                entries.add(entry)
+                                            } else if (entry.name.equals("ComicInfo.xml", ignoreCase = true)) {
+                                                val metadata = parseComicInfoXml(ais)
+                                                metadata["Title"]?.let { title = it }
+                                            }
                                         }
+                                        entry = ais.nextEntry
+                                    }
+                                    val sortedNames = entries.map { it.name }.sortedWith(alphanumComparator)
+                                    pageIdentifiers.addAll(sortedNames)
+                                    pageCount = sortedNames.size
                                 }
                             }
                         } ?: throw IOException("Could not open InputStream for CBZ.")
@@ -143,15 +170,21 @@ class GetComicInfoUseCase @Inject constructor(
                             } ?: throw IOException("Could not open InputStream for CBR.")
 
                             JunrarArchive(tempFile).use { archive ->
-                                archive.fileHeaders
-                                    .filter { !it.isDirectory && isImageFile(it.fileName) }
-                                    .map { it.fileName }
-                                    .toList()
-                                    .sortedWith(alphanumComparator)
-                                    .let {
-                                        pageIdentifiers.addAll(it)
-                                        pageCount = it.size
+                                val headers = archive.fileHeaders
+                                headers.forEach { header ->
+                                    if (!header.isDirectory) {
+                                        if (isImageFile(header.fileName)) {
+                                            pageIdentifiers.add(header.fileName)
+                                        } else if (header.fileName.equals("ComicInfo.xml", ignoreCase = true)) {
+                                            archive.getInputStream(header).use { ais ->
+                                                val metadata = parseComicInfoXml(ais)
+                                                metadata["Title"]?.let { title = it }
+                                            }
+                                        }
                                     }
+                                }
+                                pageIdentifiers.sortWith(alphanumComparator)
+                                pageCount = pageIdentifiers.size
                             }
                         } finally {
                             if (tempFile.exists()) tempFile.delete()
@@ -171,15 +204,20 @@ class GetComicInfoUseCase @Inject constructor(
                             } ?: throw IOException("Could not open InputStream for CB7.")
 
                             SevenZFile.Builder().setFile(tempFile).get().use { sevenZFile ->
-                                generateSequence { sevenZFile.nextEntry }
-                                    .filter { !it.isDirectory && isImageFile(it.name) }
-                                    .map { it.name }
-                                    .toList()
-                                    .sortedWith(alphanumComparator)
-                                    .let {
-                                        pageIdentifiers.addAll(it)
-                                        pageCount = it.size
+                                var entry = sevenZFile.nextEntry
+                                while (entry != null) {
+                                    if (!entry.isDirectory) {
+                                        if (isImageFile(entry.name)) {
+                                            pageIdentifiers.add(entry.name)
+                                        } else if (entry.name.equals("ComicInfo.xml", ignoreCase = true)) {
+                                            // SevenZFile.getInputStream(entry) might be tricky depending on version
+                                            // For now we just skip metadata for 7z if not easily accessible
+                                        }
                                     }
+                                    entry = sevenZFile.nextEntry
+                                }
+                                pageIdentifiers.sortWith(alphanumComparator)
+                                pageCount = pageIdentifiers.size
                             }
                         } finally {
                             if (tempFile.exists()) tempFile.delete()
@@ -190,30 +228,27 @@ class GetComicInfoUseCase @Inject constructor(
                         context.contentResolver.openInputStream(uri)?.use { fis ->
                             BufferedInputStream(fis).use { bis ->
                                 val tarInput: TarArchiveInputStream = when {
-                                    fileName.endsWith(".tar.gz", true) || fileName.endsWith(
-                                        ".tgz",
-                                        true
-                                    ) ->
+                                    fileName.endsWith(".tar.gz", true) || fileName.endsWith(".tgz", true) ->
                                         TarArchiveInputStream(GzipCompressorInputStream(bis))
-
-                                    fileName.endsWith(
-                                        ".tar.bz2",
-                                        true
-                                    ) || fileName.endsWith(".tbz2", true) ->
+                                    fileName.endsWith(".tar.bz2", true) || fileName.endsWith(".tbz2", true) ->
                                         TarArchiveInputStream(BZip2CompressorInputStream(bis))
-
                                     else -> TarArchiveInputStream(bis)
                                 }
                                 tarInput.use { ais ->
-                                    generateSequence { ais.nextEntry }
-                                        .filter { !it.isDirectory && isImageFile(it.name) }
-                                        .map { it.name }
-                                        .toList()
-                                        .sortedWith(alphanumComparator)
-                                        .let {
-                                            pageIdentifiers.addAll(it)
-                                            pageCount = it.size
+                                    var entry = ais.nextTarEntry
+                                    while (entry != null) {
+                                        if (!entry.isDirectory) {
+                                            if (isImageFile(entry.name)) {
+                                                pageIdentifiers.add(entry.name)
+                                            } else if (entry.name.equals("ComicInfo.xml", ignoreCase = true)) {
+                                                val metadata = parseComicInfoXml(ais)
+                                                metadata["Title"]?.let { title = it }
+                                            }
                                         }
+                                        entry = ais.nextTarEntry
+                                    }
+                                    pageIdentifiers.sortWith(alphanumComparator)
+                                    pageCount = pageIdentifiers.size
                                 }
                             }
                         } ?: throw IOException("Could not open InputStream for CBT.")
@@ -225,26 +260,14 @@ class GetComicInfoUseCase @Inject constructor(
                     }
                 }
 
-                TimberLogger.logD(
-                    "GetComicInfoUseCase",
-                    "Finished processing file type. Page count: $pageCount"
-                )
-
             } catch (ex: Exception) {
-                ex.printStackTrace()
                 TimberLogger.logE("GetComicInfoUseCase", "Error getting comic info for $uri", ex)
-                // Re-throw specific exception types if needed, or a general one
                 throw IOException("Failed to parse comic: ${ex.message}", ex)
             } finally {
                 try {
                     pfd?.close()
                 } catch (ioe: IOException) {
-                    ioe.printStackTrace()
-                    TimberLogger.logE(
-                        "GetComicInfoUseCase",
-                        "Error closing PFD for $uri",
-                        ioe
-                    )
+                    TimberLogger.logE("GetComicInfoUseCase", "Error closing PFD for $uri", ioe)
                 }
             }
             ComicInfo(

@@ -25,6 +25,12 @@
     <string name="settings_viewer_preload_description">Pages to load ahead/behind current page (0-%1$d).</string>
     <string name="settings_viewer_preload_decrease_desc">Decrease pre-load count</string>
     <string name="settings_viewer_preload_increase_desc">Increase pre-load count</string>
+    <string name="settings_webtoon_mode_title">Webtoon Mode</string>
+    <string name="settings_webtoon_mode_desc">Continuous vertical scrolling for modern webcomics.</string>
+    <string name="settings_double_page_mode_title">Double Page View</string>
+    <string name="settings_double_page_mode_desc">Show two pages side-by-side (best in landscape).</string>
+    <string name="settings_page_flip_sound_title">Page Flip Sound</string>
+    <string name="settings_page_flip_sound_desc">Play a sound effect when turning pages.</string>
 
     <!-- Data Management Section -->
     <string name="settings_section_data_management_title">Data Management</string>

@@ -46,6 +46,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -354,7 +355,7 @@ private fun LazyListScope.permissionsSection(
     item { // Permissions Section Title
         Text(
             text = stringResource(R.string.settings_section_permissions_title),
-            style = MaterialTheme.typography.titleLarge,
+            style = ComiquetaTheme.typography.typography.titleLarge,
             modifier = Modifier.padding(top = ComiquetaTheme.dimen.paddingLarge.scaled(), bottom = ComiquetaTheme.dimen.paddingSmall.scaled())
         )
     }
@@ -389,9 +390,9 @@ private fun LazyListScope.permissionsSection(
             item {
                 Text(
                     stringResource(R.string.settings_permission_read_external_storage_rationale_extended),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = ComiquetaTheme.typography.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = ComiquetaTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(
                         top = ComiquetaTheme.dimen.paddingSmall.scaled(),
                         bottom = ComiquetaTheme.dimen.paddingLarge.scaled()
@@ -409,7 +410,7 @@ private fun LazyListScope.monitoredFoldersSection(
     item { // Monitored Folders Section Title
         Text(
             text = stringResource(R.string.settings_section_monitored_folders_title),
-            style = MaterialTheme.typography.titleLarge,
+            style = ComiquetaTheme.typography.typography.titleLarge,
             modifier = Modifier.padding(top = ComiquetaTheme.dimen.paddingLarge.scaled(), bottom = ComiquetaTheme.dimen.paddingSmall.scaled())
         )
     }
@@ -453,45 +454,101 @@ private fun LazyListScope.viewerSettingsSection(
     item {
         Text(
             text = stringResource(R.string.settings_section_viewer_title),
-            style = MaterialTheme.typography.titleLarge,
+            style = ComiquetaTheme.typography.typography.titleLarge,
             modifier = Modifier.padding(top = ComiquetaTheme.dimen.paddingLarge.scaled(), bottom = ComiquetaTheme.dimen.paddingSmall.scaled())
         )
         Card(modifier = Modifier.fillMaxWidth()) {
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.settings_viewer_preload_title)) },
-                supportingContent = { Text(stringResource(R.string.settings_viewer_preload_description, MAX_PRELOAD_PAGES)) },
-                trailingContent = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(
-                            onClick = {
-                                val currentCount = uiState.viewerPagesToPreloadAhead
-                                if (currentCount > 0) {
-                                    onIntent?.invoke(SettingsIntent.UpdateViewerPagesToPreloadAhead(currentCount - 1))
-                                }
-                            },
-                            enabled = uiState.viewerPagesToPreloadAhead > 0
-                        ) {
-                            Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.settings_viewer_preload_decrease_desc))
-                        }
-                        Text(
-                            text = uiState.viewerPagesToPreloadAhead.toString(),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(horizontal = ComiquetaTheme.dimen.paddingSmall.scaled())
-                        )
-                        IconButton(
-                            onClick = {
-                                val currentCount = uiState.viewerPagesToPreloadAhead
-                                if (currentCount < MAX_PRELOAD_PAGES) {
-                                    onIntent?.invoke(SettingsIntent.UpdateViewerPagesToPreloadAhead(currentCount + 1))
-                                }
-                            },
-                            enabled = uiState.viewerPagesToPreloadAhead < MAX_PRELOAD_PAGES
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.settings_viewer_preload_increase_desc))
+            Column {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_viewer_preload_title)) },
+                    supportingContent = { Text(stringResource(R.string.settings_viewer_preload_description, MAX_PRELOAD_PAGES)) },
+                    trailingContent = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(
+                                onClick = {
+                                    val currentCount = uiState.viewerPagesToPreloadAhead
+                                    if (currentCount > 0) {
+                                        onIntent?.invoke(SettingsIntent.UpdateViewerPagesToPreloadAhead(currentCount - 1))
+                                    }
+                                },
+                                enabled = uiState.viewerPagesToPreloadAhead > 0
+                            ) {
+                                Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.settings_viewer_preload_decrease_desc))
+                            }
+                            Text(
+                                text = uiState.viewerPagesToPreloadAhead.toString(),
+                                style = ComiquetaTheme.typography.typography.bodyLarge,
+                                modifier = Modifier.padding(horizontal = ComiquetaTheme.dimen.paddingSmall.scaled())
+                            )
+                            IconButton(
+                                onClick = {
+                                    val currentCount = uiState.viewerPagesToPreloadAhead
+                                    if (currentCount < MAX_PRELOAD_PAGES) {
+                                        onIntent?.invoke(SettingsIntent.UpdateViewerPagesToPreloadAhead(currentCount + 1))
+                                    }
+                                },
+                                enabled = uiState.viewerPagesToPreloadAhead < MAX_PRELOAD_PAGES
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.settings_viewer_preload_increase_desc))
+                            }
                         }
                     }
-                }
-            )
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = ComiquetaTheme.dimen.paddingMedium.scaled()),
+                    thickness = 0.5.dp,
+                    color = ComiquetaTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                )
+
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_webtoon_mode_title)) },
+                    supportingContent = { Text(stringResource(R.string.settings_webtoon_mode_desc)) },
+                    trailingContent = {
+                        Switch(
+                            checked = uiState.isWebtoonMode,
+                            onCheckedChange = { onIntent?.invoke(SettingsIntent.UpdateWebtoonMode(it)) }
+                        )
+                    },
+                    modifier = Modifier.clickable { onIntent?.invoke(SettingsIntent.UpdateWebtoonMode(!uiState.isWebtoonMode)) }
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = ComiquetaTheme.dimen.paddingMedium.scaled()),
+                    thickness = 0.5.dp,
+                    color = ComiquetaTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                )
+
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_double_page_mode_title)) },
+                    supportingContent = { Text(stringResource(R.string.settings_double_page_mode_desc)) },
+                    trailingContent = {
+                        Switch(
+                            checked = uiState.isDoublePageView,
+                            onCheckedChange = { onIntent?.invoke(SettingsIntent.UpdateDoublePageView(it)) }
+                        )
+                    },
+                    modifier = Modifier.clickable { onIntent?.invoke(SettingsIntent.UpdateDoublePageView(!uiState.isDoublePageView)) }
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = ComiquetaTheme.dimen.paddingMedium.scaled()),
+                    thickness = 0.5.dp,
+                    color = ComiquetaTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                )
+
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_page_flip_sound_title)) },
+                    supportingContent = { Text(stringResource(R.string.settings_page_flip_sound_desc)) },
+                    trailingContent = {
+                        Switch(
+                            checked = uiState.isPageFlipSoundEnabled,
+                            onCheckedChange = { onIntent?.invoke(SettingsIntent.UpdatePageFlipSoundEnabled(it)) }
+                        )
+                    },
+                    modifier = Modifier.clickable { onIntent?.invoke(SettingsIntent.UpdatePageFlipSoundEnabled(!uiState.isPageFlipSoundEnabled)) }
+                )
+            }
         }
         Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled()))
     }
@@ -527,7 +584,7 @@ private fun LazyListScope.dataManagementSection(
     item {
         Text(
             text = stringResource(R.string.settings_section_data_management_title),
-            style = MaterialTheme.typography.titleLarge,
+            style = ComiquetaTheme.typography.typography.titleLarge,
             modifier = Modifier.padding(top = ComiquetaTheme.dimen.paddingLarge.scaled(), bottom = ComiquetaTheme.dimen.paddingSmall.scaled())
         )
         Card(modifier = Modifier.fillMaxWidth()) {
@@ -635,14 +692,14 @@ fun PermissionItem(
                 Text(
                     text = description,
                     fontSize = 12.sp.scaled(),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = ComiquetaTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             if (status.isGranted) {
                 Text(
                     stringResource(R.string.settings_permission_status_granted),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = ComiquetaTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(end = ComiquetaTheme.dimen.paddingSmall.scaled())
                 )
@@ -658,7 +715,7 @@ fun PermissionItem(
             Text(
                 text = rationale,
                 fontSize = 12.sp.scaled(),
-                color = MaterialTheme.colorScheme.tertiary,
+                color = ComiquetaTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(
                     top = ComiquetaTheme.dimen.paddingExtraSmall.scaled(),
                     start = ComiquetaTheme.dimen.paddingSmall.scaled(),
@@ -669,7 +726,7 @@ fun PermissionItem(
             Text(
                 text = stringResource(R.string.settings_permission_denied_permanently_message),
                 fontSize = 12.sp.scaled(),
-                color = MaterialTheme.colorScheme.error,
+                color = ComiquetaTheme.colorScheme.error,
                 modifier = Modifier.padding(
                     top = ComiquetaTheme.dimen.paddingExtraSmall.scaled(),
                     start = ComiquetaTheme.dimen.paddingSmall.scaled(),
@@ -714,13 +771,13 @@ fun ComicsFolderUriItem(
                 .padding(end = ComiquetaTheme.dimen.paddingSmall.scaled()),
             overflow = TextOverflow.Ellipsis,
             maxLines = 2, // Allow up to 2 lines for longer paths
-            style = MaterialTheme.typography.bodyMedium
+            style = ComiquetaTheme.typography.typography.bodyMedium
         )
         IconButton(onClick = { onIntent?.invoke(SettingsIntent.RemoveFolderClicked(folderUri)) }) {
             Icon(
                 Icons.Filled.Delete,
                 contentDescription = stringResource(R.string.settings_remove_folder_action_desc),
-                tint = MaterialTheme.colorScheme.error
+                tint = ComiquetaTheme.colorScheme.error
             )
         }
     }
@@ -732,8 +789,14 @@ private fun openAppSettings(context: Context) {
     context.startActivity(intent)
 }
 
+
 // --- Previews ---
 @PreviewScreenSizes
+@Preview(
+    name = "Settings - Light - With Data",
+    group = "Settings",
+    showBackground = true
+)
 @Composable
 private fun SettingsScreenPreview() {
     ComiquetaThemeContent {
@@ -755,35 +818,11 @@ private fun SettingsScreenPreview() {
 
 @PreviewScreenSizes
 @Preview(
-    name = "Phone - Dark",
-    group = "Screen - With Data",
+    name = "Settings - Dark - Empty",
+    group = "Settings",
     showBackground = true,
-    device = "spec:width=1080px,height=2560px,dpi=440",
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
-@Composable
-private fun SettingsScreenPreviewDark() {
-    ComiquetaThemeContent {
-        SettingsScreenContent(
-            uiState = SettingsUIState(
-                isLoading = false,
-                permissionDisplayStatuses = mapOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE to PermissionDisplayStatus(
-                        isGranted = false,
-                        shouldShowRationale = true
-                    )
-                ),
-                comicsFolders = listOf(
-                    "content://com.android.externalstorage.documents/tree/primary%3ADCIM".toUri(),
-                    "content://com.android.externalstorage.documents/tree/primary%3APictures".toUri()
-                ),
-                viewerPagesToPreloadAhead = 2
-            )
-        )
-    }
-}
-
-@PreviewScreenSizes
 @Composable
 private fun SettingsScreenPreviewEmpty() {
     ComiquetaThemeContent {
@@ -798,7 +837,12 @@ private fun SettingsScreenPreviewEmpty() {
     }
 }
 
-@PreviewScreenSizes
+@Preview(
+    name = "Settings - Dark - Loading",
+    group = "Settings",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun SettingsScreenPreviewLoading() {
     ComiquetaThemeContent {

@@ -24,6 +24,7 @@ interface IDecodeComicPageUseCase {
         pageIndex: Int,
         pageIdentifier: String,
         comicUri: Uri,
-        fileType: ComicFileType
+        fileType: ComicFileType,
+        thumbnailWidth: Int? = null
     ): ImageBitmap?
 }

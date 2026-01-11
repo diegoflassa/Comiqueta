@@ -90,7 +90,7 @@ fun SectionHeader(
                     painter = painterResource(id = dev.diegoflassa.comiqueta.core.R.drawable.ic_list),
                     contentDescription = stringResource(R.string.view_as_list_description),
                     modifier = Modifier.size(21.dp),
-                    tint = if (currentViewMode == ViewMode.LIST) MaterialTheme.colorScheme.headerSelectedIcon else MaterialTheme.colorScheme.headerUnselectedIcon
+                    tint = if (currentViewMode == ViewMode.LIST) ComiquetaTheme.colorScheme.headerSelectedIcon else ComiquetaTheme.colorScheme.headerUnselectedIcon
                 )
             }
 

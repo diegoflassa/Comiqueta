@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +21,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,7 +82,6 @@ fun ComicListItem(
                     .aspectRatio(aspectRatio)
                     .clip(RoundedCornerShape(4.dp.scaled()))
             )
-
             Spacer(modifier = Modifier.width(8.dp.scaled()))
 
             Column(
@@ -92,23 +95,48 @@ fun ComicListItem(
                     color = ComiquetaTheme.colorScheme.comicListItemTitleTextColor,
                     maxLines = 1,
                 )
-                Text(
-                    text = "Chapter ${comic?.chapter ?: "?"} - Page ${comic?.page ?: ""}",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 12.sp,
-                    color = ComiquetaTheme.colorScheme.comicListItemSubtitleTextColor,
-                    maxLines = 1,
-                )
+                if (comic != null && comic.lastPageRead > 0 && comic.pageCount > 0 && !comic.hasBeenRead) {
+                    val progress = (comic.lastPageRead + 1).toFloat() / comic.pageCount.toFloat()
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp.scaled())
+                            .height(4.dp.scaled()),
+                        color = ComiquetaTheme.colorScheme.primary,
+                        trackColor = ComiquetaTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    )
+                } else {
+                    Text(
+                        text = "Chapter ${comic?.chapter ?: "?"} - Page ${comic?.page ?: ""}",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 12.sp,
+                        color = ComiquetaTheme.colorScheme.comicListItemSubtitleTextColor,
+                        maxLines = 1,
+                    )
+                }
             }
 
-            Icon(
-                painter = rememberVectorPainter(Icons.Default.ChevronRight),
-                contentDescription = stringResource(id = R.string.more_options),
-                tint = ComiquetaTheme.colorScheme.comicListItemIconColor,
-                modifier = Modifier
-                    .width(25.dp.scaled())
-                    .aspectRatio(0.5f)
-            )
+            if (comic?.hasBeenRead == true) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = Color.Green,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp.scaled())
+                        .width(20.dp.scaled())
+                        .aspectRatio(1f)
+                )
+            } else {
+                Icon(
+                    painter = rememberVectorPainter(Icons.Default.ChevronRight),
+                    contentDescription = stringResource(id = R.string.more_options),
+                    tint = ComiquetaTheme.colorScheme.comicListItemIconColor,
+                    modifier = Modifier
+                        .width(25.dp.scaled())
+                        .aspectRatio(0.5f)
+                )
+            }
         }
     }
 }
@@ -151,6 +179,7 @@ private val sampleComicForListItemLongTitleNoAuthor = sampleComicForCoverPreview
     pageCount = 150
 )
 
+
 @PreviewScreenSizes
 @Preview(
     name = "ComicListItem - Default - Dark",
@@ -170,7 +199,6 @@ private fun ComicListItemDefaultPreview() {
     }
 }
 
-@PreviewScreenSizes
 @Preview(
     name = "ComicListItem - Favorite - Dark",
     group = "ComicListItem",
@@ -189,7 +217,6 @@ private fun ComicListItemFavoritePreview() {
     }
 }
 
-@PreviewScreenSizes
 @Preview(
     name = "ComicListItem - Long Title, No Author - Dark",
     group = "ComicListItem",
@@ -208,7 +235,6 @@ private fun ComicListItemLongTitleNoAuthorPreview() {
     }
 }
 
-@PreviewScreenSizes
 @Preview(
     name = "ComicListItem - Null Comic (Placeholder) - Dark",
     group = "ComicListItem",
