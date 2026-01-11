@@ -37,6 +37,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import android.graphics.Rect as AndroidRect
 import androidx.compose.material.icons.Icons
@@ -157,12 +158,12 @@ fun ViewerScreenContent(
     var globalIsPinchZoomActive by retain { mutableStateOf(false) }
     val pageCurlState = rememberPageCurlState(initialCurrent = uiState.currentPage)
 
+    val density = LocalDensity.current
     val view = LocalView.current
-    var exclusionRect by retain { mutableStateOf<AndroidRect?>(null) }
+    var exclusionRects by retain { mutableStateOf<List<AndroidRect>>(emptyList()) }
 
-    DisposableEffect(exclusionRect) {
-        val rects = exclusionRect?.let { listOf(it) } ?: emptyList()
-        view.systemGestureExclusionRects = rects
+    DisposableEffect(exclusionRects) {
+        view.systemGestureExclusionRects = exclusionRects
         onDispose {
             view.systemGestureExclusionRects = emptyList()
         }
@@ -178,12 +179,28 @@ fun ViewerScreenContent(
                 .fillMaxSize()
                 .onGloballyPositioned { coordinates ->
                     val bounds = coordinates.boundsInWindow()
-                    exclusionRect = AndroidRect(
+                    val exclusionWidthPx = with(density) { 40.dp.roundToPx() }
+                    val exclusionHeightPx = with(density) { 200.dp.roundToPx() }
+
+                    val centerY = (bounds.top + bounds.bottom) / 2
+                    val halfHeight = (exclusionHeightPx / 2).toFloat()
+
+                    val top = (centerY - halfHeight).coerceAtLeast(bounds.top).toInt()
+                    val bottom = (centerY + halfHeight).coerceAtMost(bounds.bottom).toInt()
+
+                    val leftStrip = AndroidRect(
                         bounds.left.toInt(),
-                        bounds.top.toInt(),
-                        bounds.right.toInt(),
-                        bounds.bottom.toInt()
+                        top,
+                        (bounds.left + exclusionWidthPx).toInt(),
+                        bottom
                     )
+                    val rightStrip = AndroidRect(
+                        (bounds.right - exclusionWidthPx).toInt(),
+                        top,
+                        bounds.right.toInt(),
+                        bottom
+                    )
+                    exclusionRects = listOf(leftStrip, rightStrip)
                 }
                 .clickable(
                     enabled = !globalIsPinchZoomActive &&
