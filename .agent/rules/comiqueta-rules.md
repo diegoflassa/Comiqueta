@@ -36,7 +36,6 @@ trigger: always_on
 - **Annotation Processing**: Use KSP (`ksp`) instead of KAPT (`kapt`) for all supported libraries (Room, Hilt, Moshi).
 
 ## Quality & Standards
-- **Logging**: Use `TimberLogger` for ALL logs. Report exceptions to `FirebaseCrashlytics`. All log tags MUST be prefixed with `CMD_` for easy project-wide filtering.
 - **Tracing**: Log the 'Start' and 'End' of important business logic flows (e.g., Scanning, Loading Stats).
 - **Testing**: All ViewModel unit tests MUST use `MainDispatcherRule` to manage `Dispatchers.Main`.
 - **Static Analysis**: Run `detekt` and `ktlint` before pushing.

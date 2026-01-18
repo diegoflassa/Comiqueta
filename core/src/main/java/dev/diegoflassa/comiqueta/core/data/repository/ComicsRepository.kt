@@ -40,7 +40,7 @@ class ComicsRepository @Inject constructor(
 ) : IComicsRepository {
 
     companion object{
-        private val tag = "CMD_" + ComicsRepository::class.simpleName
+        private val tag = "" + ComicsRepository::class.simpleName
         private const val DAYS_CONSIDERED_NEW = 7
     }
 

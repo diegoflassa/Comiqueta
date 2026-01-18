@@ -64,7 +64,7 @@ class SafFolderScanWorker @AssistedInject constructor(
     companion object {
         private const val NOTIFICATION_ID = 1001
         private const val NOTIFICATION_CHANNEL_ID = "comic_scan_channel"
-        const val TAG = "CMD_SafFolderScanWorker"
+        const val TAG = "SafFolderScanWorker"
         const val KEY_ERROR_MESSAGE = "key_error_message"
         const val KEY_FOLDER_URI = "key_folder_uri"
         const val KEY_PROGRESS = "progress"
