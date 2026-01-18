@@ -15,5 +15,8 @@ object PreferencesKeys {
 
     val PAGE_FLIP_SOUND_ENABLED = booleanPreferencesKey(UserPreferencesKeys.PAGE_FLIP_SOUND_ENABLED)
 
+    val LAST_SCAN_TOTAL_FILES = intPreferencesKey(UserPreferencesKeys.LAST_SCAN_TOTAL_FILES)
+    val LAST_SCAN_PROCESSED_COMICS = intPreferencesKey(UserPreferencesKeys.LAST_SCAN_PROCESSED_COMICS)
+
     const val DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD = 1
 }

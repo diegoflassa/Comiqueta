@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.createBitmap
 import androidx.documentfile.provider.DocumentFile
 import com.github.junrar.Archive as JunrarArchive
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.model.ComicFileType
 import kotlinx.coroutines.Dispatchers
@@ -340,7 +341,7 @@ class DecodeComicPageUseCase @Inject constructor(
                 )
                 loadedBitmap?.asImageBitmap()
             } catch (ex: Exception) {
-                ex.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 TimberLogger.logE(
                     "DecodeComicPageUseCase",
                     "Error decoding page index: $pageIndex, identifier: '$pageIdentifier' for $comicUri",
@@ -351,7 +352,7 @@ class DecodeComicPageUseCase @Inject constructor(
                 try {
                     pfd?.close()
                 } catch (ioe: IOException) {
-                    ioe.printStackTrace()
+                    FirebaseCrashlytics.getInstance().recordException(ioe)
                     TimberLogger.logE(
                         "DecodeComicPageUseCase",
                         "Error closing PFD for $comicUri in decodePage",

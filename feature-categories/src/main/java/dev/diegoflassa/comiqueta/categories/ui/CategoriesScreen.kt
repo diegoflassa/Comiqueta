@@ -23,10 +23,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
-import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
+import dev.diegoflassa.comiqueta.core.domain.model.Category
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
+import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.categories.R
 
@@ -115,7 +116,7 @@ private fun CategoriesScreenContent(
 @Composable
 fun CategoriesContent(
     modifier: Modifier = Modifier,
-    categories: List<CategoryEntity>,
+    categories: List<Category>,
     isLoading: Boolean,
     error: String?,
     onIntent: ((CategoriesIntent) -> Unit)? = null,
@@ -128,7 +129,7 @@ fun CategoriesContent(
                 stringResource(R.string.error_prefix, error),
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .padding(16.dp),
+                    .padding(ComiquetaTheme.dimen.paddingMedium.scaled()),
                 color = ComiquetaTheme.colorScheme.error
             )
         } else if (categories.isEmpty()) {
@@ -136,7 +137,7 @@ fun CategoriesContent(
                 stringResource(R.string.no_categories_found),
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .padding(16.dp)
+                    .padding(ComiquetaTheme.dimen.paddingMedium.scaled())
             )
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -154,13 +155,16 @@ fun CategoriesContent(
 
 @Composable
 fun CategoryItem(
-    category: CategoryEntity,
+    category: Category,
     onIntent: ((CategoriesIntent) -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(
+                horizontal = ComiquetaTheme.dimen.paddingMedium.scaled(),
+                vertical = ComiquetaTheme.dimen.paddingSmall.scaled()
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(category.name, modifier = Modifier.weight(1f))
@@ -176,7 +180,7 @@ fun CategoryItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryEditDialog(
-    category: CategoryEntity? = null,
+    category: Category? = null,
     currentName: String = "",
     onNameChange: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -211,11 +215,11 @@ fun CategoryEditDialog(
 }
 
 val sampleCategoriesList = listOf(
-    CategoryEntity(id = 1, name = "Action"),
-    CategoryEntity(id = 2, name = "Comedy"),
-    CategoryEntity(id = 3, name = "Sci-Fi Adventure X"),
-    CategoryEntity(id = 4, name = "Drama"),
-    CategoryEntity(id = 5, name = "Horror Thriller Z")
+    Category(id = 1, name = "Action", createdAt = 0),
+    Category(id = 2, name = "Comedy", createdAt = 0),
+    Category(id = 3, name = "Sci-Fi Adventure X", createdAt = 0),
+    Category(id = 4, name = "Drama", createdAt = 0),
+    Category(id = 5, name = "Horror Thriller Z", createdAt = 0)
 )
 
 

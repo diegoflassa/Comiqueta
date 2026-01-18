@@ -47,4 +47,9 @@ sealed interface ViewerIntent {
      * @param pageNumber The 0-based index of the page.
      */
     data class LoadThumbnail(val pageNumber: Int) : ViewerIntent
+
+    /**
+     * Intent to set the current page as the comic's cover.
+     */
+    data object SetAsCover : ViewerIntent
 }

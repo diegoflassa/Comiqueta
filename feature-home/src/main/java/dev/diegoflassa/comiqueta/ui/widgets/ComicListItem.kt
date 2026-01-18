@@ -57,14 +57,14 @@ fun ComicListItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp.scaled(), vertical = 4.dp.scaled())
+            .padding(horizontal = ComiquetaTheme.dimen.paddingLarge.scaled(), vertical = ComiquetaTheme.dimen.paddingExtraSmall.scaled())
             .clickable { onIntent?.invoke(HomeIntent.ComicSelected(comic)) },
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         shape = RoundedCornerShape(8.dp.scaled())
     ) {
         Row(
             modifier = Modifier
-                .padding(8.dp.scaled()),
+                .padding(ComiquetaTheme.dimen.paddingSmall.scaled()),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
@@ -78,7 +78,7 @@ fun ComicListItem(
                     ?: stringResource(id = R.string.comic_cover_image_description),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .width(40.dp.scaled())
+                    .width(ComiquetaTheme.dimen.inputHeight.scaled()) // 40.dp
                     .aspectRatio(aspectRatio)
                     .clip(RoundedCornerShape(4.dp.scaled()))
             )

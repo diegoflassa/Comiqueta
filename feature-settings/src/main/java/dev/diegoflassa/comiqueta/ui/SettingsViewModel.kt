@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -157,7 +158,7 @@ open class SettingsViewModel @Inject constructor(
                     currentState.copy(comicsFolders = persistedUris, isLoading = false)
                 }
             } catch (ex: Exception) {
-                ex.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 TimberLogger.logE(
                     "SettingsViewModel",
                     "Error loading persisted folders via UseCase",
@@ -219,7 +220,7 @@ open class SettingsViewModel @Inject constructor(
                         // UI state will update automatically due to the flow collection in init
                         _effect.send(SettingsEffect.ShowToast(context.getString(R.string.viewer_prefetch_updated)))
                     } catch (ex: Exception) {
-                        ex.printStackTrace()
+                        FirebaseCrashlytics.getInstance().recordException(ex)
                         TimberLogger.logE(
                             "SettingsViewModel",
                             "Error updating viewerPagesToPreloadAhead",
@@ -320,7 +321,7 @@ open class SettingsViewModel @Inject constructor(
                 )
             }
         } catch (ex: Exception) {
-            ex.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(ex)
             TimberLogger.logE(
                 "SettingsViewModel",
                 "Error removing folder $folderUri via UseCase",
@@ -350,7 +351,7 @@ open class SettingsViewModel @Inject constructor(
                 )
             }
         } catch (ex: Exception) {
-            ex.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(ex)
             TimberLogger.logE("SettingsViewModel", "Error adding folder $uri via UseCase", ex)
             _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_adding_folder, ex.message)))
         } finally {
@@ -364,8 +365,8 @@ open class SettingsViewModel @Inject constructor(
                 enqueueSafFolderScanWorkerUseCase.invoke(null)
                 _effect.send(SettingsEffect.ShowToast(context.getString(R.string.general_scan_enqueued)))
             } catch (ex: Exception) {
-                ex.printStackTrace()
-                TimberLogger.logE(tag, "Failed to enqueue general folder scan worker", ex)
+                FirebaseCrashlytics.getInstance().recordException(ex)
+                TimberLogger.logE(tag ?: "SettingsViewModel", "Failed to enqueue general folder scan worker", ex)
                 _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_starting_scan, ex.message)))
             }
         }

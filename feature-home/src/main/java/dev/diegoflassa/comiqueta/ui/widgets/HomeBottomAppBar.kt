@@ -85,7 +85,7 @@ fun HomeBottomAppBar(
                     shape = ComiquetaTheme.shapes.bottomBarShape, clip = true
                 ),
             containerColor = ComiquetaTheme.colorScheme.surface,
-            tonalElevation = 4.dp.scaled(),
+            tonalElevation = ComiquetaTheme.dimen.paddingExtraSmall.scaled(),
         ) {}
         // Right Group
         Row(

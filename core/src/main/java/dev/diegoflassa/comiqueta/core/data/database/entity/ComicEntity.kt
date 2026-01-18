@@ -18,7 +18,12 @@ import androidx.room.PrimaryKey
             onUpdate = ForeignKey.CASCADE
         )
     ],
-    indices = [Index(value = ["comic_category_id"])]
+    indices = [
+        Index(value = ["comic_category_id"]),
+        Index(value = ["file_name"]),
+        Index(value = ["last_modified"]),
+        Index(value = ["title"])
+    ]
 )
 data class ComicEntity(
     @PrimaryKey
@@ -42,6 +47,15 @@ data class ComicEntity(
 
     @ColumnInfo(name = "author")
     val author: String? = null,
+
+    @ColumnInfo(name = "volume")
+    val volume: String? = null,
+
+    @ColumnInfo(name = "number")
+    val number: String? = null,
+
+    @ColumnInfo(name = "year")
+    val year: Int? = null,
 
     @ColumnInfo(name = "is_favorite")
     val isFavorite: Boolean = false,

@@ -17,11 +17,6 @@ class EnqueueSafFolderScanWorkerUseCase @Inject constructor(
     private val workManager: WorkManager
 ) : IEnqueueSafFolderScanWorkerUseCase {
     override operator fun invoke(uriString: String?): UUID {
-        val constraints = Constraints.Builder()
-            .setRequiresBatteryNotLow(true)
-            .setRequiresStorageNotLow(true)
-            .build()
-
         // Create input data for the worker
         val inputDataBuilder = Data.Builder()
         uriString?.let {
@@ -30,7 +25,6 @@ class EnqueueSafFolderScanWorkerUseCase @Inject constructor(
         val inputData = inputDataBuilder.build()
 
         val scanWorkRequest = OneTimeWorkRequestBuilder<SafFolderScanWorker>()
-            .setConstraints(constraints)
             .setInputData(inputData)
             .addTag(SafFolderScanWorker.TAG)
             .build()
@@ -43,6 +37,11 @@ class EnqueueSafFolderScanWorkerUseCase @Inject constructor(
         } else {
             SafFolderScanWorker.TAG
         }
+
+        dev.diegoflassa.comiqueta.core.data.timber.TimberLogger.logI(
+            SafFolderScanWorker.TAG,
+            "Enqueuing unique work: $uniqueWorkName for request: ${scanWorkRequest.id}"
+        )
 
         workManager.enqueueUniqueWork(
             uniqueWorkName, 

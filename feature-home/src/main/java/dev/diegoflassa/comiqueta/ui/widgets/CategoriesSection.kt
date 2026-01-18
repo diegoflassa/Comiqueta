@@ -21,7 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import dev.diegoflassa.comiqueta.core.R
-import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
+import dev.diegoflassa.comiqueta.core.domain.model.Category
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
 import dev.diegoflassa.comiqueta.ui.home.ImmutableList
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
@@ -36,9 +36,9 @@ private const val tag = "CategoriesSection"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesSection(
-    categories: ImmutableList<CategoryEntity>,
-    selectedCategory: CategoryEntity?,
-    onCategoryClicked: (CategoryEntity) -> Unit
+    categories: ImmutableList<Category>,
+    selectedCategory: Category?,
+    onCategoryClicked: (Category) -> Unit
 ) {
     if (categories.isEmpty()) {
         return
@@ -100,11 +100,11 @@ fun CategoriesSection(
 // --- CategoriesSection Previews ---
 
 val sampleCategoriesForPreview = listOf(
-    CategoryEntity(id = 0, name = "All long text to test"),
-    CategoryEntity(id = 1, name = "Action"),
-    CategoryEntity(id = 2, name = "Comedy"),
-    CategoryEntity(id = 3, name = "Sci-Fi"),
-    CategoryEntity(id = 4, name = "Fantasy")
+    Category(id = 0, name = "All long text to test", createdAt = 0L),
+    Category(id = 1, name = "Action", createdAt = 0L),
+    Category(id = 2, name = "Comedy", createdAt = 0L),
+    Category(id = 3, name = "Sci-Fi", createdAt = 0L),
+    Category(id = 4, name = "Fantasy", createdAt = 0L)
 )
 
 @PreviewScreenSizes

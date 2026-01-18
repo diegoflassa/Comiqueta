@@ -1,13 +1,13 @@
 package dev.diegoflassa.comiqueta.core.domain.usecase.category
 
-import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
+import dev.diegoflassa.comiqueta.core.domain.model.Category
 
 interface IDeleteCategoryUseCase {
     /**
      * Deletes the specified category entity.
      * @param category The category entity to delete.
      */
-    suspend operator fun invoke(category: CategoryEntity)
+    suspend operator fun invoke(category: Category)
 
     /**
      * Deletes a category by its unique identifier.

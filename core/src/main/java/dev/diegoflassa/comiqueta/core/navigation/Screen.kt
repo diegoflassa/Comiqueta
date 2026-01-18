@@ -25,6 +25,9 @@ sealed interface Screen : NavKey {
     data object Categories : Screen
 
     @Serializable
+    data object Statistics : Screen
+
+    @Serializable
     data class Viewer(
         @Serializable(with = UriSerializer::class)
         val comicPath: Uri

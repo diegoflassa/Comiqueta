@@ -49,8 +49,8 @@ fun ComicCoverItem(
             .height(150.dp.scaled())
             .aspectRatio(aspectRatio)
             .clickable { onIntent?.invoke(HomeIntent.ComicSelected(comic)) },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp.scaled()),
-        shape = RoundedCornerShape(8.dp.scaled())
+        elevation = CardDefaults.cardElevation(defaultElevation = ComiquetaTheme.dimen.paddingExtraSmall.scaled()), // 4.dp
+        shape = RoundedCornerShape(ComiquetaTheme.dimen.searchRoundedCorner.scaled()) // 8.dp
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Image(

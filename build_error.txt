@@ -1,0 +1,18 @@
+Configuration on demand is an incubating feature.
+Reusing configuration cache.
+> Task :core:preBuild UP-TO-DATE
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:preDebugBuild UP-TO-DATE
+> Task :core:processDebugNavigationResources UP-TO-DATE
+> Task :core:generateDebugResValues UP-TO-DATE
+> Task :core:generateDebugResources UP-TO-DATE
+> Task :core:packageDebugResources UP-TO-DATE
+> Task :core:parseDebugLocalResources UP-TO-DATE
+> Task :core:generateDebugRFile UP-TO-DATE
+> Task :core:kspDebugKotlin
+> Task :core:copyRoomSchemas NO-SOURCE
+> Task :core:compileDebugKotlin
+
+BUILD SUCCESSFUL in 1m 26s
+8 actionable tasks: 2 executed, 6 up-to-date
+Configuration cache entry reused.

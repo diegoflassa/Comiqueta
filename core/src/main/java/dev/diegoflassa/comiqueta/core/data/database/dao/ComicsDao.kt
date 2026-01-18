@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import dev.diegoflassa.comiqueta.core.data.database.entity.AuthorCount
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicFtsEntity
 
@@ -152,13 +153,13 @@ interface ComicsDao {
             )
     """
     )
-    suspend fun getComicsCountByCriteria(
+    fun getComicsCountByCriteriaFlow(
         categoryId: Long?,
         filterByFavorite: Boolean?,
         createdAfterTimestamp: Long?,
         filterByRead: Boolean?,
         ftsQuery: String?
-    ): Int
+    ): kotlinx.coroutines.flow.Flow<Int>
 
     @Query("SELECT EXISTS(SELECT * FROM comics WHERE file_path = :filePath)")
     suspend fun comicExists(filePath: Uri): Boolean
@@ -172,4 +173,25 @@ interface ComicsDao {
             updateComicAndFts(updatedComic)
         }
     }
+
+    @Query("UPDATE comics SET cover_path = :coverPath WHERE file_path = :filePath")
+    suspend fun updateCoverPath(filePath: Uri, coverPath: Uri)
+
+    @Query("SELECT COUNT(*) FROM comics WHERE was_read = 1")
+    fun getReadCount(): kotlinx.coroutines.flow.Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM comics WHERE was_read = 0 AND last_page > 0")
+    fun getInProgressCount(): kotlinx.coroutines.flow.Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM comics WHERE file_name LIKE '%.cbz'")
+    fun getCbzCount(): kotlinx.coroutines.flow.Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM comics WHERE file_name LIKE '%.cbr'")
+    fun getCbrCount(): kotlinx.coroutines.flow.Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM comics WHERE file_name LIKE '%.pdf'")
+    fun getPdfCount(): kotlinx.coroutines.flow.Flow<Int>
+
+    @Query("SELECT author, COUNT(*) as count FROM comics WHERE author IS NOT NULL AND author != '' GROUP BY author ORDER BY count DESC LIMIT :limit")
+    fun getTopAuthors(limit: Int): kotlinx.coroutines.flow.Flow<List<AuthorCount>>
 }

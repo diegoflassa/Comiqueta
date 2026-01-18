@@ -16,7 +16,7 @@ import dev.diegoflassa.comiqueta.core.data.extensions.modoDebugHabilitado
 @TypeConverters(UriConverters::class)
 @Database(
     entities = [ComicEntity::class, CategoryEntity::class, ComicFtsEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class ComicDatabase : RoomDatabase() {

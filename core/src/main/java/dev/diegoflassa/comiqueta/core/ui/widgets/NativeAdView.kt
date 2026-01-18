@@ -30,6 +30,7 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.android.gms.ads.nativead.NativeAdView as GoogleNativeAdView
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
+import dev.diegoflassa.comiqueta.core.ui.extensions.findActivity
 
 private const val TAG = "NativeAdWidget"
 
@@ -90,7 +91,8 @@ fun NativeAdView(
 
         TimberLogger.logI(TAG, $$"Requesting Native Ad: $adUnitId")
 
-        val loader = AdLoader.Builder(context, adUnitId)
+        val activityContext = context.findActivity() ?: context
+        val loader = AdLoader.Builder(activityContext, adUnitId)
             .forNativeAd { ad: NativeAd ->
                 TimberLogger.logI(TAG, $$"Native Ad loaded: $adUnitId")
                 nativeAdState?.destroy()
@@ -137,8 +139,9 @@ fun NativeAdView(
     if (enabled && nativeAdState != null) {
         AndroidView(
             modifier = modifier.fillMaxWidth(),
-            factory = {
-                val adView = LayoutInflater.from(it).inflate(nativeAdLayoutResId, null) as GoogleNativeAdView
+            factory = { it ->
+                val activityContextFactory = it.findActivity() ?: it
+                val adView = LayoutInflater.from(activityContextFactory).inflate(nativeAdLayoutResId, null) as GoogleNativeAdView
                 adView
             },
             update = { adView ->

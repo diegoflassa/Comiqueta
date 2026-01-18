@@ -1,7 +1,7 @@
 package dev.diegoflassa.comiqueta.ui.home
 
 import android.net.Uri
-import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
+import dev.diegoflassa.comiqueta.core.domain.model.Category
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.navigation.Screen
@@ -46,7 +46,7 @@ sealed interface HomeIntent {
     data class ViewModeChanged(val viewMode: ViewMode) : HomeIntent
 
     // --- Intents for selection handling ---
-    data class CategorySelected(val category: CategoryEntity?) : HomeIntent
+    data class CategorySelected(val category: Category?) : HomeIntent
     data class ComicSelected(val comic: Comic?) : HomeIntent
     data class FlagSelected(val flag: ComicFlags) : HomeIntent
 
@@ -64,4 +64,6 @@ sealed interface HomeIntent {
     data object ClearSearch : HomeIntent
 
     data object RetryLoadComics : HomeIntent
+    data object ToggleScanProgressMinimization : HomeIntent
+    data object DismissScanResult : HomeIntent
 }

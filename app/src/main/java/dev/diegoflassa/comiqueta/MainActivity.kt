@@ -140,7 +140,7 @@ class MainActivity : ComponentActivity() {
     private fun initializeMobileAdsSdkIfNeeded() {
         if (::consentInformation.isInitialized && consentInformation.canRequestAds()) {
             if (isMobileAdsInitializeCalled.compareAndSet(false, true)) {
-                MobileAds.initialize(this) { initializationStatus ->
+                MobileAds.initialize(this.applicationContext) { initializationStatus ->
                     TimberLogger.logI(
                         tag,
                         "MobileAds initialized. Status: ${initializationStatus.adapterStatusMap}"

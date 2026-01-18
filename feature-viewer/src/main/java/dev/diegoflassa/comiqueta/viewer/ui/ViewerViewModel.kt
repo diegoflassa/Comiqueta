@@ -1,8 +1,11 @@
 package dev.diegoflassa.comiqueta.viewer.ui
 
+import android.app.Application
 import android.net.Uri
 import android.util.LruCache
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -10,12 +13,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.diegoflassa.comiqueta.core.data.preferences.PreferencesKeys
+import dev.diegoflassa.comiqueta.core.data.repository.IComicsRepository
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
+import dev.diegoflassa.comiqueta.core.data.util.CoverUtils
 import dev.diegoflassa.comiqueta.core.model.ComicFileType
 import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IGetComicUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IUpdateComicProgressUseCase
 import dev.diegoflassa.comiqueta.viewer.domain.usecase.IDecodeComicPageUseCase
 import dev.diegoflassa.comiqueta.viewer.domain.usecase.IGetComicInfoUseCase
+import dev.diegoflassa.comiqueta.viewer.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -38,6 +44,8 @@ open class ViewerViewModel @Inject constructor(
     private val decodeComicPageUseCase: IDecodeComicPageUseCase,
     private val getComicUseCase: IGetComicUseCase,
     private val updateComicProgressUseCase: IUpdateComicProgressUseCase,
+    private val comicsRepository: IComicsRepository,
+    private val application: Application,
     private val dataStore: DataStore<Preferences>
 ) : ViewModel() {
 
@@ -77,6 +85,7 @@ open class ViewerViewModel @Inject constructor(
             val initialSettingValue = try {
                 viewerPagesToPreloadAheadFlow.first()
             } catch (ex: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 TimberLogger.logE(TAG, "Failed to get initial preload count, using default.", ex)
                 ViewerUIState.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
             }
@@ -136,6 +145,7 @@ open class ViewerViewModel @Inject constructor(
 
             viewerPagesToPreloadAheadFlow
                 .catch { e ->
+                    FirebaseCrashlytics.getInstance().recordException(e)
                     TimberLogger.logE(TAG, "Error observing viewerPagesToPreloadAhead", e)
                     val safeDefault = ViewerUIState.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
                         .coerceAtLeast(MIN_PRELOAD_COUNT_LOGIC)
@@ -185,6 +195,7 @@ open class ViewerViewModel @Inject constructor(
             is ViewerIntent.ToggleUiVisibility -> _uiState.update { it.copy(isUiVisible = !it.isUiVisible) }
             is ViewerIntent.ErrorShown -> _uiState.update { it.copy(error = null) }
             is ViewerIntent.LoadThumbnail -> handleLoadThumbnail(intent.pageNumber)
+            is ViewerIntent.SetAsCover -> handleSetAsCover()
         }
     }
 
@@ -208,10 +219,61 @@ open class ViewerViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(e)
                 TimberLogger.logE(TAG, "Error loading thumbnail for page $pageIndex", e)
             } finally {
                 _uiState.update { it.copy(isLoadingThumbnail = it.isLoadingThumbnail - pageIndex) }
                 thumbnailLoadJobs.remove(pageIndex)
+            }
+        }
+    }
+
+    private fun handleSetAsCover() {
+        val currentPage = uiState.value.currentPage
+        val comicUri = currentComicUri ?: return
+        val fileType = currentComicFileType ?: return
+        val pageIdentifier = if (currentPage < comicPageIdentifiers.size) {
+            comicPageIdentifiers[currentPage]
+        } else {
+            currentPage.toString()
+        }
+
+        viewModelScope.launch {
+            try {
+                // We want a thumbnail size for the cover
+                val bitmap = decodeComicPageUseCase(
+                    pageIndex = currentPage,
+                    pageIdentifier = pageIdentifier,
+                    comicUri = comicUri,
+                    fileType = fileType,
+                    thumbnailWidth = CoverUtils.THUMBNAIL_WIDTH
+                )?.asAndroidBitmap()
+
+                if (bitmap != null) {
+                    val comic = getComicUseCase(comicUri)
+                    if (comic != null) {
+                        // Delete old cover if it exists in our covers directory
+                        CoverUtils.deleteOldCover(application, comic.coverPath)
+
+                        val newCoverUri = CoverUtils.saveBitmapToCache(
+                            application,
+                            bitmap,
+                            comic.title ?: "custom_cover"
+                        )
+                        if (newCoverUri != null) {
+                            comicsRepository.updateComicCover(comicUri, newCoverUri)
+                            TimberLogger.logI(
+                                TAG,
+                                "Successfully set page $currentPage as cover for ${comic.title}"
+                            )
+                            _effect.send(ViewerEffect.ShowMessage(application.getString(R.string.cover_updated_success)))
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(e)
+                TimberLogger.logE(TAG, "Error setting page as cover", e)
+                _effect.send(ViewerEffect.ShowError(application.getString(R.string.cover_updated_error)))
             }
         }
     }
@@ -283,6 +345,7 @@ open class ViewerViewModel @Inject constructor(
                 TimberLogger.logI(TAG, "LoadComic (getComicInfo) cancelled: ${cex.message}")
                 _uiState.update { it.copy(comicPath = Uri.EMPTY) }
             } catch (ex: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 TimberLogger.logE(TAG, "LoadComic (getComicInfo): Error loading comic $uri", ex)
                 val errorMessage = ex.localizedMessage ?: "Failed to load comic"
                 _uiState.update { it.copy(error = errorMessage, comicPath = Uri.EMPTY) }
@@ -379,6 +442,7 @@ open class ViewerViewModel @Inject constructor(
                     isCompleted = targetPageIndex >= pageCount - 1 && pageCount > 0
                 )
             } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(e)
                 TimberLogger.logE(TAG, "Failed to update comic progress", e)
             }
         }
@@ -406,6 +470,7 @@ open class ViewerViewModel @Inject constructor(
                     }
                 } catch (cex: CancellationException) {
                 } catch (ex: Exception) {
+                    FirebaseCrashlytics.getInstance().recordException(ex)
                     TimberLogger.logE(TAG, "Error loading page $pageToLoadIdx", ex)
                 } finally {
                     if (isActive) {
@@ -455,6 +520,7 @@ open class ViewerViewModel @Inject constructor(
         } catch (cex: CancellationException) {
             throw cex
         } catch (ex: Exception) {
+            FirebaseCrashlytics.getInstance().recordException(ex)
             TimberLogger.logE(TAG, "Error during decodeComicPage for $pageIndex", ex)
             throw ex
         }
@@ -464,6 +530,7 @@ open class ViewerViewModel @Inject constructor(
         try {
             if (this.isActive) this.cancel(CancellationException(message))
         } catch (ex: Exception) {
+            FirebaseCrashlytics.getInstance().recordException(ex)
             TimberLogger.logE(
                 TAG,
                 "Exception during job cancellation: $message - ${ex.message}",

@@ -71,6 +71,8 @@
     <string name="scan_complete_refreshing">Scan complete. Refreshing...</string>
     <string name="scan_failed">Scan failed.</string>
     <string name="scan_cancelled">Scan cancelled.</string>
+    <string name="scan_completed">Scan completed successfully.</string>
+    <string name="scan_finished_ok">OK</string>
 
     <!-- Error Messages -->
     <string name="error_loading_latest_comics_message">Error loading latest comics: %s</string>
@@ -79,4 +81,26 @@
     <string name="failed_load_categories">Failed to load categories: %s</string>
     <string name="error_unexpected_message">An unexpected error occurred: %s</string>
     <string name="retry">Retry</string>
+    <string name="scanning_folders_progress">Scanning folders: %1$d%%</string>
+    <string name="scanning_folders_progress_detail">Scanning: %1$d%% (%2$d/%3$d files, %4$d comics)</string>
+    <string name="scanning_folders">Scanning folders…</string>
+    <string name="scanning_current_comic">Processing: %s</string>
+    <string name="minimize_progress">Minimize progress</string>
+    <string name="expand_progress">Expand progress</string>
+
+    <!-- Statistics -->
+    <string name="statistics_title">Collection Statistics</string>
+    <string name="stats_summary_title">Collection Summary</string>
+    <string name="stats_total_comics">Total comics</string>
+    <string name="stats_read_comics">Read comics</string>
+    <string name="stats_unread_comics">Unread comics</string>
+    <string name="stats_in_progress_comics">In progress</string>
+    <string name="stats_favorite_comics">Favorites</string>
+    <string name="stats_total_categories">Total categories</string>
+    <string name="stats_formats_title">Formats Distribution</string>
+    <string name="stats_last_scan_title">Last Scan Information</string>
+    <string name="stats_last_scan_files_seen">Files seen during scan</string>
+    <string name="stats_last_scan_processed">Processed as comics</string>
+    <string name="stats_top_authors_title">Top Authors</string>
+    <string name="stats_no_data">No data available yet. Try scanning your folders.</string>
 </resources>

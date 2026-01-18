@@ -24,6 +24,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -33,7 +34,7 @@ import kotlin.random.Random
 fun Context.obterPackageInfo(): PackageInfo? = try {
     packageManager.getPackageInfo(packageName, 0)
 } catch (nnfe: PackageManager.NameNotFoundException) {
-    nnfe.printStackTrace()
+    FirebaseCrashlytics.getInstance().recordException(nnfe)
     null
 }
 
@@ -41,7 +42,7 @@ fun Context.obterVersaoDoApp(): String = try {
     val packageInfo: PackageInfo? = packageManager.getPackageInfo(packageName, 0)
     packageInfo?.versionName ?: ""
 } catch (nnfe: PackageManager.NameNotFoundException) {
-    nnfe.printStackTrace()
+    FirebaseCrashlytics.getInstance().recordException(nnfe)
     ""
 }
 
@@ -49,7 +50,7 @@ fun Context.obterNomeDoPacote(): String = try {
     val packageInfo: PackageInfo? = packageManager.getPackageInfo(packageName, 0)
     packageInfo?.packageName ?: ""
 } catch (nnfe: PackageManager.NameNotFoundException) {
-    nnfe.printStackTrace()
+    FirebaseCrashlytics.getInstance().recordException(nnfe)
     ""
 }
 
@@ -58,7 +59,7 @@ fun Context.modoDebugHabilitado(): Boolean = try {
     val applicationInfo = packageManager.getApplicationInfo(this.packageName, 0)
     (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 } catch (nnfe: PackageManager.NameNotFoundException) {
-    nnfe.printStackTrace()
+    FirebaseCrashlytics.getInstance().recordException(nnfe)
     false
 }
 
@@ -163,7 +164,7 @@ fun Context.permissaoExiste(permissao: String): Boolean {
         packageManager.getPermissionInfo(permissao, 0)
         return true
     } catch (nnfe: PackageManager.NameNotFoundException) {
-        nnfe.printStackTrace()
+        FirebaseCrashlytics.getInstance().recordException(nnfe)
         return false
     }
 }

@@ -1,6 +1,6 @@
 package dev.diegoflassa.comiqueta.core.domain.usecase.category
 
-import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
+import dev.diegoflassa.comiqueta.core.domain.model.Category
 
 /**
  * Interface para o caso de uso de atualizar uma categoria.
@@ -13,5 +13,5 @@ interface IUpdateCategoryUseCase {
      * @param category A entidade da categoria a ser atualizada.
      * @throws IllegalArgumentException se o nome da categoria estiver em branco.
      */
-    suspend operator fun invoke(category: CategoryEntity)
+    suspend operator fun invoke(category: Category)
 }

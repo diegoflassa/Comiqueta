@@ -18,6 +18,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
+import dev.diegoflassa.comiqueta.core.ui.extensions.findActivity
 import dev.diegoflassa.comiqueta.core.ui.extensions.hasHeightBeenSet
 
 @Composable
@@ -40,18 +41,11 @@ fun BannerAdView(
                 }
             },
         factory = { ctx ->
-            AdView(ctx).apply {
+            val activityContext = ctx.findActivity() ?: ctx
+            AdView(activityContext).apply {
                 adViewInstance = this
 
-                var activity: Activity? = null
-                var contextWrapper: Context? = ctx
-                while (contextWrapper is ContextWrapper) {
-                    if (contextWrapper is Activity) {
-                        activity = contextWrapper
-                        break
-                    }
-                    contextWrapper = contextWrapper.baseContext
-                }
+                val activity = activityContext as? Activity
 
                 val adSize = activity?.let { currentActivity ->
                     AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(

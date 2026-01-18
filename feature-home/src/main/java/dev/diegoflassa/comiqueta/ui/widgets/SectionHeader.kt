@@ -52,10 +52,10 @@ fun SectionHeader(
             .fillMaxWidth()
             .clickable(onClick = onHeaderClick)
             .padding(
-                start = 16.dp.scaled(),
-                end = 8.dp.scaled(),
-                top = 16.dp.scaled(),
-                bottom = 8.dp.scaled()
+                start = ComiquetaTheme.dimen.paddingLarge.scaled(),
+                end = ComiquetaTheme.dimen.paddingSmall.scaled(),
+                top = ComiquetaTheme.dimen.paddingLarge.scaled(),
+                bottom = ComiquetaTheme.dimen.paddingSmall.scaled()
             )
             .wrapContentHeight(),
         verticalAlignment = Alignment.CenterVertically
@@ -79,7 +79,7 @@ fun SectionHeader(
 
         if (showGridListOption) {
 
-            Spacer(modifier = Modifier.width(8.dp.scaled()))
+            Spacer(modifier = Modifier.width(ComiquetaTheme.dimen.spacerSmall.scaled()))
 
             IconButton(onClick = {
                 if (currentViewMode != ViewMode.LIST) {
@@ -89,12 +89,12 @@ fun SectionHeader(
                 Icon(
                     painter = painterResource(id = dev.diegoflassa.comiqueta.core.R.drawable.ic_list),
                     contentDescription = stringResource(R.string.view_as_list_description),
-                    modifier = Modifier.size(21.dp),
+                    modifier = Modifier.size(21.dp.scaled()),
                     tint = if (currentViewMode == ViewMode.LIST) ComiquetaTheme.colorScheme.headerSelectedIcon else ComiquetaTheme.colorScheme.headerUnselectedIcon
                 )
             }
 
-            Spacer(modifier = Modifier.width(8.dp.scaled()))
+            Spacer(modifier = Modifier.width(ComiquetaTheme.dimen.spacerSmall.scaled()))
 
             IconButton(onClick = {
                 if (currentViewMode != ViewMode.GRID) {
@@ -105,7 +105,7 @@ fun SectionHeader(
                 Icon(
                     painter = painterResource(id = dev.diegoflassa.comiqueta.core.R.drawable.ic_grid),
                     contentDescription = stringResource(R.string.view_as_grid_description),
-                    modifier = Modifier.size(21.dp),
+                    modifier = Modifier.size(21.dp.scaled()),
                     tint = if (currentViewMode == ViewMode.GRID) ComiquetaTheme.colorScheme.headerSelectedIcon else ComiquetaTheme.colorScheme.headerUnselectedIcon
                 )
             }

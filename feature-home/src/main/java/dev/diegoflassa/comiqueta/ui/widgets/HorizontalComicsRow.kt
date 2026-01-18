@@ -85,8 +85,8 @@ fun HorizontalComicsRow(
         LazyRow(
             state = lazyListState,
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            contentPadding = PaddingValues(horizontal = ComiquetaTheme.dimen.paddingLarge.scaled(), vertical = ComiquetaTheme.dimen.paddingSmall.scaled()),
+            horizontalArrangement = Arrangement.spacedBy(ComiquetaTheme.dimen.spacerMedium.scaled())
         ) {
             items(
                 count = comics.itemCount,
@@ -102,15 +102,15 @@ fun HorizontalComicsRow(
         }
 
         if (pageCount > 1) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.paddingMedium.scaled()))
             ScrollTrackIndicator(
                 pageCount = pageCount,
                 currentPage = currentPage,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
+                    .padding(horizontal = ComiquetaTheme.dimen.paddingExtraLarge.scaled())
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.paddingMedium.scaled()))
         }
     }
 }
@@ -168,15 +168,15 @@ fun HorizontalComicsRowForPreview(
             }
         }
         if (pageCount > 1) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.paddingMedium.scaled()))
             ScrollTrackIndicator(
                 pageCount = pageCount,
                 currentPage = currentPage,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
+                    .padding(horizontal = ComiquetaTheme.dimen.paddingExtraLarge.scaled())
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.paddingMedium.scaled()))
         }
     }
 }

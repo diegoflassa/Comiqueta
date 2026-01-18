@@ -20,7 +20,7 @@ firebase-perf-plugin = "2.0.2"
 #Common
 core-ktx = "1.17.0"
 material = "1.13.0"
-ui-text-google-fonts = "1.10.0"
+ui-text-google-fonts = "1.10.1"
 
 #Common Testing
 junit = "4.13.2"
@@ -46,7 +46,7 @@ firebase-bom = "34.7.0"
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2025.12.01"
+compose-bom = "2026.01.00"
 ax-constraintlayout-compose = "1.1.1"
 ax-activity-compose = "1.12.2"
 lifecycle-viewmodel-compose = "2.10.0"
@@ -296,6 +296,7 @@ ax-lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", 
 
 #Work
 ax-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "ax-work-runtime-ktx" }
+ax-work-testing = { module = "androidx.work:work-testing", version.ref = "ax-work-runtime-ktx" }
 
 #Documenfile
 ax-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "ax-documentfile" }

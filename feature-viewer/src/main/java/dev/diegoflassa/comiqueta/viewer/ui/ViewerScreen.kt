@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.boundsInWindow
@@ -42,7 +43,10 @@ import androidx.compose.ui.platform.LocalView
 import android.graphics.Rect as AndroidRect
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -78,6 +82,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
+import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.viewer.R
 import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.PageFlip
@@ -110,6 +115,10 @@ fun ViewerScreen(
                 is ViewerEffect.ShowError -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                     viewerViewModel.reduce(ViewerIntent.ErrorShown)
+                }
+
+                is ViewerEffect.ShowMessage -> {
+                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -162,6 +171,9 @@ fun ViewerScreenContent(
     val view = LocalView.current
     var exclusionRects by retain { mutableStateOf<List<AndroidRect>>(emptyList()) }
 
+    val exclusionWidthPx = with(density) { ComiquetaTheme.dimen.inputHeight.roundToPx() }
+    val exclusionHeightPx = with(density) { (ComiquetaTheme.dimen.inputHeight * 5).roundToPx() }
+
     DisposableEffect(exclusionRects) {
         view.systemGestureExclusionRects = exclusionRects
         onDispose {
@@ -179,8 +191,6 @@ fun ViewerScreenContent(
                 .fillMaxSize()
                 .onGloballyPositioned { coordinates ->
                     val bounds = coordinates.boundsInWindow()
-                    val exclusionWidthPx = with(density) { 40.dp.roundToPx() }
-                    val exclusionHeightPx = with(density) { 200.dp.roundToPx() }
 
                     val centerY = (bounds.top + bounds.bottom) / 2
                     val halfHeight = (exclusionHeightPx / 2).toFloat()
@@ -220,7 +230,7 @@ fun ViewerScreenContent(
                         text = uiState.error,
                         color = ComiquetaTheme.colorScheme.error,
                         modifier = Modifier
-                            .padding(16.dp)
+                            .padding(ComiquetaTheme.dimen.paddingLarge.scaled())
                             .clickable { onIntent?.invoke(ViewerIntent.ErrorShown) },
                         textAlign = TextAlign.Center
                     )
@@ -509,7 +519,7 @@ fun ViewerScreenContent(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(16.dp),
+                            .padding(ComiquetaTheme.dimen.paddingLarge.scaled()),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -522,7 +532,7 @@ fun ViewerScreenContent(
                             stringResource(R.string.no_comic_loaded_subtitle),
                             style = ComiquetaTheme.typography.typography.bodyLarge,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 8.dp)
+                            modifier = Modifier.padding(top = ComiquetaTheme.dimen.paddingSmall.scaled())
                         )
                     }
                 }
@@ -547,6 +557,24 @@ fun ViewerScreenContent(
                             )
                         }
                     },
+                    actions = {
+                        var showMenu by remember { mutableStateOf(false) }
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.set_as_cover)) },
+                                onClick = {
+                                    showMenu = false
+                                    onIntent?.invoke(ViewerIntent.SetAsCover)
+                                }
+                            )
+                        }
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = ComiquetaTheme.colorScheme.surface.copy(alpha = 0.85f)
                     )
@@ -566,7 +594,7 @@ fun ViewerScreenContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(ComiquetaTheme.colorScheme.surface.copy(alpha = 0.85f))
-                        .padding(bottom = 12.dp)
+                        .padding(bottom = ComiquetaTheme.dimen.paddingMedium.scaled())
                 ) {
                     ThumbnailNavBar(
                         uiState = uiState,
@@ -581,7 +609,7 @@ fun ViewerScreenContent(
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 8.dp),
+                            .padding(top = ComiquetaTheme.dimen.paddingSmall.scaled()),
                         textAlign = TextAlign.Center,
                         style = ComiquetaTheme.typography.typography.bodyMedium,
                         color = ComiquetaTheme.colorScheme.onSurface
@@ -637,8 +665,8 @@ fun WebtoonPageItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .heightIn(min = 200.dp),
+            .padding(vertical = ComiquetaTheme.dimen.paddingExtraSmall.scaled())
+            .heightIn(min = 200.dp.scaled()),
         contentAlignment = Alignment.Center
     ) {
         if (bitmap != null) {
@@ -652,7 +680,7 @@ fun WebtoonPageItem(
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(400.dp)
+                    .height(400.dp.scaled())
                     .background(ComiquetaTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -689,9 +717,9 @@ fun ThumbnailNavBar(
         state = scrollState,
         modifier = modifier
             .fillMaxWidth()
-            .height(80.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .height(80.dp.scaled()),
+        contentPadding = PaddingValues(horizontal = ComiquetaTheme.dimen.paddingLarge.scaled()),
+        horizontalArrangement = Arrangement.spacedBy(ComiquetaTheme.dimen.spacerSmall.scaled()),
         verticalAlignment = Alignment.CenterVertically
     ) {
         items(uiState.pageCount) { index ->
@@ -724,14 +752,14 @@ fun ThumbnailItem(
 
     Box(
         modifier = Modifier
-            .width(60.dp)
+            .width(60.dp.scaled())
             .fillMaxHeight()
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(ComiquetaTheme.dimen.paddingExtraSmall.scaled()))
             .background(ComiquetaTheme.colorScheme.surfaceVariant)
             .border(
-                width = if (isSelected) 2.dp else 0.dp,
+                width = if (isSelected) 2.dp.scaled() else 0.dp,
                 color = if (isSelected) ComiquetaTheme.colorScheme.primary else Color.Transparent,
-                shape = RoundedCornerShape(4.dp)
+                shape = RoundedCornerShape(ComiquetaTheme.dimen.paddingExtraSmall.scaled())
             )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
@@ -745,8 +773,8 @@ fun ThumbnailItem(
             )
         } else if (isLoading) {
             CircularProgressIndicator(
-                modifier = Modifier.width(20.dp).height(20.dp),
-                strokeWidth = 2.dp
+                modifier = Modifier.size(ComiquetaTheme.dimen.bottomAppBarIconSize.scaled()),
+                strokeWidth = 2.dp.scaled()
             )
         } else {
             Text(

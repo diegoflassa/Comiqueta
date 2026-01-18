@@ -3,10 +3,11 @@ package dev.diegoflassa.comiqueta.categories.ui
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.diegoflassa.comiqueta.categories.R
-import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
+import dev.diegoflassa.comiqueta.core.domain.model.Category
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.IAddCategoryUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.IDeleteCategoryUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.category.IGetCategoriesUseCase
@@ -97,6 +98,7 @@ class CategoriesViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             getCategoriesUseCase()
                 .catch { e ->
+                    FirebaseCrashlytics.getInstance().recordException(e)
                     _uiState.update { it.copy(isLoading = false, error = e.message) }
                     _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.error_loading_categories, e.message)))
                 }
@@ -131,32 +133,30 @@ class CategoriesViewModel @Inject constructor(
             }
             _effect.send(CategoriesEffect.NavigateBack)
         } catch (ex: Exception) {
-            ex.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(ex)
             _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.error_saving_category, ex.message)))
-        }
-        // No finally block to set isLoading to false, as loadCategories will be called by SaveCategory success/failure observation in UI if needed
-        // or rely on the loadCategories flow to update the list and loading state.
-        // For simplicity here, we assume the list will refresh or the operation is atomic enough.
-        // Consider explicit refresh or better state management if operations are slow.
-        _uiState.update {
-            it.copy(
-                isLoading = false,
-                categoryToEdit = null,
-                newCategoryName = ""
-            )
+        } finally {
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    categoryToEdit = null,
+                    newCategoryName = ""
+                )
+            }
         }
     }
 
-    private suspend fun deleteCategory(category: CategoryEntity) {
+    private suspend fun deleteCategory(category: Category) {
         _uiState.update { it.copy(isLoading = true) }
         try {
             deleteCategoryUseCase(category)
             _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.category_deleted_named, category.name)))
         } catch (ex: Exception) {
-            ex.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(ex)
             _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.error_deleting_category, ex.message)))
+        } finally {
+            _uiState.update { it.copy(isLoading = false) }
         }
-        _uiState.update { it.copy(isLoading = false) }
     }
 
     private suspend fun deleteCategoryById(categoryId: Long) {
@@ -165,9 +165,10 @@ class CategoriesViewModel @Inject constructor(
             deleteCategoryUseCase.byId(categoryId)
             _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.category_deleted_generic)))
         } catch (ex: Exception) {
-            ex.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(ex)
             _effect.send(CategoriesEffect.ShowToast(context.getString(R.string.error_deleting_category, ex.message)))
+        } finally {
+            _uiState.update { it.copy(isLoading = false) }
         }
-        _uiState.update { it.copy(isLoading = false) }
     }
 }

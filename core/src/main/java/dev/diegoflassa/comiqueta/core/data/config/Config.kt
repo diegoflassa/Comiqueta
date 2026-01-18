@@ -1,11 +1,12 @@
 package dev.diegoflassa.comiqueta.core.data.config
 
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.diegoflassa.comiqueta.core.R
 import javax.inject.Inject
 
 class Config @Inject constructor(
-    private val context: Context,
+    @ApplicationContext private val context: Context,
 ) : IConfig {
 
     override val clarityId by lazy {

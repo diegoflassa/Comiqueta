@@ -1,0 +1,50 @@
+Configuration on demand is an incubating feature.
+Reusing configuration cache.
+> Task :core:preBuild UP-TO-DATE
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature-home:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:preDebugBuild UP-TO-DATE
+> Task :feature-home:preBuild UP-TO-DATE
+> Task :core:generateDebugResValues UP-TO-DATE
+> Task :feature-home:preDebugBuild UP-TO-DATE
+> Task :core:javaPreCompileDebug UP-TO-DATE
+> Task :feature-home:generateDebugResValues UP-TO-DATE
+> Task :core:processDebugNavigationResources UP-TO-DATE
+> Task :feature-home:generateDebugResources UP-TO-DATE
+> Task :feature-home:processDebugNavigationResources UP-TO-DATE
+> Task :core:generateDebugResources UP-TO-DATE
+> Task :feature-home:packageDebugResources UP-TO-DATE
+> Task :core:packageDebugResources UP-TO-DATE
+> Task :feature-home:parseDebugLocalResources UP-TO-DATE
+> Task :core:parseDebugLocalResources UP-TO-DATE
+> Task :feature-home:generateDebugRFile UP-TO-DATE
+> Task :core:generateDebugRFile UP-TO-DATE
+> Task :core:kspDebugKotlin UP-TO-DATE
+
+> Task :core:compileDebugKotlin FAILED
+e: file:///D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/Comiqueta/core/src/main/java/dev/diegoflassa/comiqueta/core/data/worker/SafFolderScanWorker.kt:70:23 None of the following candidates is applicable:
+
+suspend fun getForegroundInfo(): ForegroundInfo:
+  Too many arguments for 'suspend fun getForegroundInfo(): ForegroundInfo'.
+
+fun getForegroundInfo(progress: Int, comicName: String?): ForegroundInfo:
+  No value passed for parameter 'comicName'.
+
+> Task :core:copyRoomSchemas NO-SOURCE
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 4s
+15 actionable tasks: 1 executed, 14 up-to-date
+Configuration cache entry reused.

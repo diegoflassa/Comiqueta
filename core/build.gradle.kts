@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.ax.room.paging)
     //Room Testing
     androidTestImplementation(libs.ax.room.testing)
+    androidTestImplementation(libs.ax.work.testing)
 
     //Dagger & Hilt
     implementation(libs.com.google.dagger.hilt.android)

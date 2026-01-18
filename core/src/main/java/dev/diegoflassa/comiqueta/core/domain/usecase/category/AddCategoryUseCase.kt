@@ -1,6 +1,6 @@
 package dev.diegoflassa.comiqueta.core.domain.usecase.category
 
-import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
+import dev.diegoflassa.comiqueta.core.domain.model.Category
 import dev.diegoflassa.comiqueta.core.domain.repository.ICategoryRepository // Verified correct import
 import javax.inject.Inject
 
@@ -11,7 +11,7 @@ class AddCategoryUseCase @Inject constructor(
         if (categoryName.isBlank()) {
             throw IllegalArgumentException("Category name cannot be blank.")
         }
-        val newCategory = CategoryEntity(name = categoryName)
+        val newCategory = Category(id = 0, name = categoryName, createdAt = System.currentTimeMillis())
         return categoryRepository.insertCategory(newCategory)
     }
 }

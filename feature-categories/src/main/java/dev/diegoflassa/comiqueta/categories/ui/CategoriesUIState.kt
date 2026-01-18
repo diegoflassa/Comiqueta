@@ -1,12 +1,12 @@
 package dev.diegoflassa.comiqueta.categories.ui
 
-import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
+import dev.diegoflassa.comiqueta.core.domain.model.Category
 
 data class CategoriesUIState(
-    val categories: List<CategoryEntity> = emptyList(),
+    val categories: List<Category> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val showDialog: Boolean = false,
-    val categoryToEdit: CategoryEntity? = null,
+    val categoryToEdit: Category? = null,
     val newCategoryName: String = ""
 )

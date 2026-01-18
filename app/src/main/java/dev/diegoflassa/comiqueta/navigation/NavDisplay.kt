@@ -14,6 +14,7 @@ import dev.diegoflassa.comiqueta.ui.home.HomeScreen
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.navigation.Screen
 import dev.diegoflassa.comiqueta.ui.SettingsScreen
+import dev.diegoflassa.comiqueta.ui.stats.StatisticsScreen
 import dev.diegoflassa.comiqueta.viewer.ui.ViewerScreen
 
 private const val TWEEN_DURATION = 300
@@ -43,6 +44,9 @@ fun NavDisplay(modifier: Modifier, navigationViewModel: NavigationViewModel) {
                     navigationViewModel = navigationViewModel,
                     comicPath = comicPath
                 )
+            }
+            entry<Screen.Statistics> {
+                StatisticsScreen(navigationViewModel = navigationViewModel)
             }
         }
     )

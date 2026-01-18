@@ -2,7 +2,10 @@ package dev.diegoflassa.comiqueta.core.data.repository
 
 import dev.diegoflassa.comiqueta.core.data.database.dao.CategoryDao
 import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
+import dev.diegoflassa.comiqueta.core.data.mappers.asEntity
+import dev.diegoflassa.comiqueta.core.data.mappers.asExternalModel
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
+import dev.diegoflassa.comiqueta.core.domain.model.Category
 import dev.diegoflassa.comiqueta.core.domain.repository.ICategoryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -12,25 +15,25 @@ import javax.inject.Inject
 class CategoryRepository @Inject constructor(
     private val categoryDao: CategoryDao
 ) : ICategoryRepository {
-    override fun getAllCategories(): Flow<List<CategoryEntity>> {
-        return categoryDao.getAll()
+    override fun getAllCategories(): Flow<List<Category>> {
+        return categoryDao.getAll().map { it.map(CategoryEntity::asExternalModel) }
     }
 
-    override fun getCategoryById(categoryId: Long): Flow<CategoryEntity?> {
-        return categoryDao.getById(categoryId)
+    override fun getCategoryById(categoryId: Long): Flow<Category?> {
+        return categoryDao.getById(categoryId).map { it?.asExternalModel() }
     }
 
-    override suspend fun insertCategory(category: CategoryEntity): Long {
+    override suspend fun insertCategory(category: Category): Long {
         // Prevent adding "All" category
         if (category.name.equals(UserPreferencesKeys.DEFAULT_CATEGORY_ALL, ignoreCase = true)) {
             // Optionally, throw an exception or return a specific value indicating failure
             // For now, let's assume we just don't insert it and return a non-positive value or handle error
             return -1L // Or throw IllegalArgumentException("Cannot add 'All' category manually")
         }
-        return categoryDao.insert(category)
+        return categoryDao.insert(category.asEntity())
     }
 
-    override suspend fun updateCategory(category: CategoryEntity) {
+    override suspend fun updateCategory(category: Category) {
         // Prevent renaming a category to "All" if it's not already the "All" category,
         // or prevent changing the name of the "All" category.
         // This logic might need refinement based on how you identify the "All" category (e.g., by a fixed ID).
@@ -39,15 +42,15 @@ class CategoryRepository @Inject constructor(
             // If we assume "All" category name should not be changed or assigned:
              throw IllegalArgumentException("Cannot update category to or from 'All' name via this method")
         }
-        return categoryDao.update(category)
+        return categoryDao.update(category.asEntity())
     }
 
-    override suspend fun deleteCategory(category: CategoryEntity) {
+    override suspend fun deleteCategory(category: Category) {
         if (category.name.equals(UserPreferencesKeys.DEFAULT_CATEGORY_ALL, ignoreCase = true)) {
             // Prevent deleting "All" category
             throw IllegalArgumentException("Cannot delete 'All' category")
         }
-        return categoryDao.delete(category)
+        return categoryDao.delete(category.asEntity())
     }
 
     override suspend fun deleteCategoryById(categoryId: Long) {
@@ -63,10 +66,11 @@ class CategoryRepository @Inject constructor(
         return categoryDao.deleteById(categoryId)
     }
 
-    override fun getEditableCategories(): Flow<List<CategoryEntity>> {
+    override fun getEditableCategories(): Flow<List<Category>> {
         return categoryDao.getAll().map { entities ->
             entities.filterNot { it.name.equals(UserPreferencesKeys.DEFAULT_CATEGORY_ALL, ignoreCase = true) }
                 .sortedBy { it.name }
+                .map(CategoryEntity::asExternalModel)
         }
     }
 }

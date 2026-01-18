@@ -5,6 +5,7 @@ import androidx.paging.PagingData
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
+import dev.diegoflassa.comiqueta.core.domain.model.CollectionStats
 import kotlinx.coroutines.flow.Flow
 
 interface IComicsRepository {
@@ -30,4 +31,8 @@ interface IComicsRepository {
     suspend fun deleteComicByFilePath(filePath: Uri)
 
     suspend fun clearAllComics()
+
+    suspend fun updateComicCover(filePath: Uri, coverPath: Uri)
+
+    fun getCollectionStats(): Flow<CollectionStats>
 }

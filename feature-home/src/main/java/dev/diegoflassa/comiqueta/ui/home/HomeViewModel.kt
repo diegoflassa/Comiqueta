@@ -20,6 +20,7 @@ import dev.diegoflassa.comiqueta.core.data.config.IConfig
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
 import dev.diegoflassa.comiqueta.core.data.preferences.UserPreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
+import dev.diegoflassa.comiqueta.core.domain.model.Category
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.data.worker.SafFolderScanWorker
@@ -48,7 +49,8 @@ class HomeViewModel @Inject constructor(
     private val getPaginatedComicsUseCase: IGetPaginatedComicsUseCase,
     private val loadCategoriesUseCase: ILoadCategoriesUseCase,
     private val comicsFolderRepository: IComicsFolderRepository,
-    private val enqueueSafFolderScanWorkerUseCase: IEnqueueSafFolderScanWorkerUseCase
+    private val enqueueSafFolderScanWorkerUseCase: IEnqueueSafFolderScanWorkerUseCase,
+    private val workManager: WorkManager
 ) : ViewModel() {
 
     companion object {
@@ -60,6 +62,11 @@ class HomeViewModel @Inject constructor(
 
     private val _effect = Channel<HomeEffect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
+
+    // ... (rest of init block if any, truncated in diff but logical content remains same)
+    
+    // ...
+
 
     private val _comicsFlow = MutableStateFlow<PagingData<Comic>>(PagingData.empty())
     val comicsFlow = _comicsFlow.asStateFlow()
@@ -76,6 +83,10 @@ class HomeViewModel @Inject constructor(
         loadCategories()
         //loadPaginatedComics()
         //reduce(HomeIntent.CheckInitialFolderPermission)
+    }
+
+    init {
+        observeScanWorker()
     }
 
     private fun hasGeneralStoragePermission(): Boolean {
@@ -305,13 +316,20 @@ class HomeViewModel @Inject constructor(
                         )
                     }
                 }
-
                 is HomeIntent.FolderSelected -> {
                     handleFolderSelected(intent.uri)
                 }
 
                 is HomeIntent.RetryLoadComics -> {
                     lastRetryAction?.invoke()
+                }
+
+                is HomeIntent.ToggleScanProgressMinimization -> {
+                    _uiState.update { it.copy(isScanProgressMinimized = !it.isScanProgressMinimized) }
+                }
+
+                is HomeIntent.DismissScanResult -> {
+                    _uiState.update { it.copy(scanFinished = false, scanResultMessage = null) }
                 }
             }
         }
@@ -345,6 +363,7 @@ class HomeViewModel @Inject constructor(
                         )
                             .cachedIn(viewModelScope)
                             .catch { e ->
+                                FirebaseCrashlytics.getInstance().recordException(e)
                                 val msg = applicationContext.getString(
                                     R.string.error_loading_comics_message,
                                     e.message
@@ -356,6 +375,7 @@ class HomeViewModel @Inject constructor(
                                 _comicsFlow.value = it
                             }
                     }.onFailure { e ->
+                        FirebaseCrashlytics.getInstance().recordException(e)
                         val msg = applicationContext.getString(
                             R.string.error_loading_comics_message,
                             e.message
@@ -373,6 +393,7 @@ class HomeViewModel @Inject constructor(
                         )
                             .cachedIn(viewModelScope)
                             .catch { e ->
+                                FirebaseCrashlytics.getInstance().recordException(e)
                                 val msg = applicationContext.getString(
                                     R.string.error_loading_latest_comics_message,
                                     e.message
@@ -384,6 +405,7 @@ class HomeViewModel @Inject constructor(
                                 _latestComicsFlow.value = it
                             }
                     }.onFailure { e ->
+                        FirebaseCrashlytics.getInstance().recordException(e)
                         val msg = applicationContext.getString(
                             R.string.error_loading_latest_comics_message,
                             e.message
@@ -401,6 +423,7 @@ class HomeViewModel @Inject constructor(
                         )
                             .cachedIn(viewModelScope)
                             .catch { e ->
+                                FirebaseCrashlytics.getInstance().recordException(e)
                                 val msg = applicationContext.getString(
                                     R.string.error_loading_favorite_comics_message,
                                     e.message
@@ -412,6 +435,7 @@ class HomeViewModel @Inject constructor(
                                 _favoriteComicsFlow.value = it
                             }
                     }.onFailure { e ->
+                        FirebaseCrashlytics.getInstance().recordException(e)
                         val msg = applicationContext.getString(
                             R.string.error_loading_favorite_comics_message,
                             e.message
@@ -422,12 +446,11 @@ class HomeViewModel @Inject constructor(
                 }
 
             } catch (ce: CancellationException) {
-                ce.printStackTrace()
-                TimberLogger.logD(tag, "Comics loading cancelled", ce)
+                TimberLogger.logD(tag ?: "HomeViewModel", "Comics loading cancelled", ce)
                 _uiState.update { it.copy(isLoading = false) }
             } catch (ex: Exception) {
-                ex.printStackTrace()
-                TimberLogger.logE(tag, "Unexpected error during combined comics loading", ex)
+                FirebaseCrashlytics.getInstance().recordException(ex)
+                TimberLogger.logE(tag ?: "HomeViewModel", "Unexpected error during combined comics loading", ex)
                 val msg = applicationContext.getString(R.string.error_unexpected_message, ex.message)
                 _uiState.update { it.copy(error = msg, isLoading = false) }
                 _effect.send(HomeEffect.ShowErrorWithRetry(msg) {
@@ -448,11 +471,12 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             loadCategoriesUseCase()
                 .catch { e ->
+                    FirebaseCrashlytics.getInstance().recordException(e)
                     val msg = applicationContext.getString(
                         R.string.error_loading_categories_message,
                         e.message
                     )
-                    TimberLogger.logE(tag, msg, e)
+                    TimberLogger.logE(tag ?: "HomeViewModel", msg, e)
                     _effect.send(HomeEffect.ShowToast(msg))
                     _uiState.update {
                         it.copy(
@@ -500,16 +524,16 @@ class HomeViewModel @Inject constructor(
     private fun triggerGeneralScan() {
         viewModelScope.launch {
             try {
-                val workRequestId =
-                    enqueueSafFolderScanWorkerUseCase.invoke(null)
+                enqueueSafFolderScanWorkerUseCase.invoke(null)
+                _uiState.update { it.copy(scanFinished = false, scanResultMessage = null) }
                 _effect.send(
                     HomeEffect.ShowToast(
                         applicationContext.getString(R.string.general_scan_enqueued)
                     )
                 )
-                observeScanWorker(workRequestId)
+                // observeScanWorker() is already running from init and observing by tag
             } catch (ex: Exception) {
-                ex.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(ex)
                 TimberLogger.logE(tag, "Failed to enqueue general folder scan worker", ex)
                 _effect.send(
                     HomeEffect.ShowToast(
@@ -523,61 +547,56 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun observeScanWorker(workRequestId: UUID) {
+    private fun observeScanWorker() {
         viewModelScope.launch {
-            WorkManager.getInstance(applicationContext)
-                .getWorkInfoByIdFlow(workRequestId)
-                .collectLatest { workInfo ->
-                    _uiState.update { it.copy(isScanningFolders = workInfo?.state == WorkInfo.State.RUNNING) }
-                    if (workInfo != null) {
-                        TimberLogger.logD(
-                            tag,
-                            "Scan Worker ($workRequestId) State: ${workInfo.state}"
+            workManager
+                .getWorkInfosByTagFlow(SafFolderScanWorker.TAG)
+                .collectLatest { workInfos ->
+                    val workInfo = workInfos.firstOrNull { it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED }
+                        ?: workInfos.firstOrNull { it.state.isFinished }
+
+                    val progress = workInfo?.progress?.getInt(SafFolderScanWorker.KEY_PROGRESS, 0) ?: 0
+                    
+                    val currentComicName = workInfo?.progress?.getString(SafFolderScanWorker.KEY_CURRENT_COMIC_NAME)
+                    val processedComicsCount = workInfo?.progress?.getInt(SafFolderScanWorker.KEY_PROCESSED_COMICS_COUNT, 0) ?: 0
+                    val scanTotalFiles = workInfo?.progress?.getInt(SafFolderScanWorker.KEY_TOTAL_FILES_COUNT, 0) ?: 0
+                    val scanProcessedFiles = workInfo?.progress?.getInt(SafFolderScanWorker.KEY_PROCESSED_FILES_COUNT, 0) ?: 0
+                    
+                    _uiState.update {
+                        val isFinished = workInfo?.state?.isFinished == true
+                        it.copy(
+                            isScanningFolders = workInfo?.state == WorkInfo.State.RUNNING || workInfo?.state == WorkInfo.State.ENQUEUED,
+                            scanProgress = if (workInfo?.state == WorkInfo.State.RUNNING) progress else if (it.scanFinished) 100 else 0,
+                            currentComicName = if (workInfo?.state == WorkInfo.State.RUNNING) currentComicName
+                                ?: it.currentComicName else if (it.scanFinished) it.currentComicName else null,
+                            processedComicsCount = if (workInfo?.state == WorkInfo.State.RUNNING) processedComicsCount else if (it.scanFinished) it.processedComicsCount else 0,
+                            scanTotalFiles = if (workInfo?.state == WorkInfo.State.RUNNING) scanTotalFiles else if (it.scanFinished) it.scanTotalFiles else 0,
+                            scanProcessedFiles = if (workInfo?.state == WorkInfo.State.RUNNING) scanProcessedFiles else if (it.scanFinished) it.scanProcessedFiles else 0
                         )
+                    }
+
+                    if (workInfo != null && workInfo.state.isFinished && !_uiState.value.scanFinished) {
+                        _uiState.update { it.copy(scanFinished = true) }
                         when (workInfo.state) {
                             WorkInfo.State.SUCCEEDED -> {
-                                TimberLogger.logD(
-                                    tag,
-                                    "Folder scan SUCCEEDED for $workRequestId. Refreshing comics."
-                                )
-                                _effect.send(
-                                    HomeEffect.ShowToast(
-                                        applicationContext.getString(R.string.scan_complete_refreshing)
-                                    )
-                                )
+                                TimberLogger.logD(tag, "Scan SUCCEEDED. Refreshing.")
+                                val message = applicationContext.getString(R.string.scan_completed)
+                                _uiState.update { it.copy(scanResultMessage = message) }
                                 loadPaginatedComics()
                             }
 
                             WorkInfo.State.FAILED -> {
                                 val errorMessage =
                                     workInfo.outputData.getString(SafFolderScanWorker.KEY_ERROR_MESSAGE)
-                                TimberLogger.logW(
-                                    tag,
-                                    "Folder scan FAILED for $workRequestId. Worker message: $errorMessage"
-                                )
-                                FirebaseCrashlytics.getInstance()
-                                    .recordException(Exception("Worker FAILED ($workRequestId): ${errorMessage ?: "No message"}"))
-                                _effect.send(
-                                    HomeEffect.ShowToast(
-                                        errorMessage ?: applicationContext.getString(
-                                            R.string.scan_failed
-                                        )
+                                _uiState.update {
+                                    it.copy(
+                                        scanResultMessage = errorMessage
+                                            ?: applicationContext.getString(R.string.scan_failed)
                                     )
-                                )
+                                }
                             }
 
-                            WorkInfo.State.CANCELLED -> {
-                                TimberLogger.logI(tag, "Folder scan CANCELLED for $workRequestId.")
-                                _effect.send(
-                                    HomeEffect.ShowToast(
-                                        applicationContext.getString(R.string.scan_cancelled)
-                                    )
-                                )
-                            }
-
-                            else -> {
-                                /* ENQUEUED, RUNNING (handled by uiState update), BLOCKED */
-                            }
+                            else -> {}
                         }
                     }
                 }

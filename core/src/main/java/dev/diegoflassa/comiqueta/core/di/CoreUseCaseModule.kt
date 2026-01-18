@@ -23,6 +23,8 @@ import dev.diegoflassa.comiqueta.core.domain.usecase.comic.GetComicUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IGetComicUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IUpdateComicProgressUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.comic.UpdateComicProgressUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.comic.GetCollectionStatsUseCase
+import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IGetCollectionStatsUseCase
 
 @Module
 @InstallIn(ViewModelComponent::class)
@@ -70,11 +72,10 @@ abstract class CoreUseCaseModule {
         updateComicProgressUseCase: UpdateComicProgressUseCase
     ): IUpdateComicProgressUseCase
 
-    companion object {
-        @Provides
-        @ViewModelScoped
-        fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
-            return WorkManager.getInstance(context)
-        }
-    }
+    @Binds
+    @ViewModelScoped
+    abstract fun bindGetCollectionStatsUseCase(
+        getCollectionStatsUseCase: GetCollectionStatsUseCase
+    ): IGetCollectionStatsUseCase
+
 }

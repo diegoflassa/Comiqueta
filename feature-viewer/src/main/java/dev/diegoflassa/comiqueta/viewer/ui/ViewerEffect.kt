@@ -10,4 +10,10 @@ sealed interface ViewerEffect {
      * @param message The error message to display.
      */
     data class ShowError(val message: String) : ViewerEffect
+
+    /**
+     * Effect to show a message, likely as a Toast or Snackbar.
+     * @param message The message to display.
+     */
+    data class ShowMessage(val message: String) : ViewerEffect
 }

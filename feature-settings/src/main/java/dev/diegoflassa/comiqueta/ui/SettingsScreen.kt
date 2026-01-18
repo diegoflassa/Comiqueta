@@ -72,6 +72,7 @@ import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.ump.UserMessagingPlatform
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dev.diegoflassa.comiqueta.settings.R
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
@@ -162,7 +163,7 @@ fun SettingsScreen(
                 TimberLogger.logD(tag, "Persistable URI permission granted for $uri")
                 settingsViewModel.processIntent(SettingsIntent.FolderSelected(uri))
             } catch (se: SecurityException) {
-                se.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(se)
                 TimberLogger.logE(tag, "Failed to take persistable URI permission for $uri", se)
                 Toast.makeText(
                     context,
@@ -204,7 +205,7 @@ fun SettingsScreen(
                     try {
                         context.startActivity(intent)
                     } catch (anfe: ActivityNotFoundException) {
-                        anfe.printStackTrace()
+                        FirebaseCrashlytics.getInstance().recordException(anfe)
                         Toast.makeText(
                             context,
                             noAppToOpenFolder,
@@ -422,7 +423,7 @@ private fun LazyListScope.monitoredFoldersSection(
         ) {
             Text(stringResource(R.string.settings_add_folder_button))
         }
-        Spacer(modifier = Modifier.height(8.dp.scaled()))
+        Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerSmall.scaled()))
     }
 
     if (uiState.comicsFolders.isEmpty()) {
@@ -574,7 +575,7 @@ private fun LazyListScope.manageCategoriesSection(
                 }
             )
         }
-        Spacer(modifier = Modifier.height(16.dp.scaled()))
+        Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled()))
     }
 }
 
@@ -600,7 +601,7 @@ private fun LazyListScope.dataManagementSection(
                 modifier = Modifier.clickable { onIntent?.invoke(SettingsIntent.RescanComicFoldersClicked) }
             )
         }
-        Spacer(modifier = Modifier.height(16.dp.scaled()))
+        Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled()))
     }
 }
 
@@ -657,7 +658,7 @@ private fun LazyListScope.privacySection(
                 }
             )
         }
-        Spacer(modifier = Modifier.height(16.dp.scaled()))
+        Spacer(modifier = Modifier.height(ComiquetaTheme.dimen.spacerMedium.scaled()))
     }
 }
 

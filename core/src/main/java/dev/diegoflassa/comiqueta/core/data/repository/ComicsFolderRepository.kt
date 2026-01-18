@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,7 +34,7 @@ class ComicsFolderRepository @Inject constructor(
         return try {
             contentResolver.persistedUriPermissions.map { it.uri }
         } catch (ex: Exception) {
-            ex.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(ex)
             TimberLogger.logE(
                 "ComicsFolderRepository",
                 "Error retrieving persisted URI permissions",
@@ -61,7 +62,7 @@ class ComicsFolderRepository @Inject constructor(
             _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
             true
         } catch (se: SecurityException) {
-            se.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(se)
             TimberLogger.logE(
                 "ComicsFolderRepository",
                 "Failed to take persistable URI permission for $uri",
@@ -69,7 +70,7 @@ class ComicsFolderRepository @Inject constructor(
             )
             false
         } catch (ex: Exception) {
-            ex.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(ex)
             TimberLogger.logE("ComicsFolderRepository", "Error taking permission for $uri", ex)
             false
         }
@@ -85,7 +86,7 @@ class ComicsFolderRepository @Inject constructor(
             _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
             true
         } catch (se: SecurityException) {
-            se.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(se)
             TimberLogger.logE(
                 "ComicsFolderRepository",
                 "Failed to release persistable URI permission for $uri",
@@ -94,7 +95,7 @@ class ComicsFolderRepository @Inject constructor(
             // If the permission was not granted or already released.
             false
         } catch (ex: Exception) {
-            ex.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(ex)
             TimberLogger.logE("ComicsFolderRepository", "Error releasing permission for $uri", ex)
             false
         }

@@ -8,4 +8,6 @@ object UserPreferencesKeys {
     const val WEBTOON_MODE = "webtoon_mode"
     const val DOUBLE_PAGE_MODE = "double_page_mode"
     const val PAGE_FLIP_SOUND_ENABLED = "page_flip_sound_enabled"
+    const val LAST_SCAN_TOTAL_FILES = "last_scan_total_files"
+    const val LAST_SCAN_PROCESSED_COMICS = "last_scan_processed_comics"
 }
