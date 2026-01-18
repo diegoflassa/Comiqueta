@@ -14,11 +14,13 @@ trigger: always_on
 ## Architecture & Layers
 - **Background Observability**: All Workers/Long-running tasks MUST emit granular progress updates and log state transitions.
 - **Indeterminate Progress**: Workers performing multi-stage operations (e.g., Count then Process) MUST update progress immediately with an indeterminate state (e.g., "Counting...") before the total is known.
+- **Function Granularity**: Break down complex functions (e.g., in Workers/ViewModels) exceeding 60 lines into smaller private sub-functions to avoid scope pollution and shadowing errors.
 
 ## Resources & UI
 - **File Granularity**: Refactor large Composable files (>500 lines). Extract sub-components into their own files.
 - **Previews**: Every distinct UI State (Loading, Error, Empty, Content) MUST have a corresponding `@Preview`.
 - **Text Contrast**: Ensure Text colors match the container's specialized content color (e.g., use `onSurfaceVariant` on `surfaceVariant` containers). Avoid using default `onSurface` on custom-colored Cards.
+- **Optimistic UI**: Prefer showing valid default/empty values (e.g., "0", "-") immediately over blocked Loading states/spinners, to improve perceived responsiveness.
 
 ## Dependency Injection (Hilt)
 - **Worker Injection**: All WorkManager Workers must use `@HiltWorker` and maintain dependencies via Hilt. Do not implement manual WorkerFactories.
