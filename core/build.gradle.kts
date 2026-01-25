@@ -1,7 +1,6 @@
 plugins {
     id("android-library-convention")
     id("com.android.library")
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.com.google.devtools.ksp)

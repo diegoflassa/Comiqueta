@@ -30,6 +30,7 @@ internal fun Modifier.dragGesture(
     state: PageCurlState.InternalState,
     enabledForward: Boolean,
     enabledBackward: Boolean,
+    dragThreshold: Float,
     scope: CoroutineScope,
     onChange: (Int) -> Unit
 ): Modifier = this.composed {
@@ -45,7 +46,25 @@ internal fun Modifier.dragGesture(
             start = state.rightEdge,
             end = state.leftEdge,
             isEnabled = { isEnabledForward.value },
-            isDragSucceed = { start, end -> end.x < start.x },
+            isDragSucceed = { start, end ->
+                val displacement = start.x - end.x
+                val thresholdPx = size.width * dragThreshold
+                // Success if passed threshold OR (moved somewhat AND fling says success per original logic)
+                // We keep the original logic "end < start" implied?
+                // The original logic was: end.x < start.x
+                // That effectively meant "Any movement left".
+                // We likely want: (displacement > threshold) OR (original_velocity_based_check_if_we_kept_it)
+                // But wait, the original logic in DragGesture was JUST "end.x < start.x".
+                // So now we require threshold?
+                // User said "The animation should 'auto complete' when this threshold is reached!"
+                // So: if displacement > threshold -> Success.
+                // What if displacement < threshold?
+                // Should it depend on velocity?
+                // The `end` passed here is `flingEndOffset`.
+                // If I fling, `flingEndOffset` will be far. displacement will be large.
+                // So checking displacement on `end` (fling result) covers both.
+                displacement > thresholdPx
+            },
             onChange = { onChange(+1) }
         )
         val backwardConfig = DragConfig(
@@ -53,7 +72,11 @@ internal fun Modifier.dragGesture(
             start = state.leftEdge,
             end = state.rightEdge,
             isEnabled = { isEnabledBackward.value },
-            isDragSucceed = { start, end -> end.x > start.x },
+            isDragSucceed = { start, end ->
+                val displacement = end.x - start.x // Backward: Swipe Right
+                val thresholdPx = size.width * dragThreshold
+                displacement > thresholdPx
+            },
             onChange = { onChange(-1) }
         )
 

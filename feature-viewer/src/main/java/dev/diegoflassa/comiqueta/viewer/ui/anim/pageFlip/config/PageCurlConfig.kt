@@ -57,7 +57,9 @@ fun rememberPageCurlConfig(
     tapBackwardEnabled: Boolean = true,
     tapCustomEnabled: Boolean = true,
     dragInteraction: PageCurlConfig.DragInteraction = PageCurlConfig.StartEndDragInteraction(),
+    dragInteraction: PageCurlConfig.DragInteraction = PageCurlConfig.StartEndDragInteraction(),
     tapInteraction: PageCurlConfig.TapInteraction = PageCurlConfig.TargetTapInteraction(),
+    dragThreshold: Float = 0.66f, // Default to 2/3 of screen width
     onCustomTap: Density.(IntSize, Offset) -> Boolean = { _, _ -> false },
 ): PageCurlConfig =
     rememberSaveable(
@@ -102,6 +104,7 @@ fun rememberPageCurlConfig(
                     it.tapCustomEnabled,
                     *it.dragInteraction.forSave().toTypedArray(),
                     *it.tapInteraction.forSave().toTypedArray(),
+                    it.dragThreshold,
                 )
             },
             restore = {
@@ -150,6 +153,7 @@ fun rememberPageCurlConfig(
 
                         else -> error("Unable to restore PageCurlConfig.TapInteraction: Unknown class name $tapInteractionClassName")
                     },
+                    iterator.next() as Float, // dragThreshold
                     onCustomTap
                 )
             }
@@ -169,6 +173,7 @@ fun rememberPageCurlConfig(
             tapCustomEnabled = tapCustomEnabled,
             dragInteraction = dragInteraction,
             tapInteraction = tapInteraction,
+            dragThreshold = dragThreshold,
             onCustomTap = onCustomTap
         )
     }
@@ -207,6 +212,7 @@ class PageCurlConfig(
     tapCustomEnabled: Boolean,
     dragInteraction: DragInteraction,
     tapInteraction: TapInteraction,
+    dragThreshold: Float,
     val onCustomTap: Density.(IntSize, Offset) -> Boolean,
 ) {
     /** Color of the back-page. In majority of use-cases it should be set to the content background color. */
@@ -247,6 +253,13 @@ class PageCurlConfig(
 
     /** The tap interaction setting. */
     var tapInteraction: TapInteraction by mutableStateOf(tapInteraction)
+
+    /**
+     * The threshold of screen width ratio (0.0 - 1.0) that must be dragged to guarantee a page turn.
+     * If the drag distance exceeds this ratio of the screen width, the page turn will complete automatically
+     * regardless of velocity.
+     */
+    var dragThreshold: Float by mutableFloatStateOf(dragThreshold)
 
     /**
      * Defines the strategy for handling drag gestures to initiate page curls.

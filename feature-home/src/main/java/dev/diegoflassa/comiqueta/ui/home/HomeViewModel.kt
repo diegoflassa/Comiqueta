@@ -563,7 +563,7 @@ class HomeViewModel @Inject constructor(
                     val scanProcessedFiles = workInfo?.progress?.getInt(SafFolderScanWorker.KEY_PROCESSED_FILES_COUNT, 0) ?: 0
                     
                     _uiState.update {
-                        val isFinished = workInfo?.state?.isFinished == true
+                        workInfo?.state?.isFinished == true
                         it.copy(
                             isScanningFolders = workInfo?.state == WorkInfo.State.RUNNING || workInfo?.state == WorkInfo.State.ENQUEUED,
                             scanProgress = if (workInfo?.state == WorkInfo.State.RUNNING) progress else if (it.scanFinished) 100 else 0,

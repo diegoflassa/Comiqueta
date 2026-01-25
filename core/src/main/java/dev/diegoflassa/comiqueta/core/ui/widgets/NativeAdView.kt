@@ -139,7 +139,7 @@ fun NativeAdView(
     if (enabled && nativeAdState != null) {
         AndroidView(
             modifier = modifier.fillMaxWidth(),
-            factory = { it ->
+            factory = {
                 val activityContextFactory = it.findActivity() ?: it
                 val adView = LayoutInflater.from(activityContextFactory).inflate(nativeAdLayoutResId, null) as GoogleNativeAdView
                 adView

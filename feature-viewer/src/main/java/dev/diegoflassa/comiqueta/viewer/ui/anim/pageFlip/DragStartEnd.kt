@@ -30,6 +30,7 @@ internal fun Modifier.dragStartEnd(
     state: PageCurlState.InternalState,
     enabledForward: Boolean,
     enabledBackward: Boolean,
+    dragThreshold: Float,
     scope: CoroutineScope,
     onChange: (Int) -> Unit,
 ): Modifier = this.composed {
@@ -47,7 +48,11 @@ internal fun Modifier.dragStartEnd(
             start = state.rightEdge,
             end = state.leftEdge,
             isEnabled = { isEnabledForward.value },
-            isDragSucceed = { _, end -> forwardEndRect.contains(end) },
+            isDragSucceed = { start, end ->
+                 val displacement = start.x - end.x
+                 val thresholdPx = size.width * dragThreshold
+                 forwardEndRect.contains(end) || displacement > thresholdPx
+            },
             onChange = { onChange(+1) }
         )
         val backwardConfig = DragConfig(
@@ -55,7 +60,11 @@ internal fun Modifier.dragStartEnd(
             start = state.leftEdge,
             end = state.rightEdge,
             isEnabled = { isEnabledBackward.value },
-            isDragSucceed = { _, end -> backwardEndRect.contains(end) },
+            isDragSucceed = { start, end ->
+                val displacement = end.x - start.x
+                val thresholdPx = size.width * dragThreshold
+                backwardEndRect.contains(end) || displacement > thresholdPx
+            },
             onChange = { onChange(-1) }
         )
 

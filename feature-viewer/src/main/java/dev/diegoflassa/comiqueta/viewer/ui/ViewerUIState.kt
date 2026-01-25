@@ -14,7 +14,7 @@ data class ViewerUIState(
     val currentPage: Int = 0,
     val pageCount: Int = 0,
     val fileType: ComicFileType? = null,
-    val isUiVisible: Boolean = true,
+    val isUiVisible: Boolean = false,
     val error: String? = null,
     val pagesToPreloadLogic: Int = DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD,
     val isLoadingPage: Set<Int> = emptySet(),

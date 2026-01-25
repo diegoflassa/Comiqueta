@@ -211,13 +211,7 @@ fun ViewerScreenContent(
                         bottom
                     )
                     exclusionRects = listOf(leftStrip, rightStrip)
-                }
-                .clickable(
-                    enabled = !globalIsPinchZoomActive &&
-                            (uiState.pageCount > 0 || uiState.isLoadingPage.isEmpty()) &&
-                            uiState.error == null,
-                    onClick = { onIntent?.invoke(ViewerIntent.ToggleUiVisibility) }
-                ),
+                },
             contentAlignment = Alignment.Center
         ) {
             when {
@@ -244,7 +238,7 @@ fun ViewerScreenContent(
                             onToggleUi = { onIntent?.invoke(ViewerIntent.ToggleUiVisibility) }
                         )
                     } else {
-                        val context = LocalContext.current
+                        LocalContext.current
                         val mediaPlayer: MediaPlayer? = remember {
                             try {
                                 // Placeholder: User should add R.raw.page_flip
@@ -278,7 +272,22 @@ fun ViewerScreenContent(
                             dragForwardEnabled = !globalIsPinchZoomActive,
                             dragBackwardEnabled = !globalIsPinchZoomActive,
                             tapForwardEnabled = !globalIsPinchZoomActive,
-                            tapBackwardEnabled = !globalIsPinchZoomActive
+                            tapBackwardEnabled = !globalIsPinchZoomActive,
+                            dragThreshold = 0.66f, // 2/3 of screen width
+                            tapInteraction = PageCurlConfig.TargetTapInteraction(
+                                forward = PageCurlConfig.TargetTapInteraction.Config(target = androidx.compose.ui.geometry.Rect(0.7f, 0.0f, 1.0f, 1.0f)),
+                                backward = PageCurlConfig.TargetTapInteraction.Config(target = androidx.compose.ui.geometry.Rect(0.0f, 0.0f, 0.3f, 1.0f))
+                            ),
+                            // Handle center taps (dead zone) for UI toggling
+                            onCustomTap = { size, offset ->
+                                val relativeX = offset.x / size.width
+                                if (relativeX > 0.3f && relativeX < 0.7f) {
+                                    onIntent?.invoke(ViewerIntent.ToggleUiVisibility)
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
                         )
 
                         PageFlip(

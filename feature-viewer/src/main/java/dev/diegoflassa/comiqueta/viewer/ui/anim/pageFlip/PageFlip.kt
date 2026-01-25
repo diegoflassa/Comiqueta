@@ -52,6 +52,7 @@ fun PageFlip(
                         state = internalState,
                         enabledForward = updatedConfig.dragForwardEnabled && updatedCurrent < state.max - 1,
                         enabledBackward = updatedConfig.dragBackwardEnabled && updatedCurrent > 0,
+                        dragThreshold = updatedConfig.dragThreshold,
                         scope = scope,
                         onChange = { state.current = updatedCurrent + it }
                     )
@@ -63,6 +64,7 @@ fun PageFlip(
                         state = internalState,
                         enabledForward = updatedConfig.dragForwardEnabled && updatedCurrent < state.max - 1,
                         enabledBackward = updatedConfig.dragBackwardEnabled && updatedCurrent > 0,
+                        dragThreshold = updatedConfig.dragThreshold,
                         scope = scope,
                         onChange = { state.current = updatedCurrent + it }
                     )

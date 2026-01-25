@@ -598,7 +598,7 @@ fun HomeScreenContent(
                 }
 
                 // Overlaid Scan Progress
-                androidx.compose.animation.AnimatedVisibility(
+                AnimatedVisibility(
                     visible = uiState.isScanningFolders || uiState.scanFinished,
                     enter = fadeIn(),
                     exit = fadeOut(),
