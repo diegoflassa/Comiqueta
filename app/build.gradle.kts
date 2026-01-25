@@ -53,8 +53,11 @@ firebaseAppDistributionDefault {
     releaseNotes = "Debug test version from Gradle."
 }
 
-
-
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(JavaVersion.VERSION_21.toString().toInt()))
+    }
+}
 
 detekt {
     buildUponDefaultConfig = true

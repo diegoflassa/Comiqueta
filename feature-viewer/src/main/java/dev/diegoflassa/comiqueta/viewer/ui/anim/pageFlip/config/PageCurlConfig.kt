@@ -57,7 +57,6 @@ fun rememberPageCurlConfig(
     tapBackwardEnabled: Boolean = true,
     tapCustomEnabled: Boolean = true,
     dragInteraction: PageCurlConfig.DragInteraction = PageCurlConfig.StartEndDragInteraction(),
-    dragInteraction: PageCurlConfig.DragInteraction = PageCurlConfig.StartEndDragInteraction(),
     tapInteraction: PageCurlConfig.TapInteraction = PageCurlConfig.TargetTapInteraction(),
     dragThreshold: Float = 0.66f, // Default to 2/3 of screen width
     onCustomTap: Density.(IntSize, Offset) -> Boolean = { _, _ -> false },

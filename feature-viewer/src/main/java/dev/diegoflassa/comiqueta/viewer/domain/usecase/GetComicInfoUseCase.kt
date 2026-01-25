@@ -235,7 +235,7 @@ class GetComicInfoUseCase @Inject constructor(
                                     else -> TarArchiveInputStream(bis)
                                 }
                                 tarInput.use { ais ->
-                                    var entry = ais.nextTarEntry
+                                    var entry = ais.nextEntry
                                     while (entry != null) {
                                         if (!entry.isDirectory) {
                                             if (isImageFile(entry.name)) {
@@ -245,7 +245,7 @@ class GetComicInfoUseCase @Inject constructor(
                                                 metadata["Title"]?.let { title = it }
                                             }
                                         }
-                                        entry = ais.nextTarEntry
+                                        entry = ais.nextEntry
                                     }
                                     pageIdentifiers.sortWith(alphanumComparator)
                                     pageCount = pageIdentifiers.size

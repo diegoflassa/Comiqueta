@@ -86,6 +86,7 @@ import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
 import dev.diegoflassa.comiqueta.viewer.R
 import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.PageFlip
+import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.config.PageCurlConfig
 import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.config.rememberPageCurlConfig
 import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.rememberPageCurlState
 import kotlinx.coroutines.CancellationException
