@@ -1,56 +1,53 @@
 package dev.diegoflassa.comiqueta.core.data.worker
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
+import android.os.Build
+import androidx.core.app.NotificationCompat
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
-import androidx.documentfile.provider.DocumentFile
-import androidx.hilt.work.HiltWorker
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.documentfile.provider.DocumentFile
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.github.junrar.Archive as JunrarArchive
-import com.github.junrar.rarfile.FileHeader as JunrarFileHeader
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import dev.diegoflassa.comiqueta.core.R
 import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
-import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
 import dev.diegoflassa.comiqueta.core.data.preferences.PreferencesKeys
+import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.data.util.CoverUtils
 import dev.diegoflassa.comiqueta.core.model.ComicFileType
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.commons.compress.archivers.ArchiveEntry
 import org.apache.commons.compress.archivers.ArchiveInputStream
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.os.Build
-import androidx.core.app.NotificationCompat
-import androidx.work.ForegroundInfo
-import dev.diegoflassa.comiqueta.core.R
 import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import java.math.BigInteger
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
-import kotlinx.coroutines.coroutineScope
-import android.provider.DocumentsContract
+import com.github.junrar.Archive as JunrarArchive
+import com.github.junrar.rarfile.FileHeader as JunrarFileHeader
 
 @HiltWorker
 class SafFolderScanWorker @AssistedInject constructor(
@@ -114,7 +111,7 @@ class SafFolderScanWorker @AssistedInject constructor(
 
         if (folderUrisToScan.isEmpty()) {
             TimberLogger.logI(TAG, "Scan finished successfully.")
-                
+
             // Save scan statistics to DataStore
             dataStore.edit { preferences ->
                 preferences[PreferencesKeys.LAST_SCAN_TOTAL_FILES] = 0
@@ -140,26 +137,32 @@ class SafFolderScanWorker @AssistedInject constructor(
                 TimberLogger.logI(TAG, "Starting parallel background file counting...")
                 for ((index, uri) in folderUrisToScan.withIndex()) {
                     if (!isActive) break
-                    
+
                     val folderDoc = DocumentFile.fromTreeUri(appContext, uri)
                     val folderName = folderDoc?.name ?: "Folder ${index + 1}"
-                    
+
                     // Initial indeterminate progress
                     if (totalFiles.get() == 0) {
                         setProgress(workDataOf(KEY_CURRENT_COMIC_NAME to "Calculating total files in $folderName..."))
                     }
-                    
+
                     val folderCount = countFilesRecursively(uri)
                     val newTotal = totalFiles.addAndGet(folderCount)
-                    TimberLogger.logD(TAG, "Counted $folderCount files in $folderName. New total: $newTotal")
+                    TimberLogger.logD(
+                        TAG,
+                        "Counted $folderCount files in $folderName. New total: $newTotal"
+                    )
                 }
-                TimberLogger.logI(TAG, "Background counting finished. Final total files: ${totalFiles.get()}")
+                TimberLogger.logI(
+                    TAG,
+                    "Background counting finished. Final total files: ${totalFiles.get()}"
+                )
             }
 
             // 2. Start Scanning Immediately (Parallel)
             for (folderUri in folderUrisToScan) {
                 if (!isActive) break
-                
+
                 TimberLogger.logD(TAG, "Processing folder URI: $folderUri")
                 val rootDoc = try {
                     DocumentFile.fromTreeUri(appContext, folderUri)
@@ -167,7 +170,8 @@ class SafFolderScanWorker @AssistedInject constructor(
                     FirebaseCrashlytics.getInstance().recordException(ex)
                     val errorMessage = "Error accessing folder: $folderUri"
                     TimberLogger.logE(TAG, errorMessage, ex)
-                    if (firstErrorMessage == null) firstErrorMessage = "Error accessing folder. Please check permissions."
+                    if (firstErrorMessage == null) firstErrorMessage =
+                        "Error accessing folder. Please check permissions."
                     anyFolderScanFailed = true
                     continue
                 }
@@ -176,13 +180,17 @@ class SafFolderScanWorker @AssistedInject constructor(
                     val errorMessage = "Folder not valid or not a directory: $folderUri"
                     FirebaseCrashlytics.getInstance().recordException(Exception(errorMessage))
                     TimberLogger.logW(TAG, errorMessage)
-                    if (firstErrorMessage == null) firstErrorMessage = "Invalid directory: $folderUri"
+                    if (firstErrorMessage == null) firstErrorMessage =
+                        "Invalid directory: $folderUri"
                     anyFolderScanFailed = true
                     continue
                 }
 
                 try {
-                    TimberLogger.logD(TAG, "Scanning document tree for: ${rootDoc.name} (URI: $folderUri)")
+                    TimberLogger.logD(
+                        TAG,
+                        "Scanning document tree for: ${rootDoc.name} (URI: $folderUri)"
+                    )
                     processedFilesCount = scanDocumentFileForComics(
                         rootDoc,
                         processedFilesCount,
@@ -207,7 +215,15 @@ class SafFolderScanWorker @AssistedInject constructor(
                                     KEY_PROCESSED_COMICS_COUNT to comicsCount
                                 )
                             )
-                            setForeground(getForegroundInfo(progress, lastKnownComicName, processed, totalCount, comicsCount))
+                            setForeground(
+                                getForegroundInfo(
+                                    progress,
+                                    lastKnownComicName,
+                                    processed,
+                                    totalCount,
+                                    comicsCount
+                                )
+                            )
                         }
                     }
                     TimberLogger.logD(TAG, "Scan finished for URI: $folderUri")
@@ -239,7 +255,8 @@ class SafFolderScanWorker @AssistedInject constructor(
             // Save scan statistics to DataStore
             dataStore.edit { preferences ->
                 preferences[PreferencesKeys.LAST_SCAN_TOTAL_FILES] = totalFiles.get()
-                preferences[PreferencesKeys.LAST_SCAN_PROCESSED_COMICS] = totalComicsProcessedCount.get()
+                preferences[PreferencesKeys.LAST_SCAN_PROCESSED_COMICS] =
+                    totalComicsProcessedCount.get()
             }
 
             Result.success()
@@ -250,13 +267,30 @@ class SafFolderScanWorker @AssistedInject constructor(
         return getForegroundInfo(0, null, 0, 0, 0)
     }
 
-    private fun getForegroundInfo(progress: Int, comicName: String?, processed: Int, total: Int, comicsCount: Int): ForegroundInfo {
+    private fun getForegroundInfo(
+        progress: Int,
+        comicName: String?,
+        processed: Int,
+        total: Int,
+        comicsCount: Int
+    ): ForegroundInfo {
         val title = appContext.getString(R.string.scan_notification_title)
         val content = if (total > 0) {
             if (comicName != null) {
-                appContext.getString(R.string.scanning_progress_detail, comicName, processed, total, comicsCount)
+                appContext.getString(
+                    R.string.scanning_progress_detail,
+                    comicName,
+                    processed,
+                    total,
+                    comicsCount
+                )
             } else {
-                appContext.getString(R.string.scanning_progress_no_name, processed, total, comicsCount)
+                appContext.getString(
+                    R.string.scanning_progress_no_name,
+                    processed,
+                    total,
+                    comicsCount
+                )
             }
         } else {
             if (comicName != null) {
@@ -298,7 +332,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                 // although DocumentFile operations are slow, this is safer than the previous crashing implementation
                 val stack = java.util.Stack<DocumentFile>()
                 stack.push(parentDoc)
-                
+
                 while (stack.isNotEmpty()) {
                     val current = stack.pop()
                     val files = current.listFiles()
@@ -311,7 +345,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                     }
                 }
             } else {
-               TimberLogger.logW(TAG, "Parent URI is not a directory or invalid: $parentUri")
+                TimberLogger.logW(TAG, "Parent URI is not a directory or invalid: $parentUri")
             }
         } catch (e: Exception) {
             FirebaseCrashlytics.getInstance().recordException(e)
@@ -369,7 +403,10 @@ class SafFolderScanWorker @AssistedInject constructor(
         )
 
         val files = dir.listFiles()
-        TimberLogger.logD(TAG, "Starting recursive scan for directory: ${dir.name} (Contains ${files.size} files/dirs)")
+        TimberLogger.logD(
+            TAG,
+            "Starting recursive scan for directory: ${dir.name} (Contains ${files.size} files/dirs)"
+        )
 
         var comicsFoundInDir = 0
         for (file in files) {
@@ -377,20 +414,39 @@ class SafFolderScanWorker @AssistedInject constructor(
                 TimberLogger.logD(
                     TAG, "Found subdirectory: ${file.name}, recursing..."
                 )
-                processed = scanDocumentFileRecursively(file, processed, totalFiles, totalComicsProcessedCount, batch, onProgressUpdate)
+                processed = scanDocumentFileRecursively(
+                    file,
+                    processed,
+                    totalFiles,
+                    totalComicsProcessedCount,
+                    batch,
+                    onProgressUpdate
+                )
             } else {
                 processed++
                 val total = totalFiles.get()
                 if (total > 0) {
                     val progressValue = (processed * 100 / total).coerceAtMost(100)
-                    if (progressValue % 10 == 0 && (processed * 100 / total) != ((processed - 1).coerceAtLeast(0) * 100 / total)) {
-                        TimberLogger.logI(TAG, "Scanning progress: $progressValue% ($processed/$total files)")
+                    if (progressValue % 10 == 0 && (processed * 100 / total) != ((processed - 1).coerceAtLeast(
+                            0
+                        ) * 100 / total)
+                    ) {
+                        TimberLogger.logI(
+                            TAG,
+                            "Scanning progress: $progressValue% ($processed/$total files)"
+                        )
                     }
-                    onProgressUpdate(progressValue, null, processed, total, totalComicsProcessedCount.get())
+                    onProgressUpdate(
+                        progressValue,
+                        null,
+                        processed,
+                        total,
+                        totalComicsProcessedCount.get()
+                    )
                 } else {
                     onProgressUpdate(0, null, processed, 0, totalComicsProcessedCount.get())
                 }
-                
+
                 val fileName = file.name ?: ""
                 val fileUri = file.uri
                 val fileExtension = fileName.substringAfterLast('.', "").lowercase(Locale.ROOT)
@@ -403,8 +459,15 @@ class SafFolderScanWorker @AssistedInject constructor(
                     comicsFoundInDir++
                     val comicTitle = fileName.substringBeforeLast('.', fileName)
                     val currentTotal = totalFiles.get()
-                    val comicProgress = if (currentTotal > 0) (processed * 100 / currentTotal).coerceAtMost(100) else 0
-                    onProgressUpdate(comicProgress, comicTitle, processed, currentTotal, totalComicsProcessedCount.get() + 1) // +1 because we are about to increment it
+                    val comicProgress =
+                        if (currentTotal > 0) (processed * 100 / currentTotal).coerceAtMost(100) else 0
+                    onProgressUpdate(
+                        comicProgress,
+                        comicTitle,
+                        processed,
+                        currentTotal,
+                        totalComicsProcessedCount.get() + 1
+                    ) // +1 because we are about to increment it
                     var coverImageUri: Uri? = null
                     var metadata = ComicMetadata()
 
@@ -419,7 +482,10 @@ class SafFolderScanWorker @AssistedInject constructor(
                             if (coverFile.exists()) {
                                 coverImageUri = currentCoverPath
                                 needsExtraction = false
-                                TimberLogger.logD(TAG, "Skipping thumbnail extraction for $fileName (already exists and valid)")
+                                TimberLogger.logD(
+                                    TAG,
+                                    "Skipping thumbnail extraction for $fileName (already exists and valid)"
+                                )
                             }
                         }
                     }
@@ -434,20 +500,18 @@ class SafFolderScanWorker @AssistedInject constructor(
                         }
                     }
 
-                    val comicToSave: ComicEntity = if (existingComic != null) {
-                        existingComic.copy(
-                            title = comicTitle,
-                            fileName = fileName,
-                            folderPath = dir.uri,
-                            coverPath = coverImageUri ?: existingComic.coverPath,
-                            author = metadata.author ?: existingComic.author,
-                            volume = metadata.volume ?: existingComic.volume,
-                            number = metadata.number ?: existingComic.number,
-                            year = metadata.year ?: existingComic.year,
-                            lastModified = fileLastModified
-                        )
-                    } else {
-                        ComicEntity(
+                    val comicToSave: ComicEntity = existingComic?.copy(
+                        title = comicTitle,
+                        fileName = fileName,
+                        folderPath = dir.uri,
+                        coverPath = coverImageUri ?: existingComic.coverPath,
+                        author = metadata.author ?: existingComic.author,
+                        volume = metadata.volume ?: existingComic.volume,
+                        number = metadata.number ?: existingComic.number,
+                        year = metadata.year ?: existingComic.year,
+                        lastModified = fileLastModified
+                    )
+                        ?: ComicEntity(
                             filePath = fileUri,
                             title = comicTitle,
                             fileName = fileName,
@@ -459,12 +523,14 @@ class SafFolderScanWorker @AssistedInject constructor(
                             year = metadata.year,
                             lastModified = fileLastModified
                         )
-                    }
 
                     if (totalComicsProcessedCount.incrementAndGet() <= UNBATCHED_SAVE_THRESHOLD) {
                         try {
                             comicsDao.insertComicsAndFts(listOf(comicToSave))
-                            TimberLogger.logD(TAG, "Immediate insert for comic #${totalComicsProcessedCount.get()}: $fileName")
+                            TimberLogger.logD(
+                                TAG,
+                                "Immediate insert for comic #${totalComicsProcessedCount.get()}: $fileName"
+                            )
                         } catch (ex: Exception) {
                             FirebaseCrashlytics.getInstance().recordException(ex)
                             TimberLogger.logE(TAG, "Error in immediate insert: ${ex.message}", ex)
@@ -475,7 +541,10 @@ class SafFolderScanWorker @AssistedInject constructor(
                         if (batch.size >= BATCH_SIZE_AFTER_THRESHOLD) {
                             try {
                                 comicsDao.insertComicsAndFts(batch)
-                                TimberLogger.logD(TAG, "Batch insert of ${batch.size} comics (Total processed: ${totalComicsProcessedCount.get()}).")
+                                TimberLogger.logD(
+                                    TAG,
+                                    "Batch insert of ${batch.size} comics (Total processed: ${totalComicsProcessedCount.get()})."
+                                )
                                 batch.clear()
                             } catch (ex: Exception) {
                                 FirebaseCrashlytics.getInstance().recordException(ex)
@@ -510,7 +579,10 @@ class SafFolderScanWorker @AssistedInject constructor(
                                     if (renderer.pageCount > 0) {
                                         renderer.openPage(0).use { page ->
                                             // Render directly at thumbnail size to save memory
-                                            val bitmap = createBitmap(CoverUtils.THUMBNAIL_WIDTH, CoverUtils.THUMBNAIL_HEIGHT)
+                                            val bitmap = createBitmap(
+                                                CoverUtils.THUMBNAIL_WIDTH,
+                                                CoverUtils.THUMBNAIL_HEIGHT
+                                            )
                                             page.render(
                                                 bitmap,
                                                 null,
@@ -573,12 +645,14 @@ class SafFolderScanWorker @AssistedInject constructor(
                                                 var currentEntry: ArchiveEntry? = ais.nextEntry
                                                 while (currentEntry != null) {
                                                     if (currentEntry.name == firstImageName) {
-                                                        val originalBitmap = BitmapFactory.decodeStream(ais)
+                                                        val originalBitmap =
+                                                            BitmapFactory.decodeStream(ais)
                                                         if (originalBitmap != null) {
-                                                            localScaledBitmap = originalBitmap.scale(
-                                                                CoverUtils.THUMBNAIL_WIDTH,
-                                                                CoverUtils.THUMBNAIL_HEIGHT
-                                                            )
+                                                            localScaledBitmap =
+                                                                originalBitmap.scale(
+                                                                    CoverUtils.THUMBNAIL_WIDTH,
+                                                                    CoverUtils.THUMBNAIL_HEIGHT
+                                                                )
                                                             originalBitmap.recycle()
                                                         }
                                                         break
@@ -605,10 +679,15 @@ class SafFolderScanWorker @AssistedInject constructor(
                         try {
                             appContext.contentResolver.openInputStream(comicFile.uri)
                                 ?.use { inputStream ->
-                                    JunrarArchive(inputStream).use { archive ->
-                                        for (fileHeader in archive.fileHeaders) {
-                                            if (!fileHeader.isDirectory && isImageFile(fileHeader.fileName)) {
-                                                imageFileHeaders.add(fileHeader)
+                                    BufferedInputStream(inputStream).use { bufferedInputStream ->
+                                        JunrarArchive(bufferedInputStream).use { archive ->
+                                            for (fileHeader in archive.fileHeaders) {
+                                                if (!fileHeader.isDirectory && isImageFile(
+                                                        fileHeader.fileName
+                                                    )
+                                                ) {
+                                                    imageFileHeaders.add(fileHeader)
+                                                }
                                             }
                                         }
                                     }
@@ -632,42 +711,61 @@ class SafFolderScanWorker @AssistedInject constructor(
                             try {
                                 appContext.contentResolver.openInputStream(comicFile.uri)
                                     ?.use { extractionInputStream ->
-                                        JunrarArchive(extractionInputStream).use { archiveForExtract ->
-                                            val headerToExtract =
-                                                archiveForExtract.fileHeaders.find { it.fileName == firstImageHeader.fileName }
-                                            if (headerToExtract != null) {
-                                                ByteArrayOutputStream().use { baos ->
-                                                    archiveForExtract.extractFile(
-                                                        headerToExtract, baos
-                                                    )
-                                                    val imageBytes = baos.toByteArray()
-                                                    
-                                                    // Use inSampleSize to load a downsampled version
-                                                    val options = BitmapFactory.Options().apply {
-                                                        inJustDecodeBounds = true
-                                                    }
-                                                    BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
-                                                    
-                                                    options.inSampleSize = calculateInSampleSize(options, CoverUtils.THUMBNAIL_WIDTH, CoverUtils.THUMBNAIL_HEIGHT)
-                                                    options.inJustDecodeBounds = false
-                                                    
-                                                    val downsampledBitmap = BitmapFactory.decodeByteArray(
-                                                        imageBytes, 0, imageBytes.size, options
-                                                    )
-                                                    if (downsampledBitmap != null) {
-                                                        localScaledBitmap = downsampledBitmap.scale(
-                                                            CoverUtils.THUMBNAIL_WIDTH, CoverUtils.THUMBNAIL_HEIGHT
+                                        BufferedInputStream(extractionInputStream).use { bufferedExtractionStream ->
+                                            JunrarArchive(bufferedExtractionStream).use { archiveForExtract ->
+                                                val headerToExtract =
+                                                    archiveForExtract.fileHeaders.find { it.fileName == firstImageHeader.fileName }
+                                                if (headerToExtract != null) {
+                                                    ByteArrayOutputStream().use { baos ->
+                                                        archiveForExtract.extractFile(
+                                                            headerToExtract, baos
                                                         )
-                                                        if (downsampledBitmap != localScaledBitmap) {
-                                                            downsampledBitmap.recycle()
+                                                        val imageBytes = baos.toByteArray()
+
+                                                        // Use inSampleSize to load a downsampled version
+                                                        val options =
+                                                            BitmapFactory.Options().apply {
+                                                                inJustDecodeBounds = true
+                                                            }
+                                                        BitmapFactory.decodeByteArray(
+                                                            imageBytes,
+                                                            0,
+                                                            imageBytes.size,
+                                                            options
+                                                        )
+
+                                                        options.inSampleSize =
+                                                            calculateInSampleSize(
+                                                                options,
+                                                                CoverUtils.THUMBNAIL_WIDTH,
+                                                                CoverUtils.THUMBNAIL_HEIGHT
+                                                            )
+                                                        options.inJustDecodeBounds = false
+
+                                                        val downsampledBitmap =
+                                                            BitmapFactory.decodeByteArray(
+                                                                imageBytes,
+                                                                0,
+                                                                imageBytes.size,
+                                                                options
+                                                            )
+                                                        if (downsampledBitmap != null) {
+                                                            localScaledBitmap =
+                                                                downsampledBitmap.scale(
+                                                                    CoverUtils.THUMBNAIL_WIDTH,
+                                                                    CoverUtils.THUMBNAIL_HEIGHT
+                                                                )
+                                                            if (downsampledBitmap != localScaledBitmap) {
+                                                                downsampledBitmap.recycle()
+                                                            }
                                                         }
                                                     }
+                                                } else {
+                                                    TimberLogger.logW(
+                                                        TAG,
+                                                        "Could not find header '${firstImageHeader.fileName}' again in CBR for extraction."
+                                                    )
                                                 }
-                                            } else {
-                                                TimberLogger.logW(
-                                                    TAG,
-                                                    "Could not find header '${firstImageHeader.fileName}' again in CBR for extraction."
-                                                )
                                             }
                                         }
                                     }
@@ -675,7 +773,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                                 FirebaseCrashlytics.getInstance().recordException(ex)
                                 TimberLogger.logE(
                                     TAG,
-                                    "Error extracting first image from CBR (junrar) ${comicFile.name}: ${ex.message}",
+                                    "Error extracting first image from CBR (junrar) ${comicFile.name}: ${ex.message} (BufferedInputStream fix applied)",
                                     ex
                                 )
                             }
@@ -685,7 +783,9 @@ class SafFolderScanWorker @AssistedInject constructor(
 
                 localScaledBitmap?.let { bmp ->
                     coverUri = CoverUtils.saveBitmapToCache(
-                        appContext, bmp, comicFile.name ?: "unknown_comic_${System.currentTimeMillis()}"
+                        appContext,
+                        bmp,
+                        comicFile.name ?: "unknown_comic_${System.currentTimeMillis()}"
                     )
                 }
 
@@ -702,7 +802,11 @@ class SafFolderScanWorker @AssistedInject constructor(
         }
     }
 
-    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+    private fun calculateInSampleSize(
+        options: BitmapFactory.Options,
+        reqWidth: Int,
+        reqHeight: Int
+    ): Int {
         val (height: Int, width: Int) = options.outHeight to options.outWidth
         var inSampleSize = 1
 
@@ -724,13 +828,16 @@ class SafFolderScanWorker @AssistedInject constructor(
         val year: Int? = null
     )
 
-    private fun extractMetadataFromArchive(comicFile: DocumentFile, extension: String): ComicMetadata {
+    private fun extractMetadataFromArchive(
+        comicFile: DocumentFile,
+        extension: String
+    ): ComicMetadata {
         if (extension != "cbz") return ComicMetadata()
 
         try {
             val resolver = appContext.contentResolver
             resolver.openInputStream(comicFile.uri)?.use { inputStream ->
-               BufferedInputStream(inputStream).use { bufferedInputStream ->
+                BufferedInputStream(inputStream).use { bufferedInputStream ->
                     val factory = ArchiveStreamFactory()
                     val ais: ArchiveInputStream<*> = factory.createArchiveInputStream(
                         ArchiveStreamFactory.ZIP, bufferedInputStream
@@ -744,16 +851,26 @@ class SafFolderScanWorker @AssistedInject constructor(
                             entry = ais.nextEntry
                         }
                     } finally {
-                        try { ais.close() } catch (e: Exception) {
+                        try {
+                            ais.close()
+                        } catch (e: Exception) {
                             FirebaseCrashlytics.getInstance().recordException(e)
-                            TimberLogger.logE(SafFolderScanWorker::class.simpleName, e.message ?: "", e)
+                            TimberLogger.logE(
+                                SafFolderScanWorker::class.simpleName,
+                                e.message ?: "",
+                                e
+                            )
                         }
                     }
                 }
             }
         } catch (ex: Exception) {
             FirebaseCrashlytics.getInstance().recordException(ex)
-            TimberLogger.logE(TAG, "Error extracting metadata from ${comicFile.name}: ${ex.message}", ex)
+            TimberLogger.logE(
+                TAG,
+                "Error extracting metadata from ${comicFile.name}: ${ex.message}",
+                ex
+            )
         }
         return ComicMetadata()
     }
@@ -777,31 +894,50 @@ class SafFolderScanWorker @AssistedInject constructor(
                             try {
                                 author = parser.nextText()
                             } catch (e: Exception) {
-                                TimberLogger.logE(SafFolderScanWorker::class.simpleName, e.message ?: "", e)
+                                TimberLogger.logE(
+                                    SafFolderScanWorker::class.simpleName,
+                                    e.message ?: "",
+                                    e
+                                )
                                 author = null
                             }
                         }
+
                         "Volume" -> {
                             try {
                                 volume = parser.nextText()
                             } catch (e: Exception) {
-                                TimberLogger.logE(SafFolderScanWorker::class.simpleName, e.message ?: "", e)
+                                TimberLogger.logE(
+                                    SafFolderScanWorker::class.simpleName,
+                                    e.message ?: "",
+                                    e
+                                )
                                 volume = null
                             }
                         }
+
                         "Number" -> {
                             try {
                                 number = parser.nextText()
                             } catch (e: Exception) {
-                                TimberLogger.logE(SafFolderScanWorker::class.simpleName, e.message ?: "", e)
+                                TimberLogger.logE(
+                                    SafFolderScanWorker::class.simpleName,
+                                    e.message ?: "",
+                                    e
+                                )
                                 number = null
                             }
                         }
+
                         "Year" -> {
                             try {
                                 year = parser.nextText()?.toIntOrNull()
                             } catch (e: Exception) {
-                                TimberLogger.logE(SafFolderScanWorker::class.simpleName, e.message ?: "", e)
+                                TimberLogger.logE(
+                                    SafFolderScanWorker::class.simpleName,
+                                    e.message ?: "",
+                                    e
+                                )
                                 year = null
                             }
                         }

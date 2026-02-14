@@ -192,6 +192,16 @@ open class ViewerViewModel @Inject constructor(
                 }
             }
 
+            is ViewerIntent.UpdateZoom -> {
+                _uiState.update {
+                    it.copy(
+                        zoomScale = intent.scale,
+                        zoomOffsetX = intent.offsetX,
+                        zoomOffsetY = intent.offsetY
+                    )
+                }
+            }
+
             is ViewerIntent.ToggleUiVisibility -> _uiState.update { it.copy(isUiVisible = !it.isUiVisible) }
             is ViewerIntent.ErrorShown -> _uiState.update { it.copy(error = null) }
             is ViewerIntent.LoadThumbnail -> handleLoadThumbnail(intent.pageNumber)
@@ -280,6 +290,10 @@ open class ViewerViewModel @Inject constructor(
 
     private fun handleLoadComic(uri: Uri) {
         viewModelScope.launch {
+            if (currentComicUri == uri) {
+                TimberLogger.logI(TAG, "LoadComic: Comic $uri already loaded. Skipping.")
+                return@launch
+            }
             try {
                 _uiState.update {
                     it.copy(

@@ -23,7 +23,11 @@ data class ViewerUIState(
     val isDoublePageMode: Boolean = false,
     val isPageFlipSoundEnabled: Boolean = false,
     val loadedThumbnails: Map<Int, ImageBitmap?> = emptyMap(),
-    val isLoadingThumbnail: Set<Int> = emptySet()
+    val isLoadingThumbnail: Set<Int> = emptySet(),
+    // Zoom state - persisted in ViewModel for robustness
+    val zoomScale: Float = 1f,
+    val zoomOffsetX: Float = 0f,
+    val zoomOffsetY: Float = 0f
 ){
     companion object {
         const val DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD = 1

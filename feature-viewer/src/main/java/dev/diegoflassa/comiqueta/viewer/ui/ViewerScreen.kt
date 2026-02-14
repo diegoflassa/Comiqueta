@@ -29,18 +29,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
-import android.graphics.Rect as AndroidRect
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -66,13 +61,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -80,6 +80,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
@@ -90,10 +91,10 @@ import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.config.PageCurlConfig
 import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.config.rememberPageCurlConfig
 import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.rememberPageCurlState
 import kotlinx.coroutines.CancellationException
+import android.graphics.Rect as AndroidRect
 
 private const val tag = "ViewerScreen"
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViewerScreen(
     modifier: Modifier = Modifier,
@@ -103,6 +104,7 @@ fun ViewerScreen(
 ) {
     val context = LocalContext.current
     val viewerUIState: ViewerUIState by viewerViewModel.uiState.collectAsStateWithLifecycle()
+    TimberLogger.logI(tag, "[PageNavFix] ViewerScreen composed. CurrentPage: ${viewerUIState.currentPage}, PageCount: ${viewerUIState.pageCount}")
 
     LaunchedEffect(comicPath) {
         if (comicPath != null) {
@@ -164,8 +166,14 @@ fun ViewerScreenContent(
     onIntent: ((ViewerIntent) -> Unit)? = null
 ) {
     BackHandler { navigationViewModel?.goBack() }
-
-    var globalIsPinchZoomActive by retain { mutableStateOf(false) }
+    
+    // Zoom state is now managed in ViewModel for persistence
+    val globalZoomScale = uiState.zoomScale
+    val globalZoomOffsetX = uiState.zoomOffsetX
+    val globalZoomOffsetY = uiState.zoomOffsetY
+    
+    // Track if zoom is active (local state for gesture handling)
+    val globalIsPinchZoomActive = globalZoomScale > 1.01f
     val pageCurlState = rememberPageCurlState(initialCurrent = uiState.currentPage)
 
     val density = LocalDensity.current
@@ -255,6 +263,7 @@ fun ViewerScreenContent(
 
                         LaunchedEffect(displayPageIndex) {
                             if (pageCurlState.current != displayPageIndex && displayPageIndex < displayPageCount) {
+                                TimberLogger.logI(tag, "[PageNavFix] Updating pageCurlState.current from ${pageCurlState.current} to $displayPageIndex")
                                 pageCurlState.current = displayPageIndex
                                 if (uiState.isPageFlipSoundEnabled) {
                                     mediaPlayer?.start()
@@ -270,11 +279,15 @@ fun ViewerScreenContent(
                         }
 
                         val pageCurlConfig = rememberPageCurlConfig(
-                            dragForwardEnabled = !globalIsPinchZoomActive,
-                            dragBackwardEnabled = !globalIsPinchZoomActive,
-                            tapForwardEnabled = !globalIsPinchZoomActive,
-                            tapBackwardEnabled = !globalIsPinchZoomActive,
-                            dragThreshold = 0.66f, // 2/3 of screen width
+                            dragForwardEnabled = true,
+                            dragBackwardEnabled = true,
+                            tapForwardEnabled = true,
+                            tapBackwardEnabled = true,
+                            dragThreshold = 0.1f, // 10% of screen width (allows micro-swipes)
+                            dragInteraction = PageCurlConfig.GestureDragInteraction(
+                                forward = PageCurlConfig.GestureDragInteraction.Config(target = androidx.compose.ui.geometry.Rect(0.0f, 0.0f, 1.0f, 1.0f)),
+                                backward = PageCurlConfig.GestureDragInteraction.Config(target = androidx.compose.ui.geometry.Rect(0.0f, 0.0f, 1.0f, 1.0f))
+                            ),
                             tapInteraction = PageCurlConfig.TargetTapInteraction(
                                 forward = PageCurlConfig.TargetTapInteraction.Config(target = androidx.compose.ui.geometry.Rect(0.7f, 0.0f, 1.0f, 1.0f)),
                                 backward = PageCurlConfig.TargetTapInteraction.Config(target = androidx.compose.ui.geometry.Rect(0.0f, 0.0f, 0.3f, 1.0f))
@@ -291,6 +304,16 @@ fun ViewerScreenContent(
                             }
                         )
 
+                        // Disable page navigation when zoomed to allow panning
+                        LaunchedEffect(globalIsPinchZoomActive) {
+                            val navigationEnabled = !globalIsPinchZoomActive
+                            pageCurlConfig.dragForwardEnabled = navigationEnabled
+                            pageCurlConfig.dragBackwardEnabled = navigationEnabled
+                            pageCurlConfig.tapForwardEnabled = navigationEnabled
+                            pageCurlConfig.tapBackwardEnabled = navigationEnabled
+                            TimberLogger.logI(tag, "[PageNavFix] Navigation Enabled: $navigationEnabled (ZoomActive: $globalIsPinchZoomActive)")
+                        }
+
                         PageFlip(
                             modifier = Modifier.fillMaxSize(),
                             count = displayPageCount,
@@ -301,24 +324,47 @@ fun ViewerScreenContent(
                             val pageIndex1 = if (uiState.isDoublePageMode) pageIndexInCurl * 2 else pageIndexInCurl
                             val pageIndex2 = if (uiState.isDoublePageMode) pageIndex1 + 1 else -1
 
-                            var itemScale by retain(pageIndexInCurl) { mutableFloatStateOf(1f) }
-                        var itemOffsetX by retain(pageIndexInCurl) { mutableFloatStateOf(0f) }
-                        var itemOffsetY by retain(pageIndexInCurl) { mutableFloatStateOf(0f) }
+                            // Use global zoom state if this is the active page
+                            var itemScale by remember(pageIndexInCurl) { mutableFloatStateOf(1f) }
+                            var itemOffsetX by remember(pageIndexInCurl) { mutableFloatStateOf(0f) }
+                            var itemOffsetY by remember(pageIndexInCurl) { mutableFloatStateOf(0f) }
+                            
+                            // Track restoration state for this specific page instance
+                            var hasRestored by remember(pageIndexInCurl) { mutableStateOf(false) }
 
-                        LaunchedEffect(pageCurlState.current, pageIndexInCurl, itemScale) {
-                            if (pageIndexInCurl == pageCurlState.current) {
-                                val newGlobalZoomState = itemScale > 1f
-                                if (globalIsPinchZoomActive != newGlobalZoomState) {
-                                    globalIsPinchZoomActive = newGlobalZoomState
-                                }
-                            } else {
-                                if (itemScale > 1f) {
-                                    itemScale = 1f
-                                    itemOffsetX = 0f
-                                    itemOffsetY = 0f
+                            // 1. Restoration & Reset Logic (Triggered by Page Change)
+                            LaunchedEffect(pageCurlState.current) {
+                                if (pageIndexInCurl == pageCurlState.current) {
+                                    // We became current. Restore State.
+                                    TimberLogger.logI(tag, "[PageNavFix] Became Current: Page $pageIndexInCurl. GlobalZoom=$globalZoomScale")
+                                    if (globalZoomScale > 1.01f) {
+                                        itemScale = globalZoomScale
+                                        itemOffsetX = globalZoomOffsetX
+                                        itemOffsetY = globalZoomOffsetY
+                                        TimberLogger.logI(tag, "[PageNavFix] Restored global zoom: $globalZoomScale")
+                                    }
+                                    hasRestored = true
+                                } else {
+                                    // We are NOT current. Reset local state if needed.
+                                    if (itemScale > 1f) {
+                                        TimberLogger.logI(tag, "[PageNavFix] Reseting zoom on non-current page $pageIndexInCurl")
+                                        itemScale = 1f
+                                        itemOffsetX = 0f
+                                        itemOffsetY = 0f
+                                    }
+                                    hasRestored = false
                                 }
                             }
-                        }
+
+                            // 2. Sync Logic (Triggered by Local Scale Change)
+                            // Only runs if we are current AND have restored
+                            LaunchedEffect(itemScale, itemOffsetX, itemOffsetY, hasRestored) {
+                                if (pageIndexInCurl == pageCurlState.current && hasRestored) {
+                                    TimberLogger.logI(tag, "[PageNavFix] Syncing Global: Page $pageIndexInCurl. ItemScale=$itemScale")
+                                    // Update Global Zoom State via ViewModel
+                                    onIntent?.invoke(ViewerIntent.UpdateZoom(itemScale, itemOffsetX, itemOffsetY))
+                                }
+                            }
 
                             BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                                 val currentBitmap1: ImageBitmap? = uiState.loadedPages[pageIndex1]
@@ -345,7 +391,7 @@ fun ViewerScreenContent(
                                                         try {
                                                             while (true) {
                                                                 val event =
-                                                                    awaitPointerEvent(PointerEventPass.Initial)
+                                                                    awaitPointerEvent(PointerEventPass.Main)
 
                                                                 val changes = event.changes
                                                                 if (changes.isEmpty()) {
@@ -431,7 +477,18 @@ fun ViewerScreenContent(
                                                                         itemOffsetX = 0f
                                                                         itemOffsetY = 0f
                                                                     }
-                                                                    changes.forEach { it.consume() }
+                                                                    
+                                                                    // Use Main pass to play nice with parent gestures
+                                                                    // We do NOT consume if we are at scale 1.0 (swiping)
+                                                                    val isZooming = zoomFactor != 1f
+                                                                    val ispanning = panDelta != Offset.Zero && itemScale > 1.01f
+                                                                    
+                                                                    if (isZooming || ispanning) {
+                                                                        if (isZooming) {
+                                                                           TimberLogger.logI(tag, "[PageNavFix] Zooming detected! factor=$zoomFactor") 
+                                                                        }
+                                                                        changes.forEach { it.consume() }
+                                                                    }
                                                                 } else {
 
                                                                 }

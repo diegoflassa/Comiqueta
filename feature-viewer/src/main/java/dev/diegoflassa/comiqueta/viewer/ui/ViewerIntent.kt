@@ -49,6 +49,14 @@ sealed interface ViewerIntent {
     data class LoadThumbnail(val pageNumber: Int) : ViewerIntent
 
     /**
+     * Intent to update the current zoom state.
+     * @param scale The zoom scale factor (1.0 = no zoom)
+     * @param offsetX The horizontal pan offset
+     * @param offsetY The vertical pan offset
+     */
+    data class UpdateZoom(val scale: Float, val offsetX: Float, val offsetY: Float) : ViewerIntent
+
+    /**
      * Intent to set the current page as the comic's cover.
      */
     data object SetAsCover : ViewerIntent

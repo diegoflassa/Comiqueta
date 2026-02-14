@@ -1,5 +1,7 @@
 package dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip
 
+import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
+
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -62,8 +64,11 @@ internal fun Modifier.dragGesture(
                 // Should it depend on velocity?
                 // The `end` passed here is `flingEndOffset`.
                 // If I fling, `flingEndOffset` will be far. displacement will be large.
-                // So checking displacement on `end` (fling result) covers both.
-                displacement > thresholdPx
+                // Fix: Allow ANY forward movement (that exceeded slop) to succeed if it's > 10px
+                // displacement > thresholdPx || displacement > 10f
+                val success = displacement > thresholdPx || displacement > 10f
+                TimberLogger.logI("DragGesture", "[PageNavFix] Forward drag: displacement=$displacement, threshold=$thresholdPx. Success: $success")
+                success
             },
             onChange = { onChange(+1) }
         )
@@ -75,7 +80,10 @@ internal fun Modifier.dragGesture(
             isDragSucceed = { start, end ->
                 val displacement = end.x - start.x // Backward: Swipe Right
                 val thresholdPx = size.width * dragThreshold
-                displacement > thresholdPx
+                // Fix: Allow ANY backward movement (that exceeded slop) to succeed if it's > 10px
+                val success = displacement > thresholdPx || displacement > 10f
+                TimberLogger.logI("DragGesture", "[PageNavFix] Backward drag: displacement=$displacement, threshold=$thresholdPx. Success: $success")
+                success
             },
             onChange = { onChange(-1) }
         )
