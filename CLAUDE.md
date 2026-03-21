@@ -17,4 +17,5 @@ Comiqueta is a premium Android comic reader (CBZ, CBR, CB7, CBT, PDF). Jetpack C
 ## Knowledge Items
 
 - [KI-001: Viewer Pinch-to-Zoom Fix](conductor/ki/KI-001_VIEWER_PINCH_ZOOM_FIX.md)
+- [KI-002: Viewer Pinch-to-Zoom NaN State Corruption Fix](conductor/ki/KI-002_VIEWER_PINCH_ZOOM_NANHFIX.md)
 - [KI-003: Token Audit & Pruning](conductor/ki/KI-003_TOKEN_AUDIT_PRUNING.md)

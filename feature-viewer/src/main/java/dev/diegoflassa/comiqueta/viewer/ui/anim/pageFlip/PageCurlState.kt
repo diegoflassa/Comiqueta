@@ -212,7 +212,8 @@ class PageCurlState(
     suspend fun next(block: suspend Animatable<Edge, AnimationVector4D>.(Size) -> Unit = DefaultNext) {
         internalState?.animateTo(
             target = { current + 1 },
-            animate = { forward.block(it) }
+            animate = { size -> this.forward.block(size) }
+        )
     }
 
     /**
@@ -226,7 +227,7 @@ class PageCurlState(
     suspend fun prev(block: suspend Animatable<Edge, AnimationVector4D>.(Size) -> Unit = DefaultPrev) {
         internalState?.animateTo(
             target = { current - 1 },
-            animate = { backward.block(it) }
+            animate = { size -> this.backward.block(size) }
         )
     }
 
