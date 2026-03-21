@@ -105,8 +105,8 @@ class ComicsRepository @Inject constructor(
         }
     }
 
-    override suspend fun getComicByFilePath(filePath: Uri): Comic? {
-        return comicsDao.getComicByFilePath(filePath)?.asExternalModel()
+    override suspend fun getComicByFilePath(filePath: String): Comic? {
+        return comicsDao.getComicByFilePath(Uri.parse(filePath))?.asExternalModel()
     }
 
     override suspend fun insertComic(comic: Comic) {
@@ -121,16 +121,16 @@ class ComicsRepository @Inject constructor(
         comicsDao.updateComicAndFts(comic.asEntity())
     }
 
-    override suspend fun deleteComicByFilePath(filePath: Uri) {
-        comicsDao.deleteComicByFilePathAndFts(filePath)
+    override suspend fun deleteComicByFilePath(filePath: String) {
+        comicsDao.deleteComicByFilePathAndFts(Uri.parse(filePath))
     }
 
     override suspend fun clearAllComics() {
         comicsDao.clearAllComicsAndFts()
     }
     
-    override suspend fun updateComicCover(filePath: Uri, coverPath: Uri) {
-        comicsDao.updateCoverPath(filePath, coverPath)
+    override suspend fun updateComicCover(filePath: String, coverPath: String) {
+        comicsDao.updateCoverPath(Uri.parse(filePath), Uri.parse(coverPath))
     }
 
     override fun getCollectionStats(): Flow<CollectionStats> {

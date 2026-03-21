@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -c \"D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/Comiqueta/conductor/\"*.md)",
+      "Bash(find \"D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/Comiqueta/conductor/ki\" -type f -exec wc -c {} +)",
+      "Bash(find \"D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/Comiqueta/.agent/workflows\" -type f -exec wc -c {} +)",
+      "Bash(wc -c \"D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/BipSale/conductor/\"*.md)",
+      "Bash(find \"D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/BipSale/.agent/workflows\" -type f -exec wc -c {} +)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\(''C:/Users/diego/.antigravity/config.json''\\)\\); print\\(''sysMsg:'', d[''sysMsg'']\\); print\\(''invariants:'', d[''invariants'']\\); print\\(''update_rules:'', [c[''a''] for c in d[''slashCmds''] if c[''n'']==''update_rules''][0]\\)\")",
+      "Bash(\"C:/Python314/python.exe\" -c \":*)"
+    ]
+  }
+}

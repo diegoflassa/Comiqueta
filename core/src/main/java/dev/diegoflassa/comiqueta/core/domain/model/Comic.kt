@@ -1,11 +1,9 @@
 package dev.diegoflassa.comiqueta.core.domain.model
 
-import android.net.Uri
-
 data class Comic(
-    val filePath: Uri = Uri.EMPTY,
+    val filePath: String = "",
     val title: String? = null,
-    val coverPath: Uri = Uri.EMPTY,
+    val coverPath: String = "",
     val author: String? = null,
     val categoryId: Long? = null,
     val isFavorite: Boolean = false,

@@ -1,34 +1,40 @@
-# Filesystem & Storage: Comiqueta
-[Voltar ao Índice](./INDEX.md)
+# Architecture: Comiqueta
 
-Comiqueta follows a decentralized **MVI + Clean Architecture** pattern tailored for Android with Jetpack Compose.
+## Module Graph
+```
+:app  →  :feature-*  →  :core
+                     ↘  :feature-ads
+```
 
-## 🏗️ Core Layers
+- **`:app`** — `MainActivity`, `NavDisplay`, `MyApplication` (Hilt).
+- **`:core`** — `/domain` (models, use cases), `/data` (Room, repos, SAF), `/di`, `/navigation`, `/theme`, `/ui`.
+- **`:feature-*`** — `/ui` (MVI), `/domain` (feature use cases), `/di`.
+- **`:feature-ads`** — Google AdMob.
+- **`build-logic/`** — Convention plugins for shared Gradle config.
 
-### 1. UI Layer (Feature Modules)
-- **Pattern**: MVI (Model-View-Intent).
-- **Components**: `Contract` (State, Intent, Effect), `ViewModel` (Hilt-injected), `Screen` (Compose).
-- **Rule**: ViewModels must only communicate with Domain UseCases or Repositories.
+## MVI Contract (per feature)
+- `XxxUIState` — immutable state data class
+- `XxxIntent` — sealed class (user actions)
+- `XxxEffect` — sealed class (one-shot side effects via `Channel`)
+- `IXxxViewModel` — interface (enables fakes for testing)
+- `XxxViewModel : ViewModel(), IXxxViewModel` — `@HiltViewModel`
 
-### 2. Domain Layer (Core/Domain)
-- **Role**: Business logic and models.
-- **Constraints**: Pure Kotlin, zero Android dependencies.
-- **Models**: `Comic`, `Category`, `Page`.
+## Navigation
+Nav3 type-safe. Keys in `core/navigation/Screen.kt` (`@Serializable`). `NavDisplay` in `:app` maps keys → screens. `NavigationViewModel` shared across features.
 
-### 3. Data Layer (Core/Data)
-- **Role**: Data sources (Room, File System).
-- **Repositories**: Handle mapping between Data Entities and Domain Models.
-- **Persistence**: Room for metadata; SAF (Storage Access Framework) for comic files.
+## Data Layer
+- **Room**: `ComicDatabase`, `ComicsDao`, `CategoryDao`. Schemas in `/schemas`.
+- **SAF**: `DocumentFile.fromTreeUri` for all external storage. `ACTION_OPEN_DOCUMENT_TREE` for root.
+- **Repos**: `IComicsRepository`, `ICategoryRepository` — map entities ↔ domain models.
+- Formats: CBZ (ZIP), CBR (junrar), CB7, CBT, PDF (`PdfRenderer`).
 
-## 🔗 Dependency Flow
-`Feature` -> `Core:Domain`
-`Core:Data` -> `Core:Domain`
-`App` -> `Feature` + `Core`
-
-## 🚦 Navigation
-- **System**: Nav3 (Custom Type-Safe Navigation).
-- **Structure**: Navigation keys defined in `core:nav`; Logic in `app` or feature-specific entry points.
-
----
-Status: **Active**
-Last Updated: 2026-02-08
+## Key Files
+| Path | Purpose |
+|------|---------|
+| `core/.../navigation/Screen.kt` | Nav3 screen keys |
+| `core/.../navigation/NavigationViewModel.kt` | Shared nav state |
+| `app/.../navigation/NavDisplay.kt` | Route mapping |
+| `core/.../data/database/ComicDatabase.kt` | Room DB |
+| `core/.../theme/Theme.kt` | `ComiquetaTheme` |
+| `build-logic/.../android-library-convention.gradle.kts` | Library config |
+| `gradle/libs.versions.toml` | Version catalog |

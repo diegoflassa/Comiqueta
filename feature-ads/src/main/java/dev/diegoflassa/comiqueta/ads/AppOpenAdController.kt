@@ -1,4 +1,4 @@
-package dev.diegoflassa.comiqueta.core.ui.widgets
+package dev.diegoflassa.comiqueta.ads
 
 import android.app.Activity
 import androidx.compose.runtime.Composable

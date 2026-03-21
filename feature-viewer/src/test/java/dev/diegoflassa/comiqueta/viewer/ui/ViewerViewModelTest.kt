@@ -1,9 +1,11 @@
 package dev.diegoflassa.comiqueta.viewer.ui
 
+import android.app.Application
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.google.common.truth.Truth.assertThat
 import dev.diegoflassa.comiqueta.core.data.preferences.PreferencesKeys
+import dev.diegoflassa.comiqueta.core.data.repository.IComicsRepository
 import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IGetComicUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IUpdateComicProgressUseCase
 import dev.diegoflassa.comiqueta.viewer.domain.usecase.IDecodeComicPageUseCase
@@ -43,12 +45,18 @@ class ViewerViewModelTest {
     private lateinit var updateComicProgressUseCase: IUpdateComicProgressUseCase
 
     @Mock
+    private lateinit var comicsRepository: IComicsRepository
+
+    @Mock
+    private lateinit var application: Application
+
+    @Mock
     private lateinit var dataStore: DataStore<Preferences>
 
     @Mock
     private lateinit var preferences: Preferences
 
-    private lateinit var viewModel: ViewerViewModel
+    private lateinit var viewModel: IViewerViewModel
 
     @Before
     fun setUp() {
@@ -74,6 +82,8 @@ class ViewerViewModelTest {
             decodeComicPageUseCase,
             getComicUseCase,
             updateComicProgressUseCase,
+            comicsRepository,
+            application,
             dataStore
         )
         advanceUntilIdle()
@@ -98,6 +108,8 @@ class ViewerViewModelTest {
             decodeComicPageUseCase,
             getComicUseCase,
             updateComicProgressUseCase,
+            comicsRepository,
+            application,
             dataStore
         )
         advanceUntilIdle()

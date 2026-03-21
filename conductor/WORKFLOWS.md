@@ -1,32 +1,17 @@
 # Workflows: Comiqueta
-[Voltar ao Índice](./INDEX.md)
 
-Development and distribution workflows for the Comiqueta project.
+## Build
+```bash
+./gradlew assembleDebug          # Debug APK
+./gradlew assembleRelease        # Release APK
+./gradlew test                   # All unit tests
+./gradlew :feature-viewer:test   # Module tests
+./gradlew :feature-viewer:test --tests "...ViewerViewModelTest"  # Single class
+./gradlew detekt                 # Static analysis
+```
 
-## 🛠️ Build System
-
-- **Gradle**: Version 8.x+ with Kotlin DSL (`.gradle.kts`).
-- **Plugins**: Hilt, KSP, Compose Compiler.
-- **Convention Plugins**: Located in `build-logic` for shared module configurations.
-
-## 🚀 Distribution
-
-- **Firebase App Distribution**: Main channel for QA/Internal testing.
-- **Scripts**:
-  - `appDistributionUploadDebug.ps1`
-  - `appDistributionUploadRelease.ps1`
-- **Fastlane**: (Optional/Planned).
-
-## 🧪 Quality & Health
-
-- **Slash Command**: `/health-check` for project-wide audits.
-- **Lints**: Kotlin Lint + Custom rules for MVI consistency.
-- **Testing**: JUnit5 for Domain/Data; Compose Test for UI.
-
-## 🌲 Git Conventions
-- Branching: `feature/*`, `bugfix/*`, `chore/*`.
-- Commits: Conventional Commits (feat, fix, chore, docs).
-
----
-Status: **Active**
-Last Updated: 2026-02-08
+## Distribution
+```bash
+powershell -File ./appDistributionUploadDebug.ps1    # Firebase debug
+powershell -File ./appDistributionUploadRelease.ps1  # Firebase release
+```

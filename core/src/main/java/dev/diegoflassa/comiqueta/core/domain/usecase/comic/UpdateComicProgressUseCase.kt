@@ -9,7 +9,7 @@ import javax.inject.Inject
 class UpdateComicProgressUseCase @Inject constructor(
     private val comicsRepository: IComicsRepository
 ) : IUpdateComicProgressUseCase {
-    override suspend fun invoke(filePath: Uri, lastPageRead: Int, isCompleted: Boolean) {
+    override suspend fun invoke(filePath: String, lastPageRead: Int, isCompleted: Boolean) {
         withContext(Dispatchers.IO) {
             val comic = comicsRepository.getComicByFilePath(filePath)
             if (comic != null) {

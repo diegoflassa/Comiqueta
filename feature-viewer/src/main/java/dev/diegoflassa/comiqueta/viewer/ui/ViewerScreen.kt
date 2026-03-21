@@ -173,7 +173,9 @@ fun ViewerScreenContent(
     val globalZoomOffsetY = uiState.zoomOffsetY
     
     // Track if zoom is active (local state for gesture handling)
-    val globalIsPinchZoomActive = globalZoomScale > 1.01f
+    // isPinchGestureInProgress tracks multi-touch contact independently from scale
+    var isPinchGestureInProgress by remember { mutableStateOf(false) }
+    val globalIsPinchZoomActive = globalZoomScale > 1.01f || isPinchGestureInProgress
     val pageCurlState = rememberPageCurlState(initialCurrent = uiState.currentPage)
 
     val density = LocalDensity.current
@@ -388,6 +390,7 @@ fun ViewerScreenContent(
                                             if (pageIndexInCurl == pageCurlState.current) {
                                                 if (currentBitmap1 != null) {
                                                     awaitPointerEventScope {
+                                                        var localPinchActive = false
                                                         try {
                                                             while (true) {
                                                                 val event =
@@ -398,11 +401,37 @@ fun ViewerScreenContent(
                                                                     continue
                                                                 }
 
+                                                                val pressedCount = changes.count { it.pressed }
+
+                                                                // Detect start of multi-touch gesture
+                                                                if (pressedCount >= 2 && !localPinchActive) {
+                                                                    localPinchActive = true
+                                                                    isPinchGestureInProgress = true
+                                                                    TimberLogger.logI(tag, "[PageNavFix] Pinch gesture started")
+                                                                }
+
+                                                                // Detect end of all touches after a pinch
+                                                                if (localPinchActive && pressedCount == 0) {
+                                                                    localPinchActive = false
+                                                                    isPinchGestureInProgress = false
+                                                                    TimberLogger.logI(tag, "[PageNavFix] Pinch gesture ended (all fingers lifted)")
+                                                                    // Reset zoom state cleanly if back to 1.0
+                                                                    if (itemScale <= 1.01f) {
+                                                                        itemScale = 1f
+                                                                        itemOffsetX = 0f
+                                                                        itemOffsetY = 0f
+                                                                    }
+                                                                    changes.forEach { it.consume() }
+                                                                    continue
+                                                                }
+
                                                                 val oldLocalItemScale = itemScale
-                                                                if (changes.size >= 2 || oldLocalItemScale > 1f) {
+                                                                if (changes.size >= 2 || oldLocalItemScale > 1f || localPinchActive) {
                                                                     val zoomFactor =
-                                                                        if (changes.size >= 2) event.calculateZoom() else 1f
-                                                                    val panDelta = event.calculatePan()
+                                                                        if (pressedCount >= 2) event.calculateZoom() else 1f
+                                                                    val panDelta =
+                                                                        if (pressedCount >= 2) event.calculatePan() else Offset.Zero
+
                                                                     val newLocalItemScale =
                                                                         (oldLocalItemScale * zoomFactor).coerceIn(
                                                                             1f,
@@ -416,7 +445,7 @@ fun ViewerScreenContent(
                                                                             constraints.maxWidth.toFloat()
                                                                         val containerHeightPx =
                                                                             constraints.maxHeight.toFloat()
-                                                                        
+
                                                                         val primaryWidth = currentBitmap1.width.toFloat()
                                                                         val primaryHeight = currentBitmap1.height.toFloat()
                                                                         val imageAspectRatio = if (currentBitmap2 != null) {
@@ -424,7 +453,7 @@ fun ViewerScreenContent(
                                                                         } else {
                                                                             primaryWidth / primaryHeight
                                                                         }
-                                                                        
+
                                                                         val containerAspectRatio =
                                                                             containerWidthPx / containerHeightPx
                                                                         val fittedImageWidth: Float
@@ -477,29 +506,32 @@ fun ViewerScreenContent(
                                                                         itemOffsetX = 0f
                                                                         itemOffsetY = 0f
                                                                     }
-                                                                    
-                                                                    // Use Main pass to play nice with parent gestures
-                                                                    // We do NOT consume if we are at scale 1.0 (swiping)
-                                                                    val isZooming = zoomFactor != 1f
-                                                                    val ispanning = panDelta != Offset.Zero && itemScale > 1.01f
-                                                                    
-                                                                    if (isZooming || ispanning) {
-                                                                        if (isZooming) {
-                                                                           TimberLogger.logI(tag, "[PageNavFix] Zooming detected! factor=$zoomFactor") 
-                                                                        }
+
+                                                                    // Consume ALL events during a pinch gesture to prevent
+                                                                    // the drag handler from interpreting residual finger
+                                                                    // movement as a page turn
+                                                                    if (localPinchActive || itemScale > 1.01f) {
                                                                         changes.forEach { it.consume() }
                                                                     }
-                                                                } else {
-
                                                                 }
                                                             }
                                                         } catch (e: CancellationException) {
-
+                                                        // Reset pinch state on cancellation to avoid stuck state
+                                                        if (localPinchActive) {
+                                                            localPinchActive = false
+                                                            isPinchGestureInProgress = false
+                                                        }
                                                         throw e
                                                     } catch (e: Throwable) {
-
+                                                        if (localPinchActive) {
+                                                            localPinchActive = false
+                                                            isPinchGestureInProgress = false
+                                                        }
                                                     } finally {
-
+                                                        if (localPinchActive) {
+                                                            localPinchActive = false
+                                                            isPinchGestureInProgress = false
+                                                        }
                                                     }
                                                 }
                                             } else {

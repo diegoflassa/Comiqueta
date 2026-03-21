@@ -1,7 +1,6 @@
 package dev.diegoflassa.comiqueta.ui.widgets
 
 import android.content.res.Configuration
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -34,7 +32,6 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.paging.compose.LazyPagingItems
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
@@ -91,7 +88,7 @@ fun HorizontalComicsRow(
             items(
                 count = comics.itemCount,
                 key = { index ->
-                    comics[index]?.filePath?.toString() ?: index
+                    comics[index]?.filePath ?: index
                 }
             ) { index ->
                 val comic = comics[index]
@@ -158,7 +155,7 @@ fun HorizontalComicsRowForPreview(
             items(
                 count = comics.size,
                 key = { index ->
-                    comics[index]?.filePath?.toString() ?: Random.nextInt()
+                    comics[index]?.filePath ?: Random.nextInt()
                 } // Preview can use Random for simplicity if keys aren't critical for preview stability
             ) { index ->
                 val comic = comics[index]
@@ -238,9 +235,9 @@ fun ScrollTrackIndicator(
 // Dummy data for previews using your Comic class
 private val sampleComicsPreviewData: List<Comic> = List(5) { index ->
     Comic(
-        filePath = "file:///preview/comic_$index.cbz".toUri(),
+        filePath = "file:///preview/comic_$index.cbz",
         title = "Awesome Comic Adventure Vol. ${index + 1}",
-        coverPath = if (index % 2 == 0) "file:///preview/cover_$index.jpg".toUri() else Uri.EMPTY,
+        coverPath = if (index % 2 == 0) "file:///preview/cover_$index.jpg" else "",
         author = "Writer ${index + 1}",
         pageCount = 22 + index,
         isNew = index < 2,
@@ -250,9 +247,9 @@ private val sampleComicsPreviewData: List<Comic> = List(5) { index ->
 
 private val fewComicsPreviewData: List<Comic> = List(2) { index ->
     Comic(
-        filePath = "file:///preview/few_comic_$index.cbz".toUri(),
+        filePath = "file:///preview/few_comic_$index.cbz",
         title = "Short Story Collection ${index + 1}",
-        coverPath = "file:///preview/few_cover_$index.jpg".toUri(),
+        coverPath = "file:///preview/few_cover_$index.jpg",
         author = "Author ${index + 1}",
         pageCount = 10 + index,
         hasBeenRead = index == 0
@@ -261,9 +258,9 @@ private val fewComicsPreviewData: List<Comic> = List(2) { index ->
 
 private val manyComicsPreviewData: List<Comic> = List(15) { index ->
     Comic(
-        filePath = "file:///preview/many_comic_$index.cbz".toUri(),
+        filePath = "file:///preview/many_comic_$index.cbz",
         title = "The Epic Saga of The Universe Part ${index + 1}",
-        coverPath = if (index % 3 == 0) Uri.EMPTY else "file:///preview/many_cover_$index.jpg".toUri(),
+        coverPath = if (index % 3 == 0) "" else "file:///preview/many_cover_$index.jpg",
         author = "Various Writers",
         pageCount = 100 + index * 5,
         lastModified = System.currentTimeMillis() - (index * 100000)

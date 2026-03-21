@@ -1,6 +1,4 @@
 package dev.diegoflassa.comiqueta.core.data.repository
-
-import android.net.Uri
 import androidx.paging.PagingData
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.data.enums.ComicFlags
@@ -20,7 +18,7 @@ interface IComicsRepository {
         searchQuery: String? = null
     ): Flow<PagingData<Comic>>
 
-    suspend fun getComicByFilePath(filePath: Uri): Comic?
+    suspend fun getComicByFilePath(filePath: String): Comic?
 
     suspend fun insertComic(comic: Comic)
 
@@ -28,11 +26,11 @@ interface IComicsRepository {
 
     suspend fun updateComic(comic: Comic)
 
-    suspend fun deleteComicByFilePath(filePath: Uri)
+    suspend fun deleteComicByFilePath(filePath: String)
 
     suspend fun clearAllComics()
 
-    suspend fun updateComicCover(filePath: Uri, coverPath: Uri)
+    suspend fun updateComicCover(filePath: String, coverPath: String)
 
     fun getCollectionStats(): Flow<CollectionStats>
 }

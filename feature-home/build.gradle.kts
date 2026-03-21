@@ -14,6 +14,7 @@ android {
 dependencies {
     //Módulos
     implementation(project(":core"))
+    implementation(project(":feature-ads"))
 
     //Common Testing
     testImplementation(libs.junit)
@@ -43,7 +44,7 @@ dependencies {
     implementation(libs.ax.compose.ui.tooling.preview)
     implementation(libs.ax.compose.ui.viewbinding)
     implementation(libs.ax.compose.runtime.livedata)
-    implementation(libs.ax.compose.runtime.rxjava3)
+    //implementation(libs.ax.compose.runtime.rxjava3)
     implementation(libs.ax.compose.material3)
     implementation(libs.ax.constraintlayout.compose)
     implementation(libs.ax.compose.material.icons.core)

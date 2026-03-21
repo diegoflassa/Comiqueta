@@ -53,7 +53,7 @@ dependencies {
     implementation(libs.ax.compose.ui.tooling.preview)
     implementation(libs.ax.compose.ui.viewbinding)
     implementation(libs.ax.compose.runtime.livedata)
-    implementation(libs.ax.compose.runtime.rxjava3)
+    //implementation(libs.ax.compose.runtime.rxjava3)
     implementation(libs.ax.compose.material3)
     implementation(libs.ax.constraintlayout.compose)
     implementation(libs.ax.compose.material.icons.core)
@@ -142,8 +142,6 @@ dependencies {
     //Splashscreen
     implementation(libs.ax.core.splashscreen)
 
-    //Ads
-    implementation(libs.play.services.ads.api)
 
     //Rar File
     implementation(libs.org.github.junrar)

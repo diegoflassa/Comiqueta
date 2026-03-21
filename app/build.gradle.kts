@@ -1,5 +1,4 @@
 import io.gitlab.arturbosch.detekt.Detekt
-import org.gradle.kotlin.dsl.project
 import java.util.Properties
 
 val firebaseAppDistributionProps = Properties()
@@ -82,6 +81,7 @@ dependencies {
     implementation(project(":feature-settings"))
     implementation(project(":feature-categories"))
     implementation(project(":feature-viewer"))
+    implementation(project(":feature-ads"))
 
     // Common
     implementation(libs.ax.core.ktx)
@@ -100,15 +100,12 @@ dependencies {
     implementation(libs.ax.compose.ui.tooling)
     implementation(libs.ax.compose.ui.tooling.preview)
     implementation(libs.ax.compose.ui.viewbinding)
-    implementation(libs.ax.compose.runtime.livedata)
-    implementation(libs.ax.compose.runtime.rxjava3)
     implementation(libs.ax.compose.material3)
     implementation(libs.ax.constraintlayout.compose)
     implementation(libs.ax.compose.material.icons.core)
     implementation(libs.ax.compose.material.icons.extended)
     implementation(libs.ax.activity.compose)
     implementation(libs.ax.lifecycle.viewmodel.compose)
-    implementation(libs.ax.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
 
     //Compose Testing
@@ -123,7 +120,7 @@ dependencies {
     implementation(libs.ax.navigation3.runtime)
     implementation(libs.ax.navigation3.ui)
     implementation(libs.ax.navigation3.viewmodel)
-    //implementation(libs.ax.navigation3.adaptive)
+    implementation(libs.ax.navigation3.adaptive)
 
     //Firebase
     implementation(platform(libs.com.google.firebase.bom))
@@ -161,9 +158,7 @@ dependencies {
 
     //Retrofit 2
     implementation(libs.com.squareup.retrofit2.retrofit)
-    implementation(libs.com.squareup.retrofit2.adapter.rxjava3)
     implementation(libs.com.squareup.retrofit2.converter.moshi)
-    implementation(libs.com.squareup.retrofit2.converter.gson)
 
     //Lifecycle
     implementation(libs.ax.lifecycle.runtime.ktx)
@@ -172,17 +167,9 @@ dependencies {
     implementation(libs.ax.lifecycle.viewmodel.savedstate)
     implementation(libs.ax.lifecycle.livedata.ktx)
     implementation(libs.ax.lifecycle.viewmodel.ktx)
-    implementation(libs.ax.lifecycle.extensions)
-
-    //RecyclerView
-    implementation(libs.ax.recyclerview)
-    implementation(libs.ax.recyclerview.selection)
 
     //Worker
     implementation(libs.ax.work.runtime.ktx)
-
-    //SwipeRefreshLayout
-    implementation(libs.ax.swiperefreshlayout)
 
     //DataStore
     implementation(libs.ax.datastore.preferences)
@@ -206,6 +193,9 @@ dependencies {
 
     //Other
     implementation(libs.com.microsoft.clarity.compose)
-    implementation(libs.com.google.auto.value)
     implementation(libs.io.coil.kt.coil.compose)
+}
+
+configurations.all {
+    exclude(group = "com.google.auto.value", module = "auto-value")
 }

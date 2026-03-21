@@ -99,7 +99,7 @@ import dev.diegoflassa.comiqueta.core.theme.getOutlinedTextFieldDefaultsColors
 import dev.diegoflassa.comiqueta.core.theme.settingIconTint
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
 import dev.diegoflassa.comiqueta.core.ui.hiltActivityViewModel
-import dev.diegoflassa.comiqueta.core.ui.widgets.BannerAdView
+import dev.diegoflassa.comiqueta.ads.BannerAdView
 import dev.diegoflassa.comiqueta.home.R
 import dev.diegoflassa.comiqueta.ui.enums.ViewMode
 import dev.diegoflassa.comiqueta.ui.widgets.CategoriesSection

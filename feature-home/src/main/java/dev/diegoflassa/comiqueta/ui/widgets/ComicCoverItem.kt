@@ -1,18 +1,26 @@
 package dev.diegoflassa.comiqueta.ui.widgets
 
 import android.content.res.Configuration
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -21,16 +29,6 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.ui.extensions.scaled
@@ -55,8 +53,8 @@ fun ComicCoverItem(
         Box(modifier = Modifier.fillMaxSize()) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = comic?.coverPath.takeIf { it != Uri.EMPTY }
-                        ?: comic?.filePath.takeIf { it != Uri.EMPTY },
+                    model = comic?.coverPath.takeIf { it?.isNotBlank() ?: false }
+                        ?: comic?.filePath.takeIf { it?.isNotBlank() ?: false },
                     error = painterResource(id = R.drawable.ic_placeholder_comic),
                     placeholder = painterResource(id = R.drawable.ic_placeholder_comic)
                 ),
@@ -98,9 +96,9 @@ fun ComicCoverItem(
 
 // --- ComicCoverItem Previews ---
 private val sampleComicForCoverPreview = Comic(
-    filePath = Uri.EMPTY,
+    filePath = "",
     title = "The Amazing Adventures of Preview Man",
-    coverPath = Uri.EMPTY,
+    coverPath = "",
     author = "AI Author",
     categoryId = 1L,
     isFavorite = false,

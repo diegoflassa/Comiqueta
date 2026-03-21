@@ -1,6 +1,5 @@
-import dev.diegoflassa.buildLogic.Configuracoes
 import com.android.build.api.dsl.LibraryExtension
-import org.gradle.api.JavaVersion
+import dev.diegoflassa.buildLogic.Configuracoes
 
 // Apply common plugins for an Android library
 plugins {
@@ -9,7 +8,7 @@ plugins {
     //alias(libs.plugins.kotlin.parcelize)
     // id("org.jetbrains.kotlin.parcelize")
     //alias(libs.plugins.com.google.devtools.ksp)
-    // id("com.google.devtools.ksp")
+    id("com.google.devtools.ksp")
 }
 
 // Access the Android Library extension using the new API interface
@@ -23,7 +22,7 @@ configure<LibraryExtension> {
 
     defaultConfig {
         minSdk = Configuracoes.MINIMUM_SDK
-        
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
