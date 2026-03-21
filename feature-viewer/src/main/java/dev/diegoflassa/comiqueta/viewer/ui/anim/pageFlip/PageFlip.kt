@@ -11,8 +11,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.config.PageCurlConfig
 import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.config.rememberPageCurlConfig
+
+private const val TAG = "PageFlip"
 
 /**
  * A Composable that provides a page-flipping animation effect for a given set of content pages.
@@ -54,7 +57,9 @@ fun PageFlip(
                         enabledBackward = updatedConfig.dragBackwardEnabled && updatedCurrent > 0,
                         dragThreshold = updatedConfig.dragThreshold,
                         scope = scope,
-                        onChange = { state.current = updatedCurrent + it }
+                        onChange = { delta ->
+                            state.current = updatedCurrent + delta
+                        }
                     )
 
             is PageCurlConfig.StartEndDragInteraction ->
@@ -66,7 +71,9 @@ fun PageFlip(
                         enabledBackward = updatedConfig.dragBackwardEnabled && updatedCurrent > 0,
                         dragThreshold = updatedConfig.dragThreshold,
                         scope = scope,
-                        onChange = { state.current = updatedCurrent + it }
+                        onChange = { delta ->
+                            state.current = updatedCurrent + delta
+                        }
                     )
         }
 

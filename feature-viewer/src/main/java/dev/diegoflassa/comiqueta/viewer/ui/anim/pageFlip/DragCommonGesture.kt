@@ -85,8 +85,10 @@ internal suspend fun PointerInputScope.detectCurlGestures(
                     )
                 }
 
+                val dragSuccess = complete && isDragSucceed(startOffset, flingEndOffset)
+
                 scope.launch {
-                    if (complete && isDragSucceed(startOffset, flingEndOffset)) {
+                    if (dragSuccess) {
                         try {
                             edge.animateTo(end)
                         } finally {
@@ -148,9 +150,7 @@ internal suspend fun PointerInputScope.detectCustomDragGestures(
             }
         } while (drag != null && !drag.isConsumed)
         if (drag != null) {
-            TimberLogger.logI("DragCommonGesture", "[PageNavFix] Slop exceeded. Starting drag. Pos=${drag.position}")
             if (!onDragStart.invoke(down.position, drag.position)) {
-                TimberLogger.logI("DragCommonGesture", "[PageNavFix] onDragStart returned false. Aborting.")
                 return@awaitEachGesture
             }
             onDrag(drag, overSlop) // Initial drag event after slop
@@ -160,9 +160,7 @@ internal suspend fun PointerInputScope.detectCustomDragGestures(
                 it.consume()
             }
             onDragEnd(drag.position, completed)
-            TimberLogger.logI("DragCommonGesture", "[PageNavFix] Drag ended. Completed=$completed")
         } else {
-            TimberLogger.logI("DragCommonGesture", "[PageNavFix] Drag null (cancelled or never exceeded slop).")
         }
     }
 }

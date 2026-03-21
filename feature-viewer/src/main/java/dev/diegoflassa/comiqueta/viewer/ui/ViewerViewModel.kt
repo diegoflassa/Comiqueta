@@ -316,7 +316,6 @@ class ViewerViewModel @Inject constructor(
                 pageLoadJobs.values.forEach { it.cancelJob("New comic load requested") }
                 pageLoadJobs.clear()
 
-                TimberLogger.logI(TAG, "LoadComic: Starting for $uri")
                 val comicInfo = getComicInfoUseCase(currentComicUri!!)
                 comicPageIdentifiers = comicInfo.pageIdentifiers
                 currentComicFileType = comicInfo.fileType
@@ -331,7 +330,8 @@ class ViewerViewModel @Inject constructor(
                 }
 
                 if (comicInfo.pageCount > 0 && comicInfo.pageIdentifiers.isNotEmpty()) {
-                    dispatchLoadPages(initialPage.coerceIn(0, comicInfo.pageCount - 1))
+                    val target = initialPage.coerceIn(0, comicInfo.pageCount - 1)
+                    dispatchLoadPages(target)
                 } else {
                     TimberLogger.logW(TAG, "LoadComic: Comic has no pages.")
                     _effect.send(ViewerEffect.ShowError("Comic has no pages or is empty."))
@@ -350,7 +350,6 @@ class ViewerViewModel @Inject constructor(
     }
 
     private fun dispatchLoadPages(targetPageIndex: Int) {
-        TimberLogger.logD(TAG, "dispatchLoadPages for page: $targetPageIndex")
         if (currentComicUri == null || currentComicFileType == null || comicPageIdentifiers.isEmpty()) {
             TimberLogger.logW(
                 TAG,

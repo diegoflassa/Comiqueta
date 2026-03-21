@@ -104,7 +104,6 @@ fun ViewerScreen(
 ) {
     val context = LocalContext.current
     val viewerUIState: ViewerUIState by viewerViewModel.uiState.collectAsStateWithLifecycle()
-    TimberLogger.logI(tag, "[PageNavFix] ViewerScreen composed. CurrentPage: ${viewerUIState.currentPage}, PageCount: ${viewerUIState.pageCount}")
 
     LaunchedEffect(comicPath) {
         if (comicPath != null) {
@@ -226,8 +225,8 @@ fun ViewerScreenContent(
             contentAlignment = Alignment.Center
         ) {
             when {
-                uiState.pageCount == 0 && uiState.isLoadingPage.isNotEmpty() -> {
-                    CircularProgressIndicator()
+                uiState.pageCount == 0 && (uiState.isLoadingPage.isNotEmpty() || uiState.comicPath != Uri.EMPTY) -> {
+                    CircularProgressIndicator(color = Color.White)
                 }
 
                 uiState.error != null -> {
@@ -265,7 +264,6 @@ fun ViewerScreenContent(
 
                         LaunchedEffect(displayPageIndex) {
                             if (pageCurlState.current != displayPageIndex && displayPageIndex < displayPageCount) {
-                                TimberLogger.logI(tag, "[PageNavFix] Updating pageCurlState.current from ${pageCurlState.current} to $displayPageIndex")
                                 pageCurlState.current = displayPageIndex
                                 if (uiState.isPageFlipSoundEnabled) {
                                     mediaPlayer?.start()
@@ -313,7 +311,6 @@ fun ViewerScreenContent(
                             pageCurlConfig.dragBackwardEnabled = navigationEnabled
                             pageCurlConfig.tapForwardEnabled = navigationEnabled
                             pageCurlConfig.tapBackwardEnabled = navigationEnabled
-                            TimberLogger.logI(tag, "[PageNavFix] Navigation Enabled: $navigationEnabled (ZoomActive: $globalIsPinchZoomActive)")
                         }
 
                         PageFlip(
@@ -338,18 +335,15 @@ fun ViewerScreenContent(
                             LaunchedEffect(pageCurlState.current) {
                                 if (pageIndexInCurl == pageCurlState.current) {
                                     // We became current. Restore State.
-                                    TimberLogger.logI(tag, "[PageNavFix] Became Current: Page $pageIndexInCurl. GlobalZoom=$globalZoomScale")
                                     if (globalZoomScale > 1.01f) {
                                         itemScale = globalZoomScale
                                         itemOffsetX = globalZoomOffsetX
                                         itemOffsetY = globalZoomOffsetY
-                                        TimberLogger.logI(tag, "[PageNavFix] Restored global zoom: $globalZoomScale")
                                     }
                                     hasRestored = true
                                 } else {
                                     // We are NOT current. Reset local state if needed.
                                     if (itemScale > 1f) {
-                                        TimberLogger.logI(tag, "[PageNavFix] Reseting zoom on non-current page $pageIndexInCurl")
                                         itemScale = 1f
                                         itemOffsetX = 0f
                                         itemOffsetY = 0f
@@ -362,7 +356,6 @@ fun ViewerScreenContent(
                             // Only runs if we are current AND have restored
                             LaunchedEffect(itemScale, itemOffsetX, itemOffsetY, hasRestored) {
                                 if (pageIndexInCurl == pageCurlState.current && hasRestored) {
-                                    TimberLogger.logI(tag, "[PageNavFix] Syncing Global: Page $pageIndexInCurl. ItemScale=$itemScale")
                                     // Update Global Zoom State via ViewModel
                                     onIntent?.invoke(ViewerIntent.UpdateZoom(itemScale, itemOffsetX, itemOffsetY))
                                 }
@@ -407,16 +400,14 @@ fun ViewerScreenContent(
                                                                 if (pressedCount >= 2 && !localPinchActive) {
                                                                     localPinchActive = true
                                                                     isPinchGestureInProgress = true
-                                                                    TimberLogger.logI(tag, "[PageNavFix] Pinch gesture started")
                                                                 }
 
                                                                 // Detect end of all touches after a pinch
                                                                 if (localPinchActive && pressedCount == 0) {
                                                                     localPinchActive = false
                                                                     isPinchGestureInProgress = false
-                                                                    TimberLogger.logI(tag, "[PageNavFix] Pinch gesture ended (all fingers lifted)")
-                                                                    // Reset zoom state cleanly if back to 1.0
-                                                                    if (itemScale <= 1.01f) {
+                                                                    // Reset zoom if close to 1.0 OR if offsets are NaN (corrupted state)
+                                                                    if (itemScale <= 1.05f || itemOffsetX.isNaN() || itemOffsetY.isNaN()) {
                                                                         itemScale = 1f
                                                                         itemOffsetX = 0f
                                                                         itemOffsetY = 0f
@@ -482,14 +473,21 @@ fun ViewerScreenContent(
                                                                                 0f
                                                                             ) / 2f
 
-                                                                        val centroid =
-                                                                            event.calculateCentroid(
-                                                                                useCurrent = true
-                                                                            )
-                                                                        itemOffsetX =
-                                                                            (itemOffsetX - (centroid.x - itemOffsetX) * (itemScale / oldLocalItemScale - 1))
-                                                                        itemOffsetY =
-                                                                            (itemOffsetY - (centroid.y - itemOffsetY) * (itemScale / oldLocalItemScale - 1))
+                                                                        // Only apply centroid-based zoom pivot when 2+ fingers
+                                                                        // are pressed. calculateCentroid() returns Offset.Unspecified
+                                                                        // (NaN) when finger count drops to 0/1, which poisons
+                                                                        // all subsequent offset math (NaN * 0 = NaN).
+                                                                        if (pressedCount >= 2) {
+                                                                            val centroid =
+                                                                                event.calculateCentroid(
+                                                                                    useCurrent = true
+                                                                                )
+                                                                            if (!centroid.x.isNaN() && !centroid.y.isNaN()) {
+                                                                                val scaleDelta = itemScale / oldLocalItemScale - 1
+                                                                                itemOffsetX -= (centroid.x - itemOffsetX) * scaleDelta
+                                                                                itemOffsetY -= (centroid.y - itemOffsetY) * scaleDelta
+                                                                            }
+                                                                        }
                                                                         itemOffsetX += panDelta.x
                                                                         itemOffsetY += panDelta.y
                                                                         itemOffsetX =
@@ -598,7 +596,7 @@ fun ViewerScreenContent(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         if (isThisPageActuallyLoading) {
-                                            CircularProgressIndicator()
+                                            CircularProgressIndicator(color = Color.White)
                                         } else {
                                             Text(
                                                 stringResource(R.string.comic_page_description, pageIndex1 + 1),

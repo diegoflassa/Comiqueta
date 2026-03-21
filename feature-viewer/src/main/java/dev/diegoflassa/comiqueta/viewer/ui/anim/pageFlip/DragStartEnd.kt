@@ -83,6 +83,8 @@ internal fun Modifier.dragStartEnd(
                     null
                 }
 
+                val direction = if (config == forwardConfig) "forward" else if (config == backwardConfig) "backward" else "none"
+
                 if (config != null) {
                     scope.launch {
                         state.animateJob?.cancel()

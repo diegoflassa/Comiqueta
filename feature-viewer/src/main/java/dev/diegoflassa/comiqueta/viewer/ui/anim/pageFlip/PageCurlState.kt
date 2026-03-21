@@ -163,11 +163,15 @@ class PageCurlState(
      * @param constraints The layout constraints of the PageCurl composable.
      */
     internal fun setup(count: Int, constraints: Constraints) {
+        val oldMax = max
+        val oldCurrent = current
         max = count
         if (count in 1..current) {
             current = (count - 1)
         } else if (count == 0) {
             current = 0
+        }
+        if (oldMax != count || oldCurrent != current) {
         }
 
         if (internalState?.constraints == constraints) {
@@ -206,11 +210,9 @@ class PageCurlState(
      *              It receives an [Animatable] for the [Edge] and the [Size] of the composable.
      */
     suspend fun next(block: suspend Animatable<Edge, AnimationVector4D>.(Size) -> Unit = DefaultNext) {
-        dev.diegoflassa.comiqueta.core.data.timber.TimberLogger.logI("PageCurlState", "[PageNavFix] next() called. current=$current, max=$max")
         internalState?.animateTo(
             target = { current + 1 },
             animate = { forward.block(it) }
-        ) ?: dev.diegoflassa.comiqueta.core.data.timber.TimberLogger.logI("PageCurlState", "[PageNavFix] next() failed: internalState is null")
     }
 
     /**
@@ -288,12 +290,10 @@ class PageCurlState(
             animateJob?.cancel()
 
             val targetIndex = target()
-            dev.diegoflassa.comiqueta.core.data.timber.TimberLogger.logI("PageCurlState", "[PageNavFix] animateTo() target=$targetIndex. current=$current, max=$max")
             
             if (max == 0 && targetIndex == 0) { // Allow animation to 0 if count is 0
                 // No specific handling needed here, proceed to animation
             } else if (targetIndex !in 0..<max) {
-                dev.diegoflassa.comiqueta.core.data.timber.TimberLogger.logI("PageCurlState", "[PageNavFix] animateTo() ignored: target $targetIndex out of bounds [0, $max)")
                 return // Invalid target
             }
 
@@ -304,7 +304,6 @@ class PageCurlState(
                         animate(Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat()))
                     } finally {
                         withContext(NonCancellable) {
-                            dev.diegoflassa.comiqueta.core.data.timber.TimberLogger.logI("PageCurlState", "[PageNavFix] animateTo() snapTo($targetIndex)")
                             snapTo(target())
                         }
                     }

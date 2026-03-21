@@ -67,7 +67,6 @@ internal fun Modifier.dragGesture(
                 // Fix: Allow ANY forward movement (that exceeded slop) to succeed if it's > 10px
                 // displacement > thresholdPx || displacement > 10f
                 val success = displacement > thresholdPx || displacement > 10f
-                TimberLogger.logI("DragGesture", "[PageNavFix] Forward drag: displacement=$displacement, threshold=$thresholdPx. Success: $success")
                 success
             },
             onChange = { onChange(+1) }
@@ -82,7 +81,6 @@ internal fun Modifier.dragGesture(
                 val thresholdPx = size.width * dragThreshold
                 // Fix: Allow ANY backward movement (that exceeded slop) to succeed if it's > 10px
                 val success = displacement > thresholdPx || displacement > 10f
-                TimberLogger.logI("DragGesture", "[PageNavFix] Backward drag: displacement=$displacement, threshold=$thresholdPx. Success: $success")
                 success
             },
             onChange = { onChange(-1) }
@@ -102,6 +100,8 @@ internal fun Modifier.dragGesture(
                 } else {
                     null
                 }
+
+                val direction = if (config == forwardConfig) "forward" else if (config == backwardConfig) "backward" else "none"
 
                 if (config != null) {
                     scope.launch {
