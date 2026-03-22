@@ -163,15 +163,11 @@ class PageCurlState(
      * @param constraints The layout constraints of the PageCurl composable.
      */
     internal fun setup(count: Int, constraints: Constraints) {
-        val oldMax = max
-        val oldCurrent = current
         max = count
         if (count in 1..current) {
             current = (count - 1)
         } else if (count == 0) {
             current = 0
-        }
-        if (oldMax != count || oldCurrent != current) {
         }
 
         if (internalState?.constraints == constraints) {
@@ -294,7 +290,7 @@ class PageCurlState(
             
             if (max == 0 && targetIndex == 0) { // Allow animation to 0 if count is 0
                 // No specific handling needed here, proceed to animation
-            } else if (targetIndex !in 0..<max) {
+            } else if (targetIndex !in 0..max) {
                 return // Invalid target
             }
 
