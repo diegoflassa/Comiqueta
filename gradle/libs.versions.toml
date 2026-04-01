@@ -20,7 +20,7 @@ firebase-perf-plugin = "2.0.2"
 #Common
 core-ktx = "1.18.0"
 material = "1.13.0"
-ui-text-google-fonts = "1.10.5"
+ui-text-google-fonts = "1.10.6"
 
 #Common Testing
 junit = "4.13.2"
@@ -46,7 +46,7 @@ firebase-bom = "34.11.0"
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2026.03.00"
+compose-bom = "2026.03.01"
 ax-constraintlayout-compose = "1.1.1"
 ax-activity-compose = "1.13.0"
 lifecycle-viewmodel-compose = "2.10.0"
@@ -100,7 +100,7 @@ ax-lifecycle-livedata-ktx = "2.10.0"
 ax-lifecycle-viewmodel-ktx = "2.10.0"
 
 #Work
-ax-work-runtime-ktx = "2.11.1"
+ax-work-runtime-ktx = "2.11.2"
 
 #Documenfile
 ax-documentfile = "1.1.0"
@@ -141,7 +141,7 @@ io-coil-kt-coil-compose = "2.7.0"
 #Plugins
 #Root build.gradle
 com-osacky-doctor = "0.12.1"
-org-jetbrains-kotlinx-kover = "0.9.7"
+org-jetbrains-kotlinx-kover = "0.9.8"
 jlleitschuh-ktlint = "14.2.0"
 arturbosch-detekt = "1.23.8"
 
