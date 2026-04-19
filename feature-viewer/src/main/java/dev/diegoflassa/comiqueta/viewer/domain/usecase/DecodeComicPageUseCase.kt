@@ -2,16 +2,13 @@ package dev.diegoflassa.comiqueta.viewer.domain.usecase
 
 import android.app.Application
 import android.graphics.BitmapFactory
-import android.graphics.ImageDecoder
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.createBitmap
-import androidx.documentfile.provider.DocumentFile
 import com.github.junrar.Archive as JunrarArchive
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.model.ComicFileType
 import kotlinx.coroutines.Dispatchers
@@ -20,14 +17,12 @@ import org.apache.commons.compress.archivers.ArchiveEntry
 import org.apache.commons.compress.archivers.ArchiveInputStream
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.apache.commons.compress.archivers.sevenz.SevenZFile
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStream
 import javax.inject.Inject
 
 class DecodeComicPageUseCase @Inject constructor(
@@ -54,7 +49,6 @@ class DecodeComicPageUseCase @Inject constructor(
                 "Decoding page index: $pageIndex, identifier: '$pageIdentifier' for $fileType from $comicUri (thumb: $thumbnailWidth)"
             )
             val context = application.applicationContext
-            var pfd: ParcelFileDescriptor? = null
 
             try {
                 fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int): Int {
@@ -69,37 +63,41 @@ class DecodeComicPageUseCase @Inject constructor(
                     return inSampleSize
                 }
 
+                fun decodeStream(inputStream: InputStream, options: BitmapFactory.Options): android.graphics.Bitmap? {
+                    return BitmapFactory.decodeStream(inputStream, null, options)
+                }
+
                 val loadedBitmap: android.graphics.Bitmap? = when (fileType) {
                     ComicFileType.PDF -> {
-                        pfd = context.contentResolver.openFileDescriptor(comicUri, "r")
-                            ?: throw IOException("PFD null for PDF page rendering.")
-                        PdfRenderer(pfd).use { renderer ->
-                            val actualPageIndex = pageIdentifier.toIntOrNull() ?: pageIndex
-                            if (actualPageIndex < 0 || actualPageIndex >= renderer.pageCount) {
-                                throw IOException("Page index out of bounds for PDF. Index: $actualPageIndex, Count: ${renderer.pageCount}")
-                            }
-                            renderer.openPage(actualPageIndex).use { page ->
-                                val finalWidth: Int
-                                val finalHeight: Int
-                                if (thumbnailWidth != null && page.width > thumbnailWidth) {
-                                    finalWidth = thumbnailWidth
-                                    finalHeight = (page.height * (thumbnailWidth.toFloat() / page.width)).toInt()
-                                } else {
-                                    finalWidth = page.width
-                                    finalHeight = page.height
+                        context.contentResolver.openFileDescriptor(comicUri, "r")?.use { pfd ->
+                            PdfRenderer(pfd).use { renderer ->
+                                val actualPageIndex = pageIdentifier.toIntOrNull() ?: pageIndex
+                                if (actualPageIndex < 0 || actualPageIndex >= renderer.pageCount) {
+                                    throw IOException("Page index out of bounds for PDF. Index: $actualPageIndex, Count: ${renderer.pageCount}")
                                 }
-                                val bitmap = createBitmap(
-                                    finalWidth,
-                                    finalHeight,
-                                    android.graphics.Bitmap.Config.ARGB_8888
-                                )
-                                page.render(
-                                    bitmap,
-                                    null,
-                                    null,
-                                    PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY
-                                )
-                                bitmap
+                                renderer.openPage(actualPageIndex).use { page ->
+                                    val finalWidth: Int
+                                    val finalHeight: Int
+                                    if (thumbnailWidth != null && page.width > thumbnailWidth) {
+                                        finalWidth = thumbnailWidth
+                                        finalHeight = (page.height * (thumbnailWidth.toFloat() / page.width)).toInt()
+                                    } else {
+                                        finalWidth = page.width
+                                        finalHeight = page.height
+                                    }
+                                    val bitmap = createBitmap(
+                                        finalWidth,
+                                        finalHeight,
+                                        android.graphics.Bitmap.Config.ARGB_8888
+                                    )
+                                    page.render(
+                                        bitmap,
+                                        null,
+                                        null,
+                                        PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY
+                                    )
+                                    bitmap
+                                }
                             }
                         }
                     }
@@ -113,27 +111,22 @@ class DecodeComicPageUseCase @Inject constructor(
                                     var entry = ais.nextEntry
                                     while (entry != null) {
                                         if (entry.name == pageIdentifier && isImageFile(entry.name) && !entry.isDirectory) {
-                                            val baos = ByteArrayOutputStream()
-                                            ais.copyTo(baos)
-                                            val imageBytes = baos.toByteArray()
-                                            
                                             val options = BitmapFactory.Options().apply {
                                                 inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
                                             }
-                                            
+
                                             if (thumbnailWidth != null) {
+                                                val tempBuffer = ByteArrayOutputStream()
+                                                ais.copyTo(tempBuffer)
+                                                val bytes = tempBuffer.toByteArray()
                                                 options.inJustDecodeBounds = true
-                                                BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
+                                                BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
                                                 options.inSampleSize = calculateInSampleSize(options, thumbnailWidth)
                                                 options.inJustDecodeBounds = false
+                                                return@withContext BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)?.asImageBitmap()
+                                            } else {
+                                                return@withContext decodeStream(ais, options)?.asImageBitmap()
                                             }
-                                            
-                                            return@withContext BitmapFactory.decodeByteArray(
-                                                imageBytes,
-                                                0,
-                                                imageBytes.size,
-                                                options
-                                            )?.asImageBitmap()
                                         }
                                         entry = ais.nextEntry
                                     }
@@ -144,100 +137,68 @@ class DecodeComicPageUseCase @Inject constructor(
                     }
 
                     ComicFileType.CBR -> {
-                        val tempFile = File(
-                            context.cacheDir,
-                            "temp_cbr_decode_${System.currentTimeMillis()}.cbr"
-                        )
+                        val tempFile = File(context.cacheDir, "temp_cbr_${System.currentTimeMillis()}.cbr")
                         try {
-                            context.contentResolver.openInputStream(comicUri)?.use { inputStream ->
-                                FileOutputStream(tempFile).use { outputStream ->
-                                    inputStream.copyTo(outputStream)
-                                }
-                            }
-                                ?: throw IOException("Could not open InputStream for CBR page decoding.")
+                            context.contentResolver.openInputStream(comicUri)?.use { input ->
+                                tempFile.outputStream().use { output -> input.copyTo(output) }
+                            } ?: throw IOException("Could not open InputStream for CBR")
 
                             JunrarArchive(tempFile).use { archive ->
-                                archive.fileHeaders.firstOrNull {
-                                    it.fileName == pageIdentifier && isImageFile(
-                                        it.fileName
-                                    ) && !it.isDirectory
-                                }?.let { header ->
-                                    ByteArrayOutputStream().use { baos ->
-                                        archive.getInputStream(header).use { entryStream ->
-                                            entryStream.copyTo(baos)
-                                        }
-                                        val imageBytes = baos.toByteArray()
-                                        val options = BitmapFactory.Options().apply {
-                                            inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
-                                        }
-                                        
-                                        if (thumbnailWidth != null) {
-                                            options.inJustDecodeBounds = true
-                                            BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
-                                            options.inSampleSize = calculateInSampleSize(options, thumbnailWidth)
-                                            options.inJustDecodeBounds = false
-                                        }
+                                val header = archive.fileHeaders.firstOrNull {
+                                    it.fileName == pageIdentifier && isImageFile(it.fileName) && !it.isDirectory
+                                } ?: return@withContext null
 
-                                        BitmapFactory.decodeByteArray(
-                                            imageBytes,
-                                            0,
-                                            imageBytes.size,
-                                            options
-                                        )
+                                archive.getInputStream(header).use { inputStream ->
+                                    val options = BitmapFactory.Options().apply {
+                                        inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+                                    }
+                                    if (thumbnailWidth != null) {
+                                        val bytes = inputStream.readBytes()
+                                        options.inJustDecodeBounds = true
+                                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+                                        options.inSampleSize = calculateInSampleSize(options, thumbnailWidth)
+                                        options.inJustDecodeBounds = false
+                                        return@withContext BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)?.asImageBitmap()
+                                    } else {
+                                        return@withContext decodeStream(inputStream, options)?.asImageBitmap()
                                     }
                                 }
                             }
                         } finally {
                             if (tempFile.exists()) tempFile.delete()
                         }
+                        null
                     }
 
                     ComicFileType.CB7 -> {
-                        val tempFile = File(
-                            context.cacheDir,
-                            "temp_cb7_decode_${System.currentTimeMillis()}.cb7"
-                        )
+                        val tempFile = File(context.cacheDir, "temp_cb7_${System.currentTimeMillis()}.cb7")
                         try {
-                            context.contentResolver.openInputStream(comicUri)?.use { inputStream ->
-                                FileOutputStream(tempFile).use { outputStream ->
-                                    inputStream.copyTo(outputStream)
-                                }
-                            }
-                                ?: throw IOException("Could not open InputStream for CB7 page decoding.")
+                            context.contentResolver.openInputStream(comicUri)?.use { input ->
+                                tempFile.outputStream().use { output -> input.copyTo(output) }
+                            } ?: throw IOException("Could not open InputStream for CB7")
 
                             SevenZFile.Builder().setFile(tempFile).get().use { sevenZFile ->
                                 var entry = sevenZFile.nextEntry
                                 while (entry != null) {
                                     if (entry.name == pageIdentifier && isImageFile(entry.name) && !entry.isDirectory) {
-                                        val contentBytes = ByteArray(entry.size.toInt())
-                                        var currentOffset = 0
-                                        while (currentOffset < contentBytes.size) {
-                                            val read = sevenZFile.read(
-                                                contentBytes,
-                                                currentOffset,
-                                                contentBytes.size - currentOffset
-                                            )
-                                            if (read == -1) break
-                                            currentOffset += read
-                                        }
-                                        
                                         val options = BitmapFactory.Options().apply {
                                             inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
                                         }
-                                        
+                                        val entryBytes = ByteArray(entry.size.toInt())
+                                        var readSoFar = 0
+                                        while (readSoFar < entryBytes.size) {
+                                            val read = sevenZFile.read(entryBytes, readSoFar, entryBytes.size - readSoFar)
+                                            if (read == -1) break
+                                            readSoFar += read
+                                        }
+
                                         if (thumbnailWidth != null) {
                                             options.inJustDecodeBounds = true
-                                            BitmapFactory.decodeByteArray(contentBytes, 0, contentBytes.size, options)
+                                            BitmapFactory.decodeByteArray(entryBytes, 0, entryBytes.size, options)
                                             options.inSampleSize = calculateInSampleSize(options, thumbnailWidth)
                                             options.inJustDecodeBounds = false
                                         }
-
-                                        return@withContext BitmapFactory.decodeByteArray(
-                                            contentBytes,
-                                            0,
-                                            contentBytes.size,
-                                            options
-                                        )?.asImageBitmap()
+                                        return@withContext BitmapFactory.decodeByteArray(entryBytes, 0, entryBytes.size, options)?.asImageBitmap()
                                     }
                                     entry = sevenZFile.nextEntry
                                 }
@@ -248,117 +209,12 @@ class DecodeComicPageUseCase @Inject constructor(
                         null
                     }
 
-                    ComicFileType.CBT -> {
-                        context.contentResolver.openInputStream(comicUri)?.use { fis ->
-                            BufferedInputStream(fis).use { bis ->
-                                val fileName = DocumentFile.fromSingleUri(context, comicUri)?.name
-                                    ?: "unknown.tar"
-                                val tarInput: TarArchiveInputStream = when {
-                                    fileName.endsWith(".tar.gz", true) || fileName.endsWith(
-                                        ".tgz",
-                                        true
-                                    ) ->
-                                        TarArchiveInputStream(GzipCompressorInputStream(bis))
-
-                                    fileName.endsWith(
-                                        ".tar.bz2",
-                                        true
-                                    ) || fileName.endsWith(".tbz2", true) ->
-                                        TarArchiveInputStream(BZip2CompressorInputStream(bis))
-
-                                    else -> TarArchiveInputStream(bis)
-                                }
-                                tarInput.use { ais ->
-                                    var entry = ais.nextEntry
-                                    while (entry != null) {
-                                        if (entry.name == pageIdentifier && isImageFile(entry.name) && !entry.isDirectory) {
-                                            val baos = ByteArrayOutputStream()
-                                            ais.copyTo(baos)
-                                            val imageBytes = baos.toByteArray()
-                                            
-                                            val options = BitmapFactory.Options().apply {
-                                                inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
-                                            }
-                                            
-                                            if (thumbnailWidth != null) {
-                                                options.inJustDecodeBounds = true
-                                                BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
-                                                options.inSampleSize = calculateInSampleSize(options, thumbnailWidth)
-                                                options.inJustDecodeBounds = false
-                                            }
-                                            
-                                            return@withContext BitmapFactory.decodeByteArray(
-                                                imageBytes,
-                                                0,
-                                                imageBytes.size,
-                                                options
-                                            )?.asImageBitmap()
-                                        }
-                                        entry = ais.nextEntry
-                                    }
-                                }
-                            }
-                        }
-                        null
-                    }
-
-                    ComicFileType.JPG, ComicFileType.JPEG, ComicFileType.PNG, ComicFileType.GIF, ComicFileType.WEBP -> {
-                        context.contentResolver.openInputStream(comicUri)?.use { inputStream ->
-                            if (fileType != ComicFileType.GIF) {
-                                val source =
-                                    ImageDecoder.createSource(context.contentResolver, comicUri)
-                                ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
-                                    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-                                    decoder.isMutableRequired = true
-                                    if (thumbnailWidth != null && info.size.width > thumbnailWidth) {
-                                        val sample = (info.size.width / thumbnailWidth).coerceAtLeast(1)
-                                        decoder.setTargetSampleSize(sample)
-                                    }
-                                }
-                            } else {
-                                val options = BitmapFactory.Options().apply {
-                                    inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
-                                }
-                                if (thumbnailWidth != null) {
-                                    // GIF decoding with BitmapFactory is limited, but we try sample size
-                                    options.inJustDecodeBounds = true
-                                    BitmapFactory.decodeStream(inputStream, null, options)
-                                    options.inSampleSize = calculateInSampleSize(options, thumbnailWidth)
-                                    options.inJustDecodeBounds = false
-                                    // Need to reopen stream for real decode
-                                    context.contentResolver.openInputStream(comicUri)?.use { bis ->
-                                         return@withContext BitmapFactory.decodeStream(bis, null, options)?.asImageBitmap()
-                                    }
-                                }
-                                BitmapFactory.decodeStream(inputStream, null, options)
-                            }
-                        }
-                    }
+                    else -> null
                 }
-                TimberLogger.logD(
-                    "DecodeComicPageUseCase",
-                    "Successfully decoded page index: $pageIndex, identifier: $pageIdentifier (thumb: $thumbnailWidth)"
-                )
                 loadedBitmap?.asImageBitmap()
-            } catch (ex: Exception) {
-                FirebaseCrashlytics.getInstance().recordException(ex)
-                TimberLogger.logE(
-                    "DecodeComicPageUseCase",
-                    "Error decoding page index: $pageIndex, identifier: '$pageIdentifier' for $comicUri",
-                    ex
-                )
+            } catch (e: Exception) {
+                TimberLogger.logE("DecodeComicPageUseCase", "Error decoding page: ${e.message}")
                 null
-            } finally {
-                try {
-                    pfd?.close()
-                } catch (ioe: IOException) {
-                    FirebaseCrashlytics.getInstance().recordException(ioe)
-                    TimberLogger.logE(
-                        "DecodeComicPageUseCase",
-                        "Error closing PFD for $comicUri in decodePage",
-                        ioe
-                    )
-                }
             }
         }
     }

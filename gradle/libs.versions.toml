@@ -1,7 +1,7 @@
 [versions]
 
 #Common
-gradle = "9.1.0"
+gradle = "9.1.1"
 kotlin = "2.3.20"
 
 #Project build.gradle
@@ -14,7 +14,7 @@ androidx-room = "2.8.4"
 
 #Project build.gradle
 google-services = "4.4.4"
-firebase-crashlytics-gradle = "3.0.6"
+firebase-crashlytics-gradle = "3.0.7"
 firebase-perf-plugin = "2.0.2"
 
 #Common
@@ -40,7 +40,7 @@ androidx-paging-common = "3.4.2"
 com-google-truth = "1.4.5"
 
 #Firebase
-firebase-bom = "34.11.0"
+firebase-bom = "34.12.0"
 
 #Timber
 com-jakewharton-timber = "5.0.1"
@@ -51,7 +51,7 @@ ax-constraintlayout-compose = "1.1.1"
 ax-activity-compose = "1.13.0"
 lifecycle-viewmodel-compose = "2.10.0"
 ax-navigation-compose = "2.9.7"
-kotlinx-serialization-json = "1.10.0"
+kotlinx-serialization-json = "1.11.0"
 ax-paging-runtime-ktx = "3.4.2"
 ax-paging-compose = "3.4.2"
 
@@ -59,10 +59,10 @@ ax-paging-compose = "3.4.2"
 org-mockito-android = "5.23.0"
 
 #Compose Navigation 3
-ax-navigation3-runtime = "1.0.1"
-ax-navigation3-ui = "1.0.1"
+ax-navigation3-runtime = "1.1.0"
+ax-navigation3-ui = "1.1.0"
 ax-navigation3-viewmodel = "2.10.0"
-ax-navigation3-adaptive = "1.3.0-alpha09"
+ax-navigation3-adaptive = "1.3.0-alpha10"
 
 #Room
 room-runtime = "2.8.4"
@@ -123,13 +123,13 @@ ax-startup-runtime = "1.2.0"
 org-apache-commons-compress = "1.28.0"
 
 #Rar files
-org-github-junrar = "7.5.8"
+org-github-junrar = "7.5.10"
 
 #App Update
 com-google-android-play-app-update = "2.1.0"
 
 #Ads
-play-services-ads-api = "25.1.0"
+play-services-ads-api = "25.2.0"
 
 #Messaging Platform
 com-google-android-ump-messaging-platform = "4.0.0"

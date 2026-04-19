@@ -10,8 +10,8 @@ object Configuracoes {
     const val DIEGOFLASSA_ID = "dev.diegoflassa"
     const val APPLICATION_ID = "$DIEGOFLASSA_ID.comiqueta"
     const val MINIMUM_SDK = 29
-    const val COMPILE_SDK = 36
-    const val TARGET_SDK = 36
+    const val COMPILE_SDK = 37
+    const val TARGET_SDK = 37
     const val BUILD_TOOLS_VERSION = "36.1.0"
 
     private var buildCountValue: Int = 0
