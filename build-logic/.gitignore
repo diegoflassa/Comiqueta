@@ -1,3 +1,6 @@
+# === Directories ===
+
+# Gradle / Kotlin build output
 /.gradle
 /.kotlin
 /build

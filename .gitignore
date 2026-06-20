@@ -1,15 +1,37 @@
+# === Directories ===
+
+# IDE
 /.fleet
-/.gradle
 /.idea
-/.kotlin
 /.vscode
+
+# Gradle / Kotlin build output
+/.gradle
+/.kotlin
 /build
 /build-logic/bin
+
+# Android Studio profiler captures
+/captures
+
+# === Files ===
+
+# Firebase admin SDK service account
 comiqueta-app-firebase-adminsdk-dv6x1-1a5daa7e1e.json
+
+# Firebase App Distribution
 firebase_app_distribution.properties
+
+# Machine-local config
 local.properties
+
+# Signing keystore
 keystore.jks
 keystore.properties
+
+# Versioning
 version.properties
+
+# Logs / heap dumps
 *.log
 *.hprof

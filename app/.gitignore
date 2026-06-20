@@ -1,4 +1,13 @@
+# === Directories ===
+
+# Build output
 /build
+
+# === Files ===
+
+# Generated resource secrets
 /src/debug/res/values/config.xml
 /src/main/res/values/config.xml
+
+# Firebase config (project keys)
 google-services.json

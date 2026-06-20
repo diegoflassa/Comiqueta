@@ -45,7 +45,7 @@ firebaseAppDistributionDefault {
 
     if (googleAppCredentials != null && googleAppCredentials.isNotBlank()) {
         serviceCredentialsFile = googleAppCredentials
-    } else if (ciProjectPropertyCredentialsFile != null && ciProjectPropertyCredentialsFile.isNotBlank()) {
+    } else if (!ciProjectPropertyCredentialsFile.isNullOrBlank()) {
         serviceCredentialsFile = ciProjectPropertyCredentialsFile
     }
 

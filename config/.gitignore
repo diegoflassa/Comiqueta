@@ -1,2 +1,9 @@
+# === Directories ===
+
+# Build output
 /build
+
+# === Files ===
+
+# Local config secrets
 config.properties
