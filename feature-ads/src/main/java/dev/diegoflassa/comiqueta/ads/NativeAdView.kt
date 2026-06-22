@@ -84,7 +84,7 @@ fun NativeAdView(
 
     LaunchedEffect(enabled, adUnitId, nativeAdLayoutResId) {
         if (!enabled || adUnitId.isBlank()) {
-            TimberLogger.logI(TAG, "Native ad loading disabled or adUnitId is blank.")
+            TimberLogger.logI(TAG, "[Comiqueta][NativeAdView] Native ad loading disabled or adUnitId is blank.")
             nativeAdState = null
             return@LaunchedEffect
         }

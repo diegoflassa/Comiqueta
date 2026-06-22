@@ -39,7 +39,7 @@ fun CategoriesScreen(
     navigationViewModel: NavigationViewModel? = hiltActivityViewModel(),
     viewModel: CategoriesViewModel = hiltViewModel()
 ) {
-    TimberLogger.logI(tag, "CategoriesScreen")
+    TimberLogger.logI(tag, "[Comiqueta][Categories] CategoriesScreen")
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 

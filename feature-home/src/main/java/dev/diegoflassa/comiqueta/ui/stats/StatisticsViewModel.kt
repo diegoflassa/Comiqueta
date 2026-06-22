@@ -31,17 +31,17 @@ class StatisticsViewModel @Inject constructor(
 
     @OptIn(FlowPreview::class)
     private fun loadStats() {
-        TimberLogger.logD("StatisticsViewModel", "DEBUG: loadStats called")
+        TimberLogger.logD("StatisticsViewModel", "[Comiqueta][Statistics] DEBUG: loadStats called")
         viewModelScope.launch {
             getCollectionStatsUseCase()
                 .debounce(500L)
                 .catch { e ->
                     FirebaseCrashlytics.getInstance().recordException(e)
-                    TimberLogger.logE("StatisticsViewModel", "DEBUG: Error loading stats", e)
+                    TimberLogger.logE("StatisticsViewModel", "[Comiqueta][Statistics] DEBUG: Error loading stats", e)
                     _uiState.update { StatisticsUIState.Error(e.message ?: "Unknown error") }
                 }
                 .collect { stats ->
-                    TimberLogger.logD("StatisticsViewModel", "DEBUG: Stats received: $stats")
+                    TimberLogger.logD("StatisticsViewModel", "[Comiqueta][Statistics] DEBUG: Stats received: $stats")
                     _uiState.update { StatisticsUIState.Success(stats) }
                 }
         }

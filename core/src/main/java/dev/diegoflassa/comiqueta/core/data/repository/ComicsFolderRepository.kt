@@ -37,7 +37,7 @@ class ComicsFolderRepository @Inject constructor(
             FirebaseCrashlytics.getInstance().recordException(ex)
             TimberLogger.logE(
                 "ComicsFolderRepository",
-                "Error retrieving persisted URI permissions",
+                "[Comiqueta][ComicsFolder] Error retrieving persisted URI permissions",
                 ex
             )
             emptyList()
@@ -58,20 +58,20 @@ class ComicsFolderRepository @Inject constructor(
     ): Boolean {
         return try {
             contentResolver.takePersistableUriPermission(uri, flags)
-            TimberLogger.logD("ComicsFolderRepository", "Successfully took permission for $uri")
+            TimberLogger.logD("ComicsFolderRepository", "[Comiqueta][ComicsFolder] Successfully took permission for $uri")
             _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
             true
         } catch (se: SecurityException) {
             FirebaseCrashlytics.getInstance().recordException(se)
             TimberLogger.logE(
                 "ComicsFolderRepository",
-                "Failed to take persistable URI permission for $uri",
+                "[Comiqueta][ComicsFolder] Failed to take persistable URI permission for $uri",
                 se
             )
             false
         } catch (ex: Exception) {
             FirebaseCrashlytics.getInstance().recordException(ex)
-            TimberLogger.logE("ComicsFolderRepository", "Error taking permission for $uri", ex)
+            TimberLogger.logE("ComicsFolderRepository", "[Comiqueta][ComicsFolder] Error taking permission for $uri", ex)
             false
         }
     }
@@ -82,21 +82,21 @@ class ComicsFolderRepository @Inject constructor(
     ): Boolean {
         return try {
             contentResolver.releasePersistableUriPermission(uri, flags)
-            TimberLogger.logD("ComicsFolderRepository", "Successfully released permission for $uri")
+            TimberLogger.logD("ComicsFolderRepository", "[Comiqueta][ComicsFolder] Successfully released permission for $uri")
             _persistedFoldersFlow.value = fetchCurrentPersistedPermissions()
             true
         } catch (se: SecurityException) {
             FirebaseCrashlytics.getInstance().recordException(se)
             TimberLogger.logE(
                 "ComicsFolderRepository",
-                "Failed to release persistable URI permission for $uri",
+                "[Comiqueta][ComicsFolder] Failed to release persistable URI permission for $uri",
                 se
             )
             // If the permission was not granted or already released.
             false
         } catch (ex: Exception) {
             FirebaseCrashlytics.getInstance().recordException(ex)
-            TimberLogger.logE("ComicsFolderRepository", "Error releasing permission for $uri", ex)
+            TimberLogger.logE("ComicsFolderRepository", "[Comiqueta][ComicsFolder] Error releasing permission for $uri", ex)
             false
         }
     }

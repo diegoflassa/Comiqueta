@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
         requestConfigurationBuilder.setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_PG)
         val requestConfiguration = requestConfigurationBuilder.build()
         MobileAds.setRequestConfiguration(requestConfiguration)
-        TimberLogger.logD(tag, "AdMob RequestConfiguration set.")
+        TimberLogger.logD(tag, "[Comiqueta][Main] AdMob RequestConfiguration set.")
     }
 
     private fun requestConsentInfo() {
@@ -104,16 +104,16 @@ class MainActivity : ComponentActivity() {
                 {
                     TimberLogger.logI(
                         tag,
-                        "Consent info updated. Status: ${consentInformation.consentStatus}, CanRequestAds: ${consentInformation.canRequestAds()}"
+                        "[Comiqueta][Main] Consent info updated. Status: ${consentInformation.consentStatus}, CanRequestAds: ${consentInformation.canRequestAds()}"
                     )
                     UserMessagingPlatform.loadAndShowConsentFormIfRequired(this@MainActivity) { loadAndShowError ->
                         if (loadAndShowError != null) {
                             TimberLogger.logE(
                                 tag,
-                                "Consent form load/show error: ${loadAndShowError.message}"
+                                "[Comiqueta][Main] Consent form load/show error: ${loadAndShowError.message}"
                             )
                         } else {
-                            TimberLogger.logI(tag, "Consent form shown (or not required).")
+                            TimberLogger.logI(tag, "[Comiqueta][Main] Consent form shown (or not required).")
                         }
                         initializeMobileAdsSdkIfNeeded()
                     }
@@ -121,7 +121,7 @@ class MainActivity : ComponentActivity() {
                 { requestConsentError ->
                     TimberLogger.logE(
                         tag,
-                        "Consent info update error: ${requestConsentError.message}"
+                        "[Comiqueta][Main] Consent info update error: ${requestConsentError.message}"
                     )
                     initializeMobileAdsSdkIfNeeded()
                 }
@@ -143,7 +143,7 @@ class MainActivity : ComponentActivity() {
                 MobileAds.initialize(this.applicationContext) { initializationStatus ->
                     TimberLogger.logI(
                         tag,
-                        "MobileAds initialized. Status: ${initializationStatus.adapterStatusMap}"
+                        "[Comiqueta][Main] MobileAds initialized. Status: ${initializationStatus.adapterStatusMap}"
                     )
                     showAds = true
                 }
@@ -152,13 +152,13 @@ class MainActivity : ComponentActivity() {
                 showAds = true
                 TimberLogger.logD(
                     tag,
-                    "MobileAds already initialized and consent valid. Showing ads."
+                    "[Comiqueta][Main] MobileAds already initialized and consent valid. Showing ads."
                 )
             }
         } else {
             TimberLogger.logW(
                 tag,
-                "Cannot request ads. Consent not obtained or SDK not ready. Ads hidden."
+                "[Comiqueta][Main] Cannot request ads. Consent not obtained or SDK not ready. Ads hidden."
             )
             showAds = false
         }

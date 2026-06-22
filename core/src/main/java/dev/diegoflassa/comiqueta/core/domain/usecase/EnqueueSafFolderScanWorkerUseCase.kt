@@ -40,7 +40,7 @@ class EnqueueSafFolderScanWorkerUseCase @Inject constructor(
 
         dev.diegoflassa.comiqueta.core.data.timber.TimberLogger.logI(
             SafFolderScanWorker.TAG,
-            "Enqueuing unique work: $uniqueWorkName for request: ${scanWorkRequest.id}"
+            "[Comiqueta][EnqueueSafFolderScanWorker] Enqueuing unique work: $uniqueWorkName for request: ${scanWorkRequest.id}"
         )
 
         workManager.enqueueUniqueWork(

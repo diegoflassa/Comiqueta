@@ -95,7 +95,7 @@ fun Context.enderecoIP(): String? {
     val interfaces: Enumeration<NetworkInterface>? = NetworkInterface.getNetworkInterfaces()
     while (interfaces?.hasMoreElements() == true) {
         val networkInterface = interfaces.nextElement()
-        TimberLogger.logI("HVN", "networkInterface: $networkInterface")
+        TimberLogger.logI("HVN", "[Comiqueta][ContextExtensions] networkInterface: $networkInterface")
         if (!networkInterface.isLoopback && networkInterface.isUp) {
             val addresses = networkInterface.inetAddresses
             while (addresses.hasMoreElements()) {

@@ -124,7 +124,7 @@ fun HomeScreen(
     navigationViewModel: NavigationViewModel = hiltActivityViewModel(),
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
-    TimberLogger.logI(tag, "HomeScreen")
+    TimberLogger.logI(tag, "[Comiqueta][Home] HomeScreen")
 
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -202,13 +202,13 @@ fun HomeScreen(
         homeViewModel.favoriteComicsFlow.collectAsLazyPagingItems()
 
     LaunchedEffect(comics.loadState) {
-        TimberLogger.logD("Comics LoadState", "${comics.loadState}")
+        TimberLogger.logD("Comics LoadState", "[Comiqueta][Home] ${comics.loadState}")
     }
     LaunchedEffect(latestComics.loadState) {
-        TimberLogger.logD("Latest Comics LoadState", "${latestComics.loadState}")
+        TimberLogger.logD("Latest Comics LoadState", "[Comiqueta][Home] ${latestComics.loadState}")
     }
     LaunchedEffect(favoriteComics.loadState) {
-        TimberLogger.logD("Favorite Comics LoadState", "${favoriteComics.loadState}")
+        TimberLogger.logD("Favorite Comics LoadState", "[Comiqueta][Home] ${favoriteComics.loadState}")
     }
     HomeScreenContent(
         config = homeViewModel.config,

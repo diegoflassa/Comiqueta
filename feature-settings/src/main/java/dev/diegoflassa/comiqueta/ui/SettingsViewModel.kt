@@ -123,7 +123,7 @@ open class SettingsViewModel @Inject constructor(
                     .catch { e ->
                         TimberLogger.logE(
                             "SettingsViewModel",
-                            "Error observing viewerPagesToPreloadAhead",
+                            "[Comiqueta][Settings] Error observing viewerPagesToPreloadAhead",
                             e
                         )
                     }
@@ -161,7 +161,7 @@ open class SettingsViewModel @Inject constructor(
                 FirebaseCrashlytics.getInstance().recordException(ex)
                 TimberLogger.logE(
                     "SettingsViewModel",
-                    "Error loading persisted folders via UseCase",
+                    "[Comiqueta][Settings] Error loading persisted folders via UseCase",
                     ex
                 )
                 _uiState.update { it.copy(isLoading = false) }
@@ -223,7 +223,7 @@ open class SettingsViewModel @Inject constructor(
                         FirebaseCrashlytics.getInstance().recordException(ex)
                         TimberLogger.logE(
                             "SettingsViewModel",
-                            "Error updating viewerPagesToPreloadAhead",
+                            "[Comiqueta][Settings] Error updating viewerPagesToPreloadAhead",
                             ex
                         )
                         _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_updating_setting, ex.message)))
@@ -244,7 +244,7 @@ open class SettingsViewModel @Inject constructor(
                     comicsRepository.clearAllComics()
                     TimberLogger.logI(
                         "SettingsViewModel",
-                        "Database cleared by user confirmation"
+                        "[Comiqueta][Settings] Database cleared by user confirmation"
                     )
                     _effect.send(SettingsEffect.ShowToast(context.getString(R.string.database_cleared)))
                 }
@@ -263,7 +263,7 @@ open class SettingsViewModel @Inject constructor(
                     triggerGeneralScan()
                     TimberLogger.logI(
                         "SettingsViewModel",
-                        "Folder rescan started by user confirmation"
+                        "[Comiqueta][Settings] Folder rescan started by user confirmation"
                     )
                     _effect.send(SettingsEffect.ShowToast(context.getString(R.string.rescan_started)))
                 }
@@ -306,13 +306,13 @@ open class SettingsViewModel @Inject constructor(
             if (success) {
                 TimberLogger.logD(
                     "SettingsViewModel",
-                    "Successfully removed folder via UseCase: $folderUri"
+                    "[Comiqueta][Settings] Successfully removed folder via UseCase: $folderUri"
                 )
                 _effect.send(SettingsEffect.ShowToast(context.getString(R.string.folder_access_removed, Uri.decode(folderUri.toString()))))
             } else {
                 TimberLogger.logW(
                     "SettingsViewModel",
-                    "Failed to remove folder via UseCase: $folderUri."
+                    "[Comiqueta][Settings] Failed to remove folder via UseCase: $folderUri."
                 )
                 _effect.send(
                     SettingsEffect.ShowToast(
@@ -324,7 +324,7 @@ open class SettingsViewModel @Inject constructor(
             FirebaseCrashlytics.getInstance().recordException(ex)
             TimberLogger.logE(
                 "SettingsViewModel",
-                "Error removing folder $folderUri via UseCase",
+                "[Comiqueta][Settings] Error removing folder $folderUri via UseCase",
                 ex
             )
             _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_removing_folder, ex.message)))
@@ -339,11 +339,11 @@ open class SettingsViewModel @Inject constructor(
             if (success) {
                 TimberLogger.logD(
                     "SettingsViewModel",
-                    "Successfully added folder via UseCase: $uri"
+                    "[Comiqueta][Settings] Successfully added folder via UseCase: $uri"
                 )
                 _effect.send(SettingsEffect.ShowToast(context.getString(R.string.folder_added, Uri.decode(uri.toString()))))
             } else {
-                TimberLogger.logW("SettingsViewModel", "Failed to add folder via UseCase: $uri.")
+                TimberLogger.logW("SettingsViewModel", "[Comiqueta][Settings] Failed to add folder via UseCase: $uri.")
                 _effect.send(
                     SettingsEffect.ShowToast(
                         context.getString(R.string.folder_add_failed, Uri.decode(uri.toString()))
@@ -352,7 +352,7 @@ open class SettingsViewModel @Inject constructor(
             }
         } catch (ex: Exception) {
             FirebaseCrashlytics.getInstance().recordException(ex)
-            TimberLogger.logE("SettingsViewModel", "Error adding folder $uri via UseCase", ex)
+            TimberLogger.logE("SettingsViewModel", "[Comiqueta][Settings] Error adding folder $uri via UseCase", ex)
             _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_adding_folder, ex.message)))
         } finally {
             loadPersistedFolders()
@@ -366,7 +366,7 @@ open class SettingsViewModel @Inject constructor(
                 _effect.send(SettingsEffect.ShowToast(context.getString(R.string.general_scan_enqueued)))
             } catch (ex: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(ex)
-                TimberLogger.logE(tag ?: "SettingsViewModel", "Failed to enqueue general folder scan worker", ex)
+                TimberLogger.logE(tag ?: "SettingsViewModel", "[Comiqueta][Settings] Failed to enqueue general folder scan worker", ex)
                 _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_starting_scan, ex.message)))
             }
         }

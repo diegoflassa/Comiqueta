@@ -58,5 +58,18 @@ Never reference a project type by its FQN inside an expression, generic, or anno
 - **MVI (per feature):** `XxxUIState` (data), `XxxIntent` (sealed), `XxxEffect` (sealed/Channel), `IXxxViewModel` (interface).
 - **Navigation:** Nav 3, type-safe `@Serializable` keys in `core/navigation/Screen.kt`.
 - **Logging:** `TimberLogger.logX(CLASS, "[TAG] msg")`. No `android.util.Log`.
+
+### Log Filter Management
+
+When introducing a new log filter to the codebase, you MUST use the format `[FILTER_PAI][FILTRO_FILHO]`, adapting it to `[Comiqueta][FILTER_NAME]`.
+
+**Unprotected Filters (Ticket/Feature-specific):**
+1. **Log Format:** Use `TimberLogger.logD(CLASS, "[Comiqueta][FILTER_NAME] message")`.
+2. **Update SOT:** Add the filter to the "Safe for Removal" list in the relevant knowledge index (e.g., `filtros_para_remocao.txt`).
+
+**Protected Filters (Global/Load-bearing):**
+1. **Update SOT:** Add the filter to the "DO NOT TOUCH / Protected" list in the relevant knowledge index.
+2. **Update Rules:** Update this `CORE_RULES.md` if it lists protected filters.
+3. **Synchronize:** Update all call sites and test assertions in the same turn.
 - **Strings:** `ComiquetaTheme` + `res/strings.xml`; locales EN, PT, ES, DE.
 - **Build:** Java 21, KSP, convention plugins in `build-logic/`. Static analysis: detekt (`./gradlew detekt`).

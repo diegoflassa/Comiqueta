@@ -36,7 +36,7 @@ class MyApplication : Application(), Configuration.Provider {
         habilitarStrictMode()
         FirebaseApp.initializeApp(this)
         TimberManager.inicializar(this)
-        TimberLogger.logI(TAG, "onCreate")
+        TimberLogger.logI(TAG, "[Comiqueta][MyApplication] onCreate")
 
         // Initialize WorkManager
         val hiltWorkManagerConfiguration = Configuration.Builder()
@@ -71,7 +71,7 @@ class MyApplication : Application(), Configuration.Provider {
             }
             TimberLogger.logI(
                 TAG,
-                "Microsoft Clarity initialized with Project ID: ${config.clarityId}"
+                "[Comiqueta][MyApplication] Microsoft Clarity initialized with Project ID: ${config.clarityId}"
             )
         }
     }
@@ -82,12 +82,12 @@ class MyApplication : Application(), Configuration.Provider {
 
             if (!claritySessionUrl.isNullOrEmpty()) {
                 FirebaseCrashlytics.getInstance().setCustomKey("clarity_session_url", claritySessionUrl)
-                TimberLogger.logI(TAG, "Clarity Session URL logged to Crashlytics: $claritySessionUrl")
+                TimberLogger.logI(TAG, "[Comiqueta][MyApplication] Clarity Session URL logged to Crashlytics: $claritySessionUrl")
             } else {
-                TimberLogger.logW(TAG, "Clarity Session URL was null or empty after initialization. Not logging to Crashlytics.")
+                TimberLogger.logW(TAG, "[Comiqueta][MyApplication] Clarity Session URL was null or empty after initialization. Not logging to Crashlytics.")
             }
         } catch (ex: Exception) {
-            TimberLogger.logE(TAG, "Error during Clarity initialization or logging Session URL to Crashlytics", ex)
+            TimberLogger.logE(TAG, "[Comiqueta][MyApplication] Error during Clarity initialization or logging Session URL to Crashlytics", ex)
         }
     }
 

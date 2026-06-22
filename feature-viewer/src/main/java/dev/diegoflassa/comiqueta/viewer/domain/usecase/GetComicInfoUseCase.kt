@@ -88,7 +88,7 @@ class GetComicInfoUseCase @Inject constructor(
                 eventType = parser.next()
             }
         } catch (e: Exception) {
-            TimberLogger.logE("GetComicInfoUseCase", "Error parsing ComicInfo.xml", e)
+            TimberLogger.logE("GetComicInfoUseCase", "[Comiqueta][GetComicInfo] Error parsing ComicInfo.xml", e)
         }
         return metadata
     }
@@ -261,13 +261,13 @@ class GetComicInfoUseCase @Inject constructor(
                 }
 
             } catch (ex: Exception) {
-                TimberLogger.logE("GetComicInfoUseCase", "Error getting comic info for $uri", ex)
+                TimberLogger.logE("GetComicInfoUseCase", "[Comiqueta][GetComicInfo] Error getting comic info for $uri", ex)
                 throw IOException("Failed to parse comic: ${ex.message}", ex)
             } finally {
                 try {
                     pfd?.close()
                 } catch (ioe: IOException) {
-                    TimberLogger.logE("GetComicInfoUseCase", "Error closing PFD for $uri", ioe)
+                    TimberLogger.logE("GetComicInfoUseCase", "[Comiqueta][GetComicInfo] Error closing PFD for $uri", ioe)
                 }
             }
             ComicInfo(

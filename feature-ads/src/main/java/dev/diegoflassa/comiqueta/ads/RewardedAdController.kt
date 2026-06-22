@@ -37,7 +37,7 @@ fun LoadRewardedAd(
 
     LaunchedEffect(enabled, adUnitId, activity) {
         if (!enabled || adUnitId.isBlank()) {
-            TimberLogger.logI(TAG, "Rewarded ad loading disabled or adUnitId is blank.")
+            TimberLogger.logI(TAG, "[Comiqueta][RewardedAdController] Rewarded ad loading disabled or adUnitId is blank.")
             return@LaunchedEffect
         }
 

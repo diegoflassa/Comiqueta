@@ -119,7 +119,7 @@ fun SettingsScreen(
     navigationViewModel: NavigationViewModel? = hiltActivityViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
-    TimberLogger.logI(tag, "SettingsScreen")
+    TimberLogger.logI(tag, "[Comiqueta][Settings] SettingsScreen")
     val context = LocalContext.current
     val activity = context as? Activity
     val settingsUIState: SettingsUIState by settingsViewModel.uiState.collectAsStateWithLifecycle()
@@ -160,11 +160,11 @@ fun SettingsScreen(
                     Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             try {
                 contentResolver.takePersistableUriPermission(uri, takeFlags)
-                TimberLogger.logD(tag, "Persistable URI permission granted for $uri")
+                TimberLogger.logD(tag, "[Comiqueta][Settings] Persistable URI permission granted for $uri")
                 settingsViewModel.processIntent(SettingsIntent.FolderSelected(uri))
             } catch (se: SecurityException) {
                 FirebaseCrashlytics.getInstance().recordException(se)
-                TimberLogger.logE(tag, "Failed to take persistable URI permission for $uri", se)
+                TimberLogger.logE(tag, "[Comiqueta][Settings] Failed to take persistable URI permission for $uri", se)
                 Toast.makeText(
                     context,
                     folderAddFailedTemplate.format(uri.toString()),
@@ -213,7 +213,7 @@ fun SettingsScreen(
                         ).show()
                         TimberLogger.logE(
                             tag,
-                            "No activity found to handle folder URI: ${effect.folderUri}",
+                            "[Comiqueta][Settings] No activity found to handle folder URI: ${effect.folderUri}",
                             anfe
                         )
                     }
@@ -618,12 +618,12 @@ private fun LazyListScope.privacySection(
                 .fillMaxWidth()
                 .clickable {
                     activity?.let { currentActivity ->
-                        TimberLogger.logD(tag, "Showing privacy options form.")
+                        TimberLogger.logD(tag, "[Comiqueta][Settings] Showing privacy options form.")
                         UserMessagingPlatform.showPrivacyOptionsForm(currentActivity) { formError ->
                             if (formError != null) {
                                 TimberLogger.logE(
                                     tag,
-                                    "Error showing privacy options form: ${formError.message}",
+                                    "[Comiqueta][Settings] Error showing privacy options form: ${formError.message}",
                                     Exception("${formError.errorCode}-${formError.message}")
                                 )
                                 Toast.makeText(
@@ -636,7 +636,7 @@ private fun LazyListScope.privacySection(
                     } ?: run {
                         TimberLogger.logW(
                             tag,
-                            "Activity context not available for showing privacy options form."
+                            "[Comiqueta][Settings] Activity context not available for showing privacy options form."
                         )
                         Toast.makeText(
                             context,
@@ -749,7 +749,7 @@ fun ComicsFolderUriItem(
         try {
             Uri.decode(path)
         } catch (e: IllegalArgumentException) {
-            TimberLogger.logW(tag, "Failed to decode path: $path", e)
+            TimberLogger.logW(tag, "[Comiqueta][Settings] Failed to decode path: $path", e)
             path // Fallback to the original path if decoding fails
         }
     }

@@ -238,7 +238,7 @@ class HomeViewModel @Inject constructor(
                 }
 
                 is HomeIntent.RequestStoragePermission -> {
-                    TimberLogger.logD(TAG, "Intent: RequestStoragePermission received.")
+                    TimberLogger.logD(TAG, "[Comiqueta][Home] Intent: RequestStoragePermission received.")
                     _effect.send(HomeEffect.RequestGeneralStoragePermission)
                 }
 
@@ -247,7 +247,7 @@ class HomeViewModel @Inject constructor(
                 }
 
                 is HomeIntent.AddFolderClicked -> {
-                    TimberLogger.logD(TAG, "Intent: AddFolderClicked received.")
+                    TimberLogger.logD(TAG, "[Comiqueta][Home] Intent: AddFolderClicked received.")
                     if (!hasGeneralStoragePermission()) {
                         _effect.send(
                             HomeEffect.ShowToast(
@@ -263,25 +263,25 @@ class HomeViewModel @Inject constructor(
                 }
 
                 is HomeIntent.CheckInitialFolderPermission -> {
-                    TimberLogger.logD(TAG, "Intent: CheckInitialFolderPermission received.")
+                    TimberLogger.logD(TAG, "[Comiqueta][Home] Intent: CheckInitialFolderPermission received.")
                     val isGranted = hasGeneralStoragePermission()
                     _uiState.update { it.copy(generalStoragePermissionGranted = isGranted) }
                     if (!isGranted) {
-                        TimberLogger.logI(TAG, "Initial storage permission check: NOT granted.")
+                        TimberLogger.logI(TAG, "[Comiqueta][Home] Initial storage permission check: NOT granted.")
                         _effect.send(
                             HomeEffect.ShowToast(
                                 applicationContext.getString(R.string.storage_permission_recommended)
                             )
                         )
                     } else {
-                        TimberLogger.logI(TAG, "Initial storage permission check: GRANTED.")
+                        TimberLogger.logI(TAG, "[Comiqueta][Home] Initial storage permission check: GRANTED.")
                     }
                 }
 
                 is HomeIntent.FlagSelected -> {
                     TimberLogger.logD(
                         TAG,
-                        "Intent: FlagSelected received with flag: ${intent.flag}"
+                        "[Comiqueta][Home] Intent: FlagSelected received with flag: ${intent.flag}"
                     )
                     _uiState.update { currentState ->
                         currentState.copy(flags = setOf(intent.flag))
@@ -292,7 +292,7 @@ class HomeViewModel @Inject constructor(
                 is HomeIntent.FolderPermissionResult -> {
                     TimberLogger.logD(
                         TAG,
-                        "Intent: FolderPermissionResult received. Granted: ${intent.isGranted}"
+                        "[Comiqueta][Home] Intent: FolderPermissionResult received. Granted: ${intent.isGranted}"
                     )
                     _uiState.update { it.copy(generalStoragePermissionGranted = intent.isGranted) }
                     if (intent.isGranted) {
@@ -440,11 +440,11 @@ class HomeViewModel @Inject constructor(
                 }
 
             } catch (ce: CancellationException) {
-                TimberLogger.logD(TAG, "Comics loading cancelled", ce)
+                TimberLogger.logD(TAG, "[Comiqueta][Home] Comics loading cancelled", ce)
                 _uiState.update { it.copy(isLoading = false) }
             } catch (ex: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(ex)
-                TimberLogger.logE(TAG, "Unexpected error during combined comics loading", ex)
+                TimberLogger.logE(TAG, "[Comiqueta][Home] Unexpected error during combined comics loading", ex)
                 val msg = applicationContext.getString(R.string.error_unexpected_message, ex.message)
                 _uiState.update { it.copy(error = msg, isLoading = false) }
                 _effect.send(HomeEffect.ShowErrorWithRetry(msg) {
@@ -490,7 +490,7 @@ class HomeViewModel @Inject constructor(
     private suspend fun handleFolderSelected(uri: Uri) {
         TimberLogger.logD(
             "HomeViewModel",
-            "Folder selected and permission should be taken by UI: $uri"
+            "[Comiqueta][Home] Folder selected and permission should be taken by UI: $uri"
         )
         val success = comicsFolderRepository.takePersistablePermission(
             uri,
@@ -528,7 +528,7 @@ class HomeViewModel @Inject constructor(
                 // observeScanWorker() is already running from init and observing by tag
             } catch (ex: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(ex)
-                TimberLogger.logE(TAG, "Failed to enqueue general folder scan worker", ex)
+                TimberLogger.logE(TAG, "[Comiqueta][Home] Failed to enqueue general folder scan worker", ex)
                 _effect.send(
                     HomeEffect.ShowToast(
                         applicationContext.getString(
@@ -572,7 +572,7 @@ class HomeViewModel @Inject constructor(
                         _uiState.update { it.copy(scanFinished = true) }
                         when (workInfo.state) {
                             WorkInfo.State.SUCCEEDED -> {
-                                TimberLogger.logD(TAG, "Scan SUCCEEDED. Refreshing.")
+                                TimberLogger.logD(TAG, "[Comiqueta][Home] Scan SUCCEEDED. Refreshing.")
                                 val message = applicationContext.getString(R.string.scan_completed)
                                 _uiState.update { it.copy(scanResultMessage = message) }
                                 loadPaginatedComics()

@@ -86,7 +86,7 @@ class ComicsRepository @Inject constructor(
                         filterByRead = filterByRead,
                         ftsQuery = effectiveFtsQuery
                     ).first()
-                    TimberLogger.logI(tag, "Count: $count, CategoryId: $categoryId, Favorite: $filterByFavorite, CreatedAfter: $createdAfterTimestamp, Read: $filterByRead, FTS Search: '$effectiveFtsQuery', Flags: $flags")
+                    TimberLogger.logI(tag, "[Comiqueta][Comics] Count: $count, CategoryId: $categoryId, Favorite: $filterByFavorite, CreatedAfter: $createdAfterTimestamp, Read: $filterByRead, FTS Search: '$effectiveFtsQuery', Flags: $flags")
                 }
 
                 comicsDao.getComicsPagingSource(
@@ -136,29 +136,29 @@ class ComicsRepository @Inject constructor(
     override fun getCollectionStats(): Flow<CollectionStats> {
         return combine(
             comicsDao.getComicsCountByCriteriaFlow(null, null, null, null, null)
-                .onEach { TimberLogger.logD(tag, "Flow emit: Total Comics = $it") },
+                .onEach { TimberLogger.logD(tag, "[Comiqueta][Comics] Flow emit: Total Comics = $it") },
             comicsDao.getReadCount()
-                .onEach { TimberLogger.logD(tag, "Flow emit: Read Comics = $it") },
+                .onEach { TimberLogger.logD(tag, "[Comiqueta][Comics] Flow emit: Read Comics = $it") },
             comicsDao.getInProgressCount()
-                .onEach { TimberLogger.logD(tag, "Flow emit: In Progress = $it") },
+                .onEach { TimberLogger.logD(tag, "[Comiqueta][Comics] Flow emit: In Progress = $it") },
             comicsDao.getComicsCountByCriteriaFlow(null, true, null, null, null)
-                .onEach { TimberLogger.logD(tag, "Flow emit: Favorites = $it") },
+                .onEach { TimberLogger.logD(tag, "[Comiqueta][Comics] Flow emit: Favorites = $it") },
             categoryDao.getCount()
-                .onEach { TimberLogger.logD(tag, "Flow emit: Categories = $it") },
+                .onEach { TimberLogger.logD(tag, "[Comiqueta][Comics] Flow emit: Categories = $it") },
             comicsDao.getCbzCount()
-                .onEach { TimberLogger.logD(tag, "Flow emit: CBZ = $it") },
+                .onEach { TimberLogger.logD(tag, "[Comiqueta][Comics] Flow emit: CBZ = $it") },
             comicsDao.getCbrCount()
-                .onEach { TimberLogger.logD(tag, "Flow emit: CBR = $it") },
+                .onEach { TimberLogger.logD(tag, "[Comiqueta][Comics] Flow emit: CBR = $it") },
             comicsDao.getPdfCount()
-                .onEach { TimberLogger.logD(tag, "Flow emit: PDF = $it") },
+                .onEach { TimberLogger.logD(tag, "[Comiqueta][Comics] Flow emit: PDF = $it") },
             dataStore.data
                 .catch { 
-                    TimberLogger.logE(tag, "Error reading DataStore", it)
+                    TimberLogger.logE(tag, "[Comiqueta][Comics] Error reading DataStore", it)
                     emit(androidx.datastore.preferences.core.emptyPreferences()) 
                 }
-                .onEach { TimberLogger.logD(tag, "Flow emit: DataStore Preferences = $it") },
+                .onEach { TimberLogger.logD(tag, "[Comiqueta][Comics] Flow emit: DataStore Preferences = $it") },
             comicsDao.getTopAuthors(5)
-                .onEach { TimberLogger.logD(tag, "Flow emit: Top Authors = ${it.size}") }
+                .onEach { TimberLogger.logD(tag, "[Comiqueta][Comics] Flow emit: Top Authors = ${it.size}") }
         ) { args ->
             val totalComics = args[0] as Int
             val readComics = args[1] as Int

@@ -40,7 +40,7 @@ fun LoadAppOpenAd(
 
     LaunchedEffect(enabled, adUnitId, activity) {
         if (!enabled || adUnitId.isBlank()) {
-            TimberLogger.logI(TAG, "App Open ad loading disabled or adUnitId is blank.")
+            TimberLogger.logI(TAG, "[Comiqueta][AppOpenAdController] App Open ad loading disabled or adUnitId is blank.")
             return@LaunchedEffect
         }
 

@@ -46,7 +46,7 @@ class DecodeComicPageUseCase @Inject constructor(
         return withContext(Dispatchers.IO) {
             TimberLogger.logI(
                 "DecodeComicPageUseCase",
-                "Decoding page index: $pageIndex, identifier: '$pageIdentifier' for $fileType from $comicUri (thumb: $thumbnailWidth)"
+                "[Comiqueta][DecodeComicPage] Decoding page index: $pageIndex, identifier: '$pageIdentifier' for $fileType from $comicUri (thumb: $thumbnailWidth)"
             )
             val context = application.applicationContext
 
@@ -213,7 +213,7 @@ class DecodeComicPageUseCase @Inject constructor(
                 }
                 loadedBitmap?.asImageBitmap()
             } catch (e: Exception) {
-                TimberLogger.logE("DecodeComicPageUseCase", "Error decoding page: ${e.message}")
+                TimberLogger.logE("DecodeComicPageUseCase", "[Comiqueta][DecodeComicPage] Error decoding page: ${e.message}")
                 null
             }
         }

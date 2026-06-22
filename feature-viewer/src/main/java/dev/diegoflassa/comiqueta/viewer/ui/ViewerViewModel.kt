@@ -94,7 +94,7 @@ class ViewerViewModel @Inject constructor(
                 viewerPagesToPreloadAheadFlow.first()
             } catch (ex: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(ex)
-                TimberLogger.logE(TAG, "Failed to get initial preload count, using default.", ex)
+                TimberLogger.logE(TAG, "[Comiqueta][Viewer] Failed to get initial preload count, using default.", ex)
                 ViewerUIState.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
             }
 
@@ -109,7 +109,7 @@ class ViewerViewModel @Inject constructor(
                     isLoadingThumbnail = emptySet()
                 )
             }
-            TimberLogger.logI(TAG, "Initial logic preload count set to: $initialLogicPreload.")
+            TimberLogger.logI(TAG, "[Comiqueta][Viewer] Initial logic preload count set to: $initialLogicPreload.")
 
             val isMangaModeFlow: Flow<Boolean> = dataStore.data
                 .map {
@@ -143,7 +143,7 @@ class ViewerViewModel @Inject constructor(
             viewerPagesToPreloadAheadFlow
                 .catch { e ->
                     FirebaseCrashlytics.getInstance().recordException(e)
-                    TimberLogger.logE(TAG, "Error observing viewerPagesToPreloadAhead", e)
+                    TimberLogger.logE(TAG, "[Comiqueta][Viewer] Error observing viewerPagesToPreloadAhead", e)
                     val safeDefault = ViewerUIState.DEFAULT_VIEWER_PAGES_TO_PRELOAD_AHEAD
                         .coerceAtLeast(MIN_PRELOAD_COUNT_LOGIC)
                         .coerceAtMost(MAX_PRELOAD_COUNT_LOGIC)
@@ -160,7 +160,7 @@ class ViewerViewModel @Inject constructor(
                     if (_pagesToPreloadLogic.value != newLogicPreload) {
                         TimberLogger.logI(
                             TAG,
-                            "Preload setting changed. From DataStore: $newSettingValue, Applied for Logic: $newLogicPreload"
+                            "[Comiqueta][Viewer] Preload setting changed. From DataStore: $newSettingValue, Applied for Logic: $newLogicPreload"
                         )
                         _pagesToPreloadLogic.value = newLogicPreload
                         _uiState.update { it.copy(pagesToPreloadLogic = newLogicPreload) }
@@ -171,7 +171,7 @@ class ViewerViewModel @Inject constructor(
     }
 
     override fun reduce(intent: ViewerIntent) {
-        TimberLogger.logI(TAG, "Reducing intent: $intent")
+        TimberLogger.logI(TAG, "[Comiqueta][Viewer] Reducing intent: $intent")
         when (intent) {
             is ViewerIntent.LoadComic -> handleLoadComic(intent.uriString.toUri())
             is ViewerIntent.GoToPage -> dispatchLoadPages(intent.pageNumber)
@@ -226,7 +226,7 @@ class ViewerViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(e)
-                TimberLogger.logE(TAG, "Error loading thumbnail for page $pageIndex", e)
+                TimberLogger.logE(TAG, "[Comiqueta][Viewer] Error loading thumbnail for page $pageIndex", e)
             } finally {
                 _uiState.update { it.copy(isLoadingThumbnail = it.isLoadingThumbnail - pageIndex) }
                 thumbnailLoadJobs.remove(pageIndex)
@@ -270,7 +270,7 @@ class ViewerViewModel @Inject constructor(
                             comicsRepository.updateComicCover(comicUri.toString(), newCoverUri.toString())
                             TimberLogger.logI(
                                 TAG,
-                                "Successfully set page $currentPage as cover for ${comic.title}"
+                                "[Comiqueta][Viewer] Successfully set page $currentPage as cover for ${comic.title}"
                             )
                             _effect.send(ViewerEffect.ShowMessage(application.getString(R.string.cover_updated_success)))
                         }
@@ -278,7 +278,7 @@ class ViewerViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(e)
-                TimberLogger.logE(TAG, "Error setting page as cover", e)
+                TimberLogger.logE(TAG, "[Comiqueta][Viewer] Error setting page as cover", e)
                 _effect.send(ViewerEffect.ShowError(application.getString(R.string.cover_updated_error)))
             }
         }
@@ -287,7 +287,7 @@ class ViewerViewModel @Inject constructor(
     private fun handleLoadComic(uri: Uri) {
         viewModelScope.launch {
             if (currentComicUri == uri) {
-                TimberLogger.logI(TAG, "LoadComic: Comic $uri already loaded. Skipping.")
+                TimberLogger.logI(TAG, "[Comiqueta][Viewer] LoadComic: Comic $uri already loaded. Skipping.")
                 return@launch
             }
             try {
@@ -333,15 +333,15 @@ class ViewerViewModel @Inject constructor(
                     val target = initialPage.coerceIn(0, comicInfo.pageCount - 1)
                     dispatchLoadPages(target)
                 } else {
-                    TimberLogger.logW(TAG, "LoadComic: Comic has no pages.")
+                    TimberLogger.logW(TAG, "[Comiqueta][Viewer] LoadComic: Comic has no pages.")
                     _effect.send(ViewerEffect.ShowError("Comic has no pages or is empty."))
                 }
             } catch (cex: CancellationException) {
-                TimberLogger.logI(TAG, "LoadComic (getComicInfo) cancelled: ${cex.message}")
+                TimberLogger.logI(TAG, "[Comiqueta][Viewer] LoadComic (getComicInfo) cancelled: ${cex.message}")
                 _uiState.update { it.copy(comicPath = Uri.EMPTY) }
             } catch (ex: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(ex)
-                TimberLogger.logE(TAG, "LoadComic (getComicInfo): Error loading comic $uri", ex)
+                TimberLogger.logE(TAG, "[Comiqueta][Viewer] LoadComic (getComicInfo): Error loading comic $uri", ex)
                 val errorMessage = ex.localizedMessage ?: "Failed to load comic"
                 _uiState.update { it.copy(error = errorMessage, comicPath = Uri.EMPTY) }
                 _effect.send(ViewerEffect.ShowError(errorMessage))
@@ -353,7 +353,7 @@ class ViewerViewModel @Inject constructor(
         if (currentComicUri == null || currentComicFileType == null || comicPageIdentifiers.isEmpty()) {
             TimberLogger.logW(
                 TAG,
-                "dispatchLoadPages: Comic data not ready for page $targetPageIndex."
+                "[Comiqueta][Viewer] dispatchLoadPages: Comic data not ready for page $targetPageIndex."
             )
             if (uiState.value.pageCount == 0) {
                 _uiState.update { it.copy(error = "Comic data not fully loaded.") }
@@ -364,7 +364,7 @@ class ViewerViewModel @Inject constructor(
         if (targetPageIndex !in 0..<pageCount) {
             TimberLogger.logW(
                 TAG,
-                "dispatchLoadPages: Invalid targetPageIndex $targetPageIndex for pageCount $pageCount"
+                "[Comiqueta][Viewer] dispatchLoadPages: Invalid targetPageIndex $targetPageIndex for pageCount $pageCount"
             )
             viewModelScope.launch { _effect.send(ViewerEffect.ShowError("Invalid page number: ${targetPageIndex + 1}")) }
             return
@@ -432,7 +432,7 @@ class ViewerViewModel @Inject constructor(
                 )
             } catch (e: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(e)
-                TimberLogger.logE(TAG, "Failed to update comic progress", e)
+                TimberLogger.logE(TAG, "[Comiqueta][Viewer] Failed to update comic progress", e)
             }
         }
 
@@ -458,10 +458,10 @@ class ViewerViewModel @Inject constructor(
                         _uiState.update { it.copy(isLoadingPage = it.isLoadingPage - pageToLoadIdx) }
                     }
                 } catch (cex: CancellationException) {
-                    TimberLogger.logE(TAG, "Error loading page $pageToLoadIdx", cex)
+                    TimberLogger.logE(TAG, "[Comiqueta][Viewer] Error loading page $pageToLoadIdx", cex)
                 } catch (ex: Exception) {
                     FirebaseCrashlytics.getInstance().recordException(ex)
-                    TimberLogger.logE(TAG, "Error loading page $pageToLoadIdx", ex)
+                    TimberLogger.logE(TAG, "[Comiqueta][Viewer] Error loading page $pageToLoadIdx", ex)
                 } finally {
                     if (isActive) {
                         _uiState.update { it.copy(isLoadingPage = it.isLoadingPage - pageToLoadIdx) }
@@ -508,7 +508,7 @@ class ViewerViewModel @Inject constructor(
             throw cex
         } catch (ex: Exception) {
             FirebaseCrashlytics.getInstance().recordException(ex)
-            TimberLogger.logE(TAG, "Error during decodeComicPage for $pageIndex", ex)
+            TimberLogger.logE(TAG, "[Comiqueta][Viewer] Error during decodeComicPage for $pageIndex", ex)
             throw ex
         }
     }
@@ -520,7 +520,7 @@ class ViewerViewModel @Inject constructor(
             FirebaseCrashlytics.getInstance().recordException(ex)
             TimberLogger.logE(
                 TAG,
-                "Exception during job cancellation: $message - ${ex.message}",
+                "[Comiqueta][Viewer] Exception during job cancellation: $message - ${ex.message}",
                 ex
             )
         }
@@ -528,7 +528,7 @@ class ViewerViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        TimberLogger.logI(TAG, "ViewModel cleared. Cancelling all page load jobs.")
+        TimberLogger.logI(TAG, "[Comiqueta][Viewer] ViewModel cleared. Cancelling all page load jobs.")
         pageLoadJobs.values.forEach { it.cancelJob("ViewModel cleared") }
         pageLoadJobs.clear()
     }
