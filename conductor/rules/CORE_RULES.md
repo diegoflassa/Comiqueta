@@ -34,11 +34,41 @@ Minimize tokens every task. Read only what you need (targeted `grep`/`glob`, lin
 
 Never reference a project type by its FQN inside an expression, generic, or annotation argument (e.g. a `hiltViewModel<…>()` or `R.drawable.…` written with a full package path). Add a top-of-file `import` and use the simple name. **Exception:** KDoc cross-references (`[fully.qualified.Symbol]`) require the FQN — that is correct.
 
-## 6. KI Discipline
+## 6. KI Sync Rule (GLOBAL — MANDATORY)
 
-- **Index-first.** Read `ki/KI_INDEX.md`; fetch an individual KI only when the task matches its row. Never pre-load all KIs.
-- **Sync in the same turn.** After any code/architecture change that alters a feature's behaviour, structure, or contracts, update the affected KI(s) **before the turn ends** (scope: only what changed).
-- **Writing standards.** Present tense (canonical spec, not changelog); a single `**Last verified:** YYYY-MM-DD` line, no dated history; self-sufficient (no links to `plannings/*`); split if a KI passes ~400 lines. Full spec: `ki/KI_AUTHORING.md`.
+After **any** code change, planning update, or architectural decision that modifies the behaviour,
+structure, or contracts of a feature:
+
+1. **Identify the affected KI(s)** from `conductor/ki/KI_INDEX.md`.
+2. **Update the KI immediately** — before the turn ends. Do not defer.
+3. **What to sync:** file tables, business rules, layer boundaries, public contracts, and test targets affected by the change.
+4. **Scope:** only update what changed. Do not rewrite unrelated sections.
+5. **If the change affects `CORE_RULES.md`** (global rules), those files ARE the source of truth — reflect their content in the relevant KI's Business Rules section.
+
+### 6.1 Write KIs as if every change was always the original intent
+
+A KI is a **present-tense canonical spec**, not a changelog. Whenever you update a KI:
+
+- **Rewrite affected sections in the present tense.** Do NOT prepend "Phase X added…", "Task Y changed…", or similar historical scaffolding. Just state what the code IS, as if it had always been that way.
+- **Do NOT keep "Previously verified" / "Earlier verified" parenthetical chains** describing what the file used to say. Each KI has a single `**Last verified:** YYYY-MM-DD` line and no further dated history.
+- **Diff context belongs in the commit message**, not in the KI. The reader of the KI is implementing fresh; they do not need to know the spec used to be different.
+
+### 6.2 KIs must be self-sufficient
+
+A KI must be **readable on its own** by an AI making code changes to the relevant module. That means:
+
+- All contracts, file tables, business rules, test targets, and worked examples needed to safely change the module live inside the KI.
+- **No references to `conductor/plannings/*` files** — plannings are temporary artefacts that get deleted; a KI that links to one breaks the moment the plan is removed. If a planning contained information the KI needs, **inline it into the KI**.
+- Cross-KI references are fine when they prevent duplication, but the KI must still be useful on its own for the change at hand.
+
+### 6.3 Optimise for targeted reads
+
+Keep KIs **small and focused** so an AI only loads what it needs:
+
+- If a KI grows past roughly 400 lines or covers multiple sub-packages, **split it** along sub-package boundaries.
+- Trim aggressively: drop historical change-narratives, duplicated patterns already documented in `rules/`, and planning markers. **Never** trim the substantive specs needed to make code changes — file purpose, contracts, business rules, test cases.
+
+> **Rationale:** KIs are the reference an AI reads when implementing. A planning can diverge from a KI silently and cause regressions. Plannings are temporary; KIs persist. The KI must always reflect the current implementation contract, written in present tense, self-contained, and small enough to load targeted reads.
 
 ## 7. Planning Protocol
 
@@ -46,6 +76,32 @@ Never reference a project type by its FQN inside an expression, generic, or anno
 - **Naming:** `[CODE]_[desc]_plan.md` if a ticket exists, else `[feature]_[desc]_plan.md`.
 - **Create a plan when** work spans 3+ files, crosses layers (UI+VM+data), fixes a blocking bug, gates behind a flag, or the approach is uncertain. Content: scope, steps, testing checklist, blockers, dependencies.
 - **META_PLANNING** (`META_PLANNING_*.md`) is disposable scaffolding: synthesise the multi-model proposals into one canonical plan, write it, then delete the META_PLANNING and update `INDEX.md`. Never execute a META_PLANNING as-is.
+
+### 7.1 META_PLANNING Protocol (GLOBAL RULE)
+
+A `META_PLANNING_*.md` file is a **consolidation prompt**: it collects planning proposals produced by multiple AI models and instructs one AI to synthesise them into a single canonical execution plan.
+
+**Purpose:** META_PLANNINGs are never executed as-is. They exist only to produce a real plan.
+
+**Execution protocol (mandatory):**
+
+1. **Read the META_PLANNING file** in full.
+2. **Synthesise** the proposals into a single canonical `[feature_name]_plan.md` inside `conductor/plannings/` following naming rules.
+3. **The synthesised plan is the output** — write it with full scope, implementation steps, testing checklist, blockers, and dependencies.
+4. **Delete the META_PLANNING file** after the synthesised plan is written and confirmed. META_PLANNINGs are disposable scaffolding; the canonical plan is the artefact that persists.
+5. **Update `conductor/plannings/INDEX.md`**: remove the META_PLANNING row, add the new canonical plan row with status `🔵 Backlog`.
+6. **Do NOT start implementing** during the META_PLANNING synthesis turn unless the user explicitly asks. Synthesis = planning only.
+
+> **Rationale:** META_PLANNINGs accumulate noise. The synthesis step produces a clean, deduplicated, actionable plan that any AI can execute without re-reading the original proposals.
+
+### 7.2 Plan Lifecycle
+
+- ❌ **NEVER DELETE** completed or obsolete plans from `conductor/plannings/`.
+- ✅ **MOVE** completed or expired plans to `conductor/plannings/archived/` for permanent record.
+- **Status Transitions:**
+  - **Ready → Active**: Update plan with start date, update `INDEX.md` status.
+  - **Active → Completed**: Create/update corresponding KI, link bidirectionally, move to archived.
+  - **Active → Obsolete**: Archive immediately if plan is superseded or ticket closed without implementation.
 
 ---
 

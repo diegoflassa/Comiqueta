@@ -65,9 +65,9 @@ This serves as a safety net to recover from any NaN state that somehow propagate
 ### Part 3: Increased Snap Threshold
 Increased the zoom-to-1.0 snap threshold from `1.01f` to `1.05f`, allowing the state machine to recover from slightly zoomed states that might otherwise remain stuck.
 
-### Additional Changes: UI Improvements & Log Cleanup
-- Changed loading indicators from `CircularProgressIndicator()` to `CircularProgressIndicator(color = Color.White)` for better visibility during dark comic pages (lines 235, 615 in ViewerScreen.kt)
-- Removed all `[PageNavFix]` debug logging statements from ViewerViewModel.kt and all pageFlip gesture files for production cleanliness
+### Additional: UI & Log Hygiene
+- Loading indicators use `CircularProgressIndicator(color = Color.White)` for visibility during dark comic pages (lines 235, 615 in ViewerScreen.kt)
+- No `[PageNavFix]` debug logging statements remain in ViewerViewModel.kt or any pageFlip gesture files
 
 **Technical Explanation:**
 This fix is rooted in understanding IEEE 754 floating-point semantics:
@@ -83,11 +83,4 @@ By guarding the centroid-dependent calculation and explicitly checking for NaN b
 - Recovery mechanism prevents permanent corruption even if edge cases occur
 - Loading indicators now visible on dark pages
 
-**Status:** Resolved — 2026-03-21
-
-**Verification:**
-The fix was validated through:
-1. Log analysis showing NaN offsets appearing at the exact moment scale became stuck
-2. Reproducing the bug scenario: pinch-out gesture followed by sequential finger release
-3. Confirming navigation fully restored after applying the three-part fix
-4. Removal of debug logs verified with grep to ensure no [PageNavFix] remains
+**Last verified:** 2026-06-23

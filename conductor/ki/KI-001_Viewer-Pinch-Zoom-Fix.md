@@ -23,4 +23,4 @@ val panDelta  = if (pressedCount >= 2) event.calculatePan()  else Offset.Zero
 if (localPinchActive || itemScale > 1.01f) { changes.forEach { it.consume() } }
 ```
 
-**Status:** Resolved — 2026-03-21
+**Last verified:** 2026-06-23
