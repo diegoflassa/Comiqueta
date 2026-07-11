@@ -13,7 +13,7 @@ Single bootstrap file for all AI agents working on this repo.
 
 ## Knowledge Items
 
-- [KI-001: Viewer Pinch-to-Zoom Fix](conductor/ki/KI-001_Viewer-Pinch-Zoom-Fix.md)
+- [KI-001: Viewer Pinch-to-Zoom & Pan](conductor/ki/KI-001_Viewer-Pinch-Zoom-Fix.md)
 - [KI-002: Viewer Pinch-to-Zoom NaN State Corruption Fix](conductor/ki/KI-002_Viewer-Pinch-Zoom-NaN-Fix.md)
 - [KI-003: Token Audit & Pruning](conductor/ki/KI-003_Token-Audit-and-Pruning.md)
 

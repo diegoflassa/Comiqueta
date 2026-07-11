@@ -420,8 +420,10 @@ fun ViewerScreenContent(
                                                                 if (changes.size >= 2 || oldLocalItemScale > 1f || localPinchActive) {
                                                                     val zoomFactor =
                                                                         if (pressedCount >= 2) event.calculateZoom() else 1f
+                                                                    // One finger pans; the delta is only applied while itemScale > 1f below,
+                                                                    // so an un-zoomed single-finger drag still falls through to page turns.
                                                                     val panDelta =
-                                                                        if (pressedCount >= 2) event.calculatePan() else Offset.Zero
+                                                                        if (pressedCount >= 1) event.calculatePan() else Offset.Zero
 
                                                                     val newLocalItemScale =
                                                                         (oldLocalItemScale * zoomFactor).coerceIn(
