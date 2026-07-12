@@ -25,7 +25,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import dev.diegoflassa.comiqueta.core.domain.model.Comic
@@ -110,10 +109,10 @@ private val sampleComicForCoverPreview = Comic(
     pageCount = 22
 )
 
-@PreviewScreenSizes
-@Preview(name = "ComicCoverItem - Dark", group = "ComicCoverItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "ComicCoverItem · Default · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "ComicCoverItem · Default · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
-private fun ComicCoverItemPreview() {
+private fun ComicCoverItemDefaultPreview() {
     ComiquetaThemeContent {
         Surface {
             ComicCoverItem(
@@ -124,8 +123,21 @@ private fun ComicCoverItemPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(name = "ComicCoverItem - Null Comic (Placeholder) - Dark", group = "ComicCoverItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "ComicCoverItem · Default · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ComicCoverItemDefaultDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            ComicCoverItem(
+                comic = sampleComicForCoverPreview,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "ComicCoverItem · Null Comic (Placeholder) · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "ComicCoverItem · Null Comic (Placeholder) · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun ComicCoverItemNullPreview() {
     ComiquetaThemeContent {
@@ -138,10 +150,37 @@ private fun ComicCoverItemNullPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(name = "ComicCoverItem - Custom Aspect Ratio - Dark", group = "ComicCoverItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "ComicCoverItem · Null Comic (Placeholder) · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ComicCoverItemNullDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            ComicCoverItem(
+                comic = null,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "ComicCoverItem · Custom Aspect Ratio · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "ComicCoverItem · Custom Aspect Ratio · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun ComicCoverItemCustomAspectRatioPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            ComicCoverItem(
+                comic = sampleComicForCoverPreview,
+                aspectRatio = 1f, // Square aspect ratio
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "ComicCoverItem · Custom Aspect Ratio · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ComicCoverItemCustomAspectRatioDarkPreview() {
     ComiquetaThemeContent {
         Surface {
             ComicCoverItem(

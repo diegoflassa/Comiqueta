@@ -114,6 +114,8 @@ A `META_PLANNING_*.md` file is a **consolidation prompt**: it collects planning 
 - **MVI (per feature):** `XxxUIState` (data), `XxxIntent` (sealed), `XxxEffect` (sealed/Channel), `IXxxViewModel` (interface).
 - **Navigation:** Nav 3, type-safe `@Serializable` keys in `core/navigation/Screen.kt`.
 - **Logging:** `TimberLogger.logX(CLASS, "[TAG] msg")`. No `android.util.Log`.
+- **Strings:** `ComiquetaTheme` + `res/strings.xml`; locales EN, PT, ES, DE.
+- **Build:** Java 21, KSP, convention plugins in `build-logic/`. Static analysis: detekt (`./gradlew detekt`).
 
 ### Log Filter Management
 
@@ -127,5 +129,3 @@ When introducing a new log filter to the codebase, you MUST use the format `[FIL
 1. **Update SOT:** Add the filter to the "DO NOT TOUCH / Protected" list in the relevant knowledge index.
 2. **Update Rules:** Update this `CORE_RULES.md` if it lists protected filters.
 3. **Synchronize:** Update all call sites and test assertions in the same turn.
-- **Strings:** `ComiquetaTheme` + `res/strings.xml`; locales EN, PT, ES, DE.
-- **Build:** Java 21, KSP, convention plugins in `build-logic/`. Static analysis: detekt (`./gradlew detekt`).

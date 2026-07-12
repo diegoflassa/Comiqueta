@@ -64,7 +64,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -792,14 +791,10 @@ private fun openAppSettings(context: Context) {
 
 
 // --- Previews ---
-@PreviewScreenSizes
-@Preview(
-    name = "Settings - Light - With Data",
-    group = "Settings",
-    showBackground = true
-)
+@Preview(name = "SettingsScreenContent · With Data · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "SettingsScreenContent · With Data · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
-private fun SettingsScreenPreview() {
+private fun SettingsScreenContentWithDataPreview() {
     ComiquetaThemeContent {
         SettingsScreenContent(
             uiState = SettingsUIState(
@@ -817,15 +812,30 @@ private fun SettingsScreenPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(
-    name = "Settings - Dark - Empty",
-    group = "Settings",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "SettingsScreenContent · With Data · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun SettingsScreenPreviewEmpty() {
+private fun SettingsScreenContentWithDataDarkPreview() {
+    ComiquetaThemeContent {
+        SettingsScreenContent(
+            uiState = SettingsUIState(
+                isLoading = false,
+                permissionDisplayStatuses = mapOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE to PermissionDisplayStatus(
+                        isGranted = true,
+                        shouldShowRationale = false
+                    )
+                ),
+                comicsFolders = listOf("content://com.android.externalstorage.documents/tree/primary%3ADCIM".toUri()),
+                viewerPagesToPreloadAhead = 1
+            )
+        )
+    }
+}
+
+@Preview(name = "SettingsScreenContent · Empty · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "SettingsScreenContent · Empty · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
+@Composable
+private fun SettingsScreenContentEmptyPreview() {
     ComiquetaThemeContent {
         SettingsScreenContent(
             uiState = SettingsUIState(
@@ -838,14 +848,40 @@ private fun SettingsScreenPreviewEmpty() {
     }
 }
 
-@Preview(
-    name = "Settings - Dark - Loading",
-    group = "Settings",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "SettingsScreenContent · Empty · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun SettingsScreenPreviewLoading() {
+private fun SettingsScreenContentEmptyDarkPreview() {
+    ComiquetaThemeContent {
+        SettingsScreenContent(
+            uiState = SettingsUIState(
+                isLoading = false,
+                permissionDisplayStatuses = emptyMap(),
+                comicsFolders = emptyList(),
+                viewerPagesToPreloadAhead = 0
+            )
+        )
+    }
+}
+
+@Preview(name = "SettingsScreenContent · Loading · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "SettingsScreenContent · Loading · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
+@Composable
+private fun SettingsScreenContentLoadingPreview() {
+    ComiquetaThemeContent {
+        SettingsScreenContent(
+            uiState = SettingsUIState(
+                isLoading = true,
+                permissionDisplayStatuses = emptyMap(),
+                comicsFolders = emptyList(),
+                viewerPagesToPreloadAhead = 1
+            )
+        )
+    }
+}
+
+@Preview(name = "SettingsScreenContent · Loading · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun SettingsScreenContentLoadingDarkPreview() {
     ComiquetaThemeContent {
         SettingsScreenContent(
             uiState = SettingsUIState(

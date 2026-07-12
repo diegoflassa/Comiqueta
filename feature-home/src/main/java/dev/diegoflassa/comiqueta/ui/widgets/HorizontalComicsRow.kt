@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -279,14 +278,10 @@ private val comicsWithNullsPreviewData: List<Comic?> =
 
 
 
-@PreviewScreenSizes
-@Preview(
-    name = "HorizontalComicsRow - Light - Default",
-    group = "HorizontalComicsRow",
-    showBackground = true
-)
+@Preview(name = "HorizontalComicsRow · Default · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HorizontalComicsRow · Default · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
-private fun HorizontalComicsRowPreviewLightDefault() {
+private fun HorizontalComicsRowDefaultPreview() {
     ComiquetaThemeContent(darkTheme = false) {
         Surface {
             HorizontalComicsRowForPreview(
@@ -297,14 +292,9 @@ private fun HorizontalComicsRowPreviewLightDefault() {
     }
 }
 
-@Preview(
-    name = "HorizontalComicsRow - Dark - Default",
-    group = "HorizontalComicsRow",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "HorizontalComicsRow · Default · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun HorizontalComicsRowPreviewDarkDefault() {
+private fun HorizontalComicsRowDefaultDarkPreview() {
     ComiquetaThemeContent(darkTheme = true) {
         Surface {
             HorizontalComicsRowForPreview(
@@ -315,13 +305,10 @@ private fun HorizontalComicsRowPreviewDarkDefault() {
     }
 }
 
-@Preview(
-    name = "HorizontalComicsRow - Light - Few Items",
-    group = "HorizontalComicsRow",
-    showBackground = true
-)
+@Preview(name = "HorizontalComicsRow · Few Items · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HorizontalComicsRow · Few Items · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
-private fun HorizontalComicsRowPreviewLightFewItems() {
+private fun HorizontalComicsRowFewItemsPreview() {
     ComiquetaThemeContent(darkTheme = false) {
         Surface {
             HorizontalComicsRowForPreview(
@@ -332,14 +319,23 @@ private fun HorizontalComicsRowPreviewLightFewItems() {
     }
 }
 
-@Preview(
-    name = "HorizontalComicsRow - Dark - Many Items",
-    group = "HorizontalComicsRow",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "HorizontalComicsRow · Many Items · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HorizontalComicsRow · Many Items · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
-private fun HorizontalComicsRowPreviewDarkManyItems() {
+private fun HorizontalComicsRowManyItemsPreview() {
+    ComiquetaThemeContent(darkTheme = false) {
+        Surface {
+            HorizontalComicsRowForPreview(
+                comics = manyComicsPreviewData,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "HorizontalComicsRow · Many Items · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HorizontalComicsRowManyItemsDarkPreview() {
     ComiquetaThemeContent(darkTheme = true) {
         Surface {
             HorizontalComicsRowForPreview(
@@ -350,13 +346,10 @@ private fun HorizontalComicsRowPreviewDarkManyItems() {
     }
 }
 
-@Preview(
-    name = "HorizontalComicsRow - Light - Empty List",
-    group = "HorizontalComicsRow",
-    showBackground = true
-)
+@Preview(name = "HorizontalComicsRow · Empty List · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HorizontalComicsRow · Empty List · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
-private fun HorizontalComicsRowPreviewLightEmpty() {
+private fun HorizontalComicsRowEmptyPreview() {
     ComiquetaThemeContent(darkTheme = false) {
         Surface {
             HorizontalComicsRowForPreview(
@@ -367,13 +360,10 @@ private fun HorizontalComicsRowPreviewLightEmpty() {
     }
 }
 
-@Preview(
-    name = "HorizontalComicsRow - Light - With Nulls (Loading)",
-    group = "HorizontalComicsRow",
-    showBackground = true
-)
+@Preview(name = "HorizontalComicsRow · With Nulls (Loading) · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HorizontalComicsRow · With Nulls (Loading) · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
-private fun HorizontalComicsRowPreviewLightWithNulls() {
+private fun HorizontalComicsRowWithNullsPreview() {
     ComiquetaThemeContent(darkTheme = false) {
         Surface {
             HorizontalComicsRowForPreview(

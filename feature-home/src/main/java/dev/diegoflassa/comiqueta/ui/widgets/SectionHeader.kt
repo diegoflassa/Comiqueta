@@ -25,7 +25,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
@@ -114,13 +113,8 @@ fun SectionHeader(
 }
 
 // --- SectionHeader Previews ---
-@PreviewScreenSizes
-@Preview(
-    name = "SectionHeader - Expanded, Grid, View Options - Dark",
-    group = "SectionHeader",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "SectionHeader · Expanded, Grid, View Options · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "SectionHeader · Expanded, Grid, View Options · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun SectionHeaderExpandedGridViewOptionsPreview() {
     ComiquetaThemeContent {
@@ -137,13 +131,25 @@ private fun SectionHeaderExpandedGridViewOptionsPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(
-    name = "SectionHeader - Collapsed, List, View Options - Dark",
-    group = "SectionHeader",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "SectionHeader · Expanded, Grid, View Options · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun SectionHeaderExpandedGridViewOptionsDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            SectionHeader(
+                title = "Latest Comics",
+                isExpanded = true,
+                onHeaderClick = {},
+                showGridListOption = true,
+                currentViewMode = ViewMode.GRID,
+                onViewTypeChange = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "SectionHeader · Collapsed, List, View Options · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "SectionHeader · Collapsed, List, View Options · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun SectionHeaderCollapsedListViewOptionsPreview() {
     ComiquetaThemeContent {
@@ -160,13 +166,25 @@ private fun SectionHeaderCollapsedListViewOptionsPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(
-    name = "SectionHeader - Expanded, No View Options - Dark",
-    group = "SectionHeader",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "SectionHeader · Collapsed, List, View Options · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun SectionHeaderCollapsedListViewOptionsDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            SectionHeader(
+                title = "Favorite Comics",
+                isExpanded = false,
+                onHeaderClick = {},
+                showGridListOption = true,
+                currentViewMode = ViewMode.LIST,
+                onViewTypeChange = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "SectionHeader · Expanded, No View Options · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "SectionHeader · Expanded, No View Options · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun SectionHeaderExpandedNoViewOptionsPreview() {
     ComiquetaThemeContent {
@@ -183,15 +201,44 @@ private fun SectionHeaderExpandedNoViewOptionsPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(
-    name = "SectionHeader - Collapsed, No View Options - Dark",
-    group = "SectionHeader",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "SectionHeader · Expanded, No View Options · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun SectionHeaderExpandedNoViewOptionsDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            SectionHeader(
+                title = "All Comics",
+                isExpanded = true,
+                onHeaderClick = {},
+                showGridListOption = false,
+                currentViewMode = ViewMode.LIST,
+                onViewTypeChange = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "SectionHeader · Collapsed, No View Options · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "SectionHeader · Collapsed, No View Options · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun SectionHeaderCollapsedNoViewOptionsPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            SectionHeader(
+                title = "Search Results",
+                isExpanded = false,
+                onHeaderClick = {},
+                showGridListOption = false,
+                currentViewMode = ViewMode.GRID,
+                onViewTypeChange = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "SectionHeader · Collapsed, No View Options · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun SectionHeaderCollapsedNoViewOptionsDarkPreview() {
     ComiquetaThemeContent {
         Surface {
             SectionHeader(

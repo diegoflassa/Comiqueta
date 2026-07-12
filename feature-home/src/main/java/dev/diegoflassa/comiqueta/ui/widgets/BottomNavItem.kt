@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.theme.bottomAppBarSelectedIcon
@@ -61,8 +60,8 @@ fun BottomNavItem(
 
 // --- BottomNavItem Previews ---
 
-@PreviewScreenSizes
-@Preview(name = "BottomNavItem - Home Selected - Dark", group = "BottomNavItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "BottomNavItem · Home Selected · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "BottomNavItem · Home Selected · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun BottomNavItemHomeSelectedPreview() {
     ComiquetaThemeContent {
@@ -78,8 +77,24 @@ private fun BottomNavItemHomeSelectedPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(name = "BottomNavItem - Favorites Unselected - Dark", group = "BottomNavItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "BottomNavItem · Home Selected · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun BottomNavItemHomeSelectedDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            BottomNavItem(
+                label = "Home",
+                icon = Icons.Filled.Home,
+                contentDescription = "Home",
+                isSelected = true,
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "BottomNavItem · Favorites Unselected · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "BottomNavItem · Favorites Unselected · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun BottomNavItemFavoritesUnselectedPreview() {
     ComiquetaThemeContent {
@@ -95,10 +110,42 @@ private fun BottomNavItemFavoritesUnselectedPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(name = "BottomNavItem - Settings Unselected - Dark", group = "BottomNavItem", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "BottomNavItem · Favorites Unselected · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun BottomNavItemFavoritesUnselectedDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            BottomNavItem(
+                label = "Favorites",
+                icon = Icons.Filled.Favorite,
+                contentDescription = "Favorites",
+                isSelected = false,
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "BottomNavItem · Settings Unselected · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "BottomNavItem · Settings Unselected · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun BottomNavItemSettingsUnselectedPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            BottomNavItem(
+                label = "Settings",
+                icon = Icons.Filled.Settings,
+                contentDescription = "Settings",
+                isSelected = false,
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "BottomNavItem · Settings Unselected · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun BottomNavItemSettingsUnselectedDarkPreview() {
     ComiquetaThemeContent {
         Surface {
             BottomNavItem(

@@ -70,9 +70,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -1165,16 +1163,10 @@ private val sampleCategories = listOf(
 )
 
 // BottomAppBar Previews
-@PreviewScreenSizes
-@Preview(
-    name = "Phone - BottomAppBar",
-    group = "BottomAppBar - Phone",
-    showBackground = true,
-    device = "spec:width=1080px,height=2560px,dpi=440",
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "BottomAppBar · Default · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "BottomAppBar · Default · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
-private fun BottomAppBarPreviewPhone() {
+private fun BottomAppBarDefaultPreview() {
     ComiquetaThemeContent {
         Box(
             modifier = Modifier
@@ -1189,40 +1181,9 @@ private fun BottomAppBarPreviewPhone() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(
-    name = "Foldable - BottomAppBar",
-    group = "BottomAppBar - Foldable",
-    showBackground = true,
-    device = Devices.FOLDABLE,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "BottomAppBar · Default · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun BottomAppBarPreviewFoldable() {
-    ComiquetaThemeContent {
-        Box(
-            modifier = Modifier
-                .height((ComiquetaTheme.dimen.bottomBarHeight * 2).scaled())
-                .fillMaxWidth()
-        ) {
-            HomeBottomAppBar(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-            )
-        }
-    }
-}
-
-@PreviewScreenSizes
-@Preview(
-    name = "Tablet - BottomAppBar",
-    group = "BottomAppBar - Tablet",
-    showBackground = true,
-    device = Devices.TABLET,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-private fun BottomAppBarPreviewTablet() {
+private fun BottomAppBarDefaultDarkPreview() {
     ComiquetaThemeContent {
         Box(
             modifier = Modifier
@@ -1239,13 +1200,8 @@ private fun BottomAppBarPreviewTablet() {
 
 
 // Previews With Data
-@PreviewScreenSizes
-@Preview(
-    name = "Home - Dark - With Data - Grid",
-    group = "Screen - With Data",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "HomeScreen · With Data - Grid · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HomeScreen · With Data - Grid · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun HomeScreenContentWithComicsGridPreview() {
     ComiquetaThemeContent {
@@ -1261,13 +1217,24 @@ private fun HomeScreenContentWithComicsGridPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(
-    name = "Home - Dark - With Data - List",
-    group = "Screen - With Data",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "HomeScreen · With Data - Grid · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HomeScreenContentWithComicsGridDarkPreview() {
+    ComiquetaThemeContent {
+        HomeScreenContentForPreview(
+            comics = sampleComics,
+            latestComics = sampleComics.filter { it.isNew },
+            favoriteComics = sampleComics.filter { it.isFavorite },
+            uiState = HomeUIState(
+                isLoading = false,
+                categories = ImmutableList(sampleCategories),
+                selectedCategory = sampleCategories.first()
+            ), onIntent = {})
+    }
+}
+
+@Preview(name = "HomeScreen · With Data - List · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HomeScreen · With Data - List · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun HomeScreenContentWithComicsListPreview() {
     ComiquetaThemeContent {
@@ -1284,14 +1251,26 @@ private fun HomeScreenContentWithComicsListPreview() {
     }
 }
 
+@Preview(name = "HomeScreen · With Data - List · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HomeScreenContentWithComicsListDarkPreview() {
+    ComiquetaThemeContent {
+        HomeScreenContentForPreview(
+            comics = sampleComics,
+            latestComics = sampleComics.filter { it.isNew },
+            favoriteComics = sampleComics.filter { it.isFavorite },
+            uiState = HomeUIState(
+                isLoading = false,
+                viewMode = ViewMode.LIST,
+                categories = ImmutableList(sampleCategories),
+                selectedCategory = sampleCategories.first()
+            ), onIntent = {})
+    }
+}
+
 // Previews for Other States (Loading, Empty)
-@PreviewScreenSizes
-@Preview(
-    name = "Home - Dark - Loading",
-    group = "Screen - Other States",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "HomeScreen · Loading · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HomeScreen · Loading · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun HomeScreenContentLoadingPreview() {
     ComiquetaThemeContent {
@@ -1303,13 +1282,20 @@ private fun HomeScreenContentLoadingPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(
-    name = "Home - Dark - Empty",
-    group = "Screen - Other States",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "HomeScreen · Loading · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HomeScreenContentLoadingDarkPreview() {
+    ComiquetaThemeContent {
+        HomeScreenContentForPreview(
+            comics = emptyList(),
+            latestComics = emptyList(),
+            favoriteComics = emptyList(),
+            uiState = HomeUIState(isLoading = true), onIntent = {})
+    }
+}
+
+@Preview(name = "HomeScreen · Empty · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HomeScreen · Empty · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun HomeScreenContentEmptyPreview() {
     ComiquetaThemeContent {
@@ -1332,13 +1318,31 @@ private fun HomeScreenContentEmptyPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(
-    name = "Home - Scanning",
-    group = "Screen - Scanning States",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "HomeScreen · Empty · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HomeScreenContentEmptyDarkPreview() {
+    ComiquetaThemeContent {
+        HomeScreenContentForPreview(
+            comics = emptyList(),
+            latestComics = emptyList(),
+            favoriteComics = emptyList(),
+            uiState = HomeUIState(
+                isLoading = false,
+                categories = ImmutableList(
+                    listOf(
+                        Category(
+                            id = 1L,
+                            name = "All",
+                            createdAt = 0
+                        )
+                    )
+                ),
+            ), onIntent = {})
+    }
+}
+
+@Preview(name = "HomeScreen · Scanning · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HomeScreen · Scanning · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun HomeScreenContentScanningPreview() {
     ComiquetaThemeContent {
@@ -1359,15 +1363,49 @@ private fun HomeScreenContentScanningPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(
-    name = "Home - Scan Finished",
-    group = "Screen - Scanning States",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "HomeScreen · Scanning · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HomeScreenContentScanningDarkPreview() {
+    ComiquetaThemeContent {
+        HomeScreenContentForPreview(
+            comics = sampleComics,
+            latestComics = sampleComics.filter { it.isNew },
+            favoriteComics = sampleComics.filter { it.isFavorite },
+            uiState = HomeUIState(
+                isLoading = false,
+                isScanningFolders = true,
+                scanProgress = 45,
+                scanTotalFiles = 100,
+                scanProcessedFiles = 45,
+                currentComicName = "Amazing Spider-Man #300.cbr",
+                categories = ImmutableList(sampleCategories),
+                selectedCategory = sampleCategories.first()
+            ), onIntent = {})
+    }
+}
+
+@Preview(name = "HomeScreen · Scan Finished · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HomeScreen · Scan Finished · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun HomeScreenContentScanFinishedPreview() {
+    ComiquetaThemeContent {
+        HomeScreenContentForPreview(
+            comics = sampleComics,
+            latestComics = sampleComics.filter { it.isNew },
+            favoriteComics = sampleComics.filter { it.isFavorite },
+            uiState = HomeUIState(
+                isLoading = false,
+                scanFinished = true,
+                scanResultMessage = "Scan completed successfully. Found 15 new comics.",
+                categories = ImmutableList(sampleCategories),
+                selectedCategory = sampleCategories.first()
+            ), onIntent = {})
+    }
+}
+
+@Preview(name = "HomeScreen · Scan Finished · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HomeScreenContentScanFinishedDarkPreview() {
     ComiquetaThemeContent {
         HomeScreenContentForPreview(
             comics = sampleComics,

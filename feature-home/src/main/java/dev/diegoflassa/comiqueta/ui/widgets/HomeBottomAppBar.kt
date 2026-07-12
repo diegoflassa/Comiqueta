@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -116,8 +115,8 @@ fun HomeBottomAppBar(
 }
 
 // --- HomeBottomAppBar Previews ---
-@PreviewScreenSizes
-@Preview(name = "HomeBottomAppBar - Default - Dark", group = "HomeBottomAppBar", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "HomeBottomAppBar · Default · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HomeBottomAppBar · Default · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun HomeBottomAppBarDefaultPreview() {
     ComiquetaThemeContent {
@@ -129,8 +128,20 @@ private fun HomeBottomAppBarDefaultPreview() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(name = "HomeBottomAppBar - Custom Height - Dark", group = "HomeBottomAppBar", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "HomeBottomAppBar · Default · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun HomeBottomAppBarDefaultDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            HomeBottomAppBar(
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "HomeBottomAppBar · Custom Height · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "HomeBottomAppBar · Custom Height · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun HomeBottomAppBarCustomHeightPreview() {
     ComiquetaThemeContent {
@@ -143,11 +154,36 @@ private fun HomeBottomAppBarCustomHeightPreview() {
     }
 }
 
-// --- EmptyStateContent Previews ---
-@PreviewScreenSizes
-@Preview(name = "EmptyStateContent - Dark", group = "EmptyStateContent", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "HomeBottomAppBar · Custom Height · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun EmptyStateContentPreview() {
+private fun HomeBottomAppBarCustomHeightDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            HomeBottomAppBar(
+                bottomBarHeight = 72.dp,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+// --- EmptyStateContent Previews ---
+@Preview(name = "EmptyStateContent · Default · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "EmptyStateContent · Default · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
+@Composable
+private fun EmptyStateContentDefaultPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            EmptyStateContent(
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "EmptyStateContent · Default · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun EmptyStateContentDefaultDarkPreview() {
     ComiquetaThemeContent {
         Surface {
             EmptyStateContent(

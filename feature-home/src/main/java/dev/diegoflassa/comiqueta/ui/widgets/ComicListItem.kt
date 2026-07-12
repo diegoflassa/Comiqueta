@@ -33,7 +33,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
@@ -182,13 +181,8 @@ private val sampleComicForListItemLongTitleNoAuthor = sampleComicForCoverPreview
 )
 
 
-@PreviewScreenSizes
-@Preview(
-    name = "ComicListItem - Default - Dark",
-    group = "ComicListItem",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "ComicListItem · Default · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "ComicListItem · Default · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun ComicListItemDefaultPreview() {
     ComiquetaThemeContent {
@@ -201,12 +195,21 @@ private fun ComicListItemDefaultPreview() {
     }
 }
 
-@Preview(
-    name = "ComicListItem - Favorite - Dark",
-    group = "ComicListItem",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "ComicListItem · Default · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ComicListItemDefaultDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            ComicListItem(
+                comic = sampleComicForListItemDefault,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "ComicListItem · Favorite · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "ComicListItem · Favorite · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun ComicListItemFavoritePreview() {
     ComiquetaThemeContent {
@@ -219,12 +222,21 @@ private fun ComicListItemFavoritePreview() {
     }
 }
 
-@Preview(
-    name = "ComicListItem - Long Title, No Author - Dark",
-    group = "ComicListItem",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "ComicListItem · Favorite · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ComicListItemFavoriteDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            ComicListItem(
+                comic = sampleComicForListItemFavorite,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "ComicListItem · Long Title, No Author · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "ComicListItem · Long Title, No Author · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun ComicListItemLongTitleNoAuthorPreview() {
     ComiquetaThemeContent {
@@ -237,14 +249,36 @@ private fun ComicListItemLongTitleNoAuthorPreview() {
     }
 }
 
-@Preview(
-    name = "ComicListItem - Null Comic (Placeholder) - Dark",
-    group = "ComicListItem",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "ComicListItem · Long Title, No Author · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ComicListItemLongTitleNoAuthorDarkPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            ComicListItem(
+                comic = sampleComicForListItemLongTitleNoAuthor,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "ComicListItem · Null Comic (Placeholder) · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "ComicListItem · Null Comic (Placeholder) · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
 private fun ComicListItemNullPreview() {
+    ComiquetaThemeContent {
+        Surface {
+            ComicListItem(
+                comic = null,
+                onIntent = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "ComicListItem · Null Comic (Placeholder) · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ComicListItemNullDarkPreview() {
     ComiquetaThemeContent {
         Surface {
             ComicListItem(

@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -224,14 +223,10 @@ val sampleCategoriesList = listOf(
 
 
 // --- Previews - Main States ---
-@PreviewScreenSizes
-@Preview(
-    name = "Categories - Light - Main State",
-    group = "Categories",
-    showBackground = true
-)
+@Preview(name = "CategoriesScreenContent · Main State · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "CategoriesScreenContent · Main State · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
-private fun CategoriesScreenPreviewMainState() {
+private fun CategoriesScreenContentMainStatePreview() {
     ComiquetaThemeContent {
         CategoriesScreenContent(
             uiState = CategoriesUIState(categories = sampleCategoriesList.take(3)),
@@ -240,15 +235,37 @@ private fun CategoriesScreenPreviewMainState() {
     }
 }
 
-@PreviewScreenSizes
-@Preview(
-    name = "Categories - Dark - With Dialog",
-    group = "Categories",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "CategoriesScreenContent · Main State · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun CategoriesScreenPreviewWithDialog() {
+private fun CategoriesScreenContentMainStateDarkPreview() {
+    ComiquetaThemeContent {
+        CategoriesScreenContent(
+            uiState = CategoriesUIState(categories = sampleCategoriesList.take(3)),
+            onIntent = {},
+        )
+    }
+}
+
+@Preview(name = "CategoriesScreenContent · With Dialog · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "CategoriesScreenContent · With Dialog · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
+@Composable
+private fun CategoriesScreenContentWithDialogPreview() {
+    ComiquetaThemeContent {
+        CategoriesScreenContent(
+            uiState = CategoriesUIState(
+                categories = sampleCategoriesList,
+                showDialog = true,
+                categoryToEdit = sampleCategoriesList[1],
+                newCategoryName = sampleCategoriesList[1].name
+            ),
+            onIntent = {},
+        )
+    }
+}
+
+@Preview(name = "CategoriesScreenContent · With Dialog · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun CategoriesScreenContentWithDialogDarkPreview() {
     ComiquetaThemeContent {
         CategoriesScreenContent(
             uiState = CategoriesUIState(
@@ -263,14 +280,10 @@ private fun CategoriesScreenPreviewWithDialog() {
 }
 
 // --- Previews - Other States ---
-@Preview(
-    name = "Categories - Dark - Empty",
-    group = "Categories",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "CategoriesScreenContent · Empty · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "CategoriesScreenContent · Empty · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
-private fun CategoriesScreenPreviewEmptyState() {
+private fun CategoriesScreenContentEmptyPreview() {
     ComiquetaThemeContent {
         CategoriesScreenContent(
             uiState = CategoriesUIState(categories = emptyList()),
@@ -279,14 +292,21 @@ private fun CategoriesScreenPreviewEmptyState() {
     }
 }
 
-@Preview(
-    name = "Categories - Dark - Loading",
-    group = "Categories",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "CategoriesScreenContent · Empty · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun CategoriesContentPreviewLoading() {
+private fun CategoriesScreenContentEmptyDarkPreview() {
+    ComiquetaThemeContent {
+        CategoriesScreenContent(
+            uiState = CategoriesUIState(categories = emptyList()),
+            onIntent = {},
+        )
+    }
+}
+
+@Preview(name = "CategoriesContent · Loading · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "CategoriesContent · Loading · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
+@Composable
+private fun CategoriesContentLoadingPreview() {
     ComiquetaThemeContent {
         CategoriesContent(
             categories = emptyList(),
@@ -297,14 +317,36 @@ private fun CategoriesContentPreviewLoading() {
     }
 }
 
-@Preview(
-    name = "Categories - Dark - Error",
-    group = "Categories",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "CategoriesContent · Loading · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun CategoriesContentPreviewError() {
+private fun CategoriesContentLoadingDarkPreview() {
+    ComiquetaThemeContent {
+        CategoriesContent(
+            categories = emptyList(),
+            isLoading = true,
+            error = null,
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(name = "CategoriesContent · Error · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "CategoriesContent · Error · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
+@Composable
+private fun CategoriesContentErrorPreview() {
+    ComiquetaThemeContent {
+        CategoriesContent(
+            categories = emptyList(),
+            isLoading = false,
+            error = "Failed to load categories. Please try again.",
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(name = "CategoriesContent · Error · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun CategoriesContentErrorDarkPreview() {
     ComiquetaThemeContent {
         CategoriesContent(
             categories = emptyList(),
@@ -316,14 +358,10 @@ private fun CategoriesContentPreviewError() {
 }
 
 // --- Previews - Dialogs ---
-@Preview(
-    name = "Dialog - Add - Dark",
-    group = "Categories - Dialogs",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "CategoryEditDialog · Add · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "CategoryEditDialog · Add · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
 @Composable
-private fun CategoryEditDialogPreviewAdd() {
+private fun CategoryEditDialogAddPreview() {
     ComiquetaThemeContent {
         CategoryEditDialog(
             category = null,
@@ -335,14 +373,24 @@ private fun CategoryEditDialogPreviewAdd() {
     }
 }
 
-@Preview(
-    name = "Dialog - Edit - Dark",
-    group = "Categories - Dialogs",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "CategoryEditDialog · Add · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun CategoryEditDialogPreviewEdit() {
+private fun CategoryEditDialogAddDarkPreview() {
+    ComiquetaThemeContent {
+        CategoryEditDialog(
+            category = null,
+            currentName = "",
+            onNameChange = {},
+            onDismiss = {},
+            onSave = {}
+        )
+    }
+}
+
+@Preview(name = "CategoryEditDialog · Edit · Phone", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420")
+@Preview(name = "CategoryEditDialog · Edit · Tablet", showBackground = true, locale = "en", device = "spec:width=1200px,height=2000px,dpi=240")
+@Composable
+private fun CategoryEditDialogEditPreview() {
     ComiquetaThemeContent {
         CategoryEditDialog(
             category = sampleCategoriesList.first(),
@@ -353,5 +401,18 @@ private fun CategoryEditDialogPreviewEdit() {
         )
     }
 }
-// --- Previews End ---
+
+@Preview(name = "CategoryEditDialog · Edit · Phone · Dark", showBackground = true, locale = "en", device = "spec:width=1080px,height=2520px,dpi=420", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun CategoryEditDialogEditDarkPreview() {
+    ComiquetaThemeContent {
+        CategoryEditDialog(
+            category = sampleCategoriesList.first(),
+            currentName = sampleCategoriesList.first().name,
+            onNameChange = {},
+            onDismiss = {},
+            onSave = {}
+        )
+    }
+}
 // --- Previews End ---
