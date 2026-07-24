@@ -2,7 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(wc -c \"D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/Comiqueta/conductor/\"*.md)",
-      "Bash(find \"D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/Comiqueta/conductor/ki\" -type f -exec wc -c {} +)",
+      "Bash(find \"D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/Comiqueta/conductor/knowledge\" -type f -exec wc -c {} +)",
       "Bash(find \"D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/Comiqueta/.agent/workflows\" -type f -exec wc -c {} +)",
       "Bash(wc -c \"D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/BipSale/conductor/\"*.md)",
       "Bash(find \"D:/users/diego/Programming/Workspaces/Workspace.AndroidStudio/BipSale/.agent/workflows\" -type f -exec wc -c {} +)",
@@ -14,7 +14,7 @@
       "Skill(update-config:*)",
       "Read(//d/users/diego/Programming/Workspaces/Workspace.AndroidStudio/BipSale/**)",
       "Read(//d/users/diego/Programming/Workspaces/Workspace.AndroidStudio/BipSale/conductor/**)",
-      "Read(//d/users/diego/Programming/Workspaces/Workspace.AndroidStudio/BipSale/conductor/ki/**)",
+      "Read(//d/users/diego/Programming/Workspaces/Workspace.AndroidStudio/BipSale/conductor/knowledge/**)",
       "Read(//d/users/diego/Programming/Workspaces/Workspace.AndroidStudio/BipSale/.claude/**)"
     ]
   }

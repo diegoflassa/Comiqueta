@@ -138,11 +138,11 @@ Comiqueta follows **Clean Architecture** with **MVI (Model-View-Intent)** patter
 - **Repository pattern** for data abstraction
 - **Flow-based reactive updates**
 
-For detailed architecture documentation, see [ARCHITECTURE.md](conductor/ARCHITECTURE.md).
+For detailed architecture documentation, see [architecture.md](conductor/rules/architecture.md).
 
 ## 📝 Development Guidelines
 
-See [RULES.md](conductor/RULES.md) for coding standards:
+See [CORE_RULES.md](conductor/rules/CORE_RULES.md) for coding standards:
 
 - **UI:** Use `ComiquetaTheme` tokens only — no hardcoded colors or dimensions.
 - **Strings:** All user-facing strings in `res/strings.xml` only. Locales: EN, PT, ES, DE.
@@ -154,14 +154,14 @@ See [RULES.md](conductor/RULES.md) for coding standards:
 
 ## 📚 Documentation
 
-- **[Architecture](conductor/ARCHITECTURE.md)** — Module graph, MVI pattern, navigation, data layer, key files.
-- **[Rules](conductor/RULES.md)** — Coding standards, build configuration, quality gates.
-- **[Workflows](conductor/WORKFLOWS.md)** — Build, test, and distribution commands.
+- **[Architecture](conductor/rules/architecture.md)** — Module graph, MVI pattern, navigation, data layer, key files.
+- **[Rules](conductor/rules/CORE_RULES.md)** — Coding standards, build configuration, quality gates.
+- **[Workflows](conductor/workflows/INDEX.md)** — Build, test, and distribution commands.
 
 ### Knowledge Items
-- [KI-001: Viewer Pinch-to-Zoom Fix](conductor/ki/KI-001_VIEWER_PINCH_ZOOM_FIX.md) — Multi-touch gesture lifecycle fix
-- [KI-002: Viewer Pinch-to-Zoom NaN State Corruption Fix](conductor/ki/KI-002_VIEWER_PINCH_ZOOM_NANHFIX.md) — IEEE 754 floating-point edge case handling
-- [KI-003: Token Audit & Pruning](conductor/ki/KI-003_TOKEN_AUDIT_PRUNING.md) — Context optimization strategies
+- [KI-01: Viewer Pinch-to-Zoom Fix](conductor/knowledge/KI-01-VIEWER-PINCH-ZOOM-FIX.md) — Multi-touch gesture lifecycle fix
+- [KI-02: Viewer Pinch-to-Zoom NaN State Corruption Fix](conductor/knowledge/KI-02-VIEWER-PINCH-ZOOM-NAN-FIX.md) — IEEE 754 floating-point edge case handling
+- [KI-03: Token Audit & Pruning](conductor/knowledge/KI-03-TOKEN-AUDIT-AND-PRUNING.md) — Context optimization strategies
 
 ## 🔧 Troubleshooting
 
@@ -195,4 +195,4 @@ This project is proprietary software. All rights reserved.
 
 ## 👨‍💻 Contributing
 
-Follow the coding standards in [RULES.md](conductor/RULES.md) and ensure all tests pass before submitting changes.
+Follow the coding standards in [CORE_RULES.md](conductor/rules/CORE_RULES.md) and ensure all tests pass before submitting changes.

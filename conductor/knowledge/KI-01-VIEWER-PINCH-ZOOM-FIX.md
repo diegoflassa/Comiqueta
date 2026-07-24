@@ -1,4 +1,4 @@
-# KI-001: Viewer Pinch-to-Zoom & Pan
+# KI-01: Viewer Pinch-to-Zoom & Pan
 [CLAUDE.md](../../CLAUDE.md)
 
 **File:** `feature-viewer/.../viewer/ui/ViewerScreen.kt`
@@ -37,6 +37,6 @@ if (localPinchActive && pressedCount == 0) { localPinchActive = false; isPinchGe
 if (localPinchActive || itemScale > 1.01f) { changes.forEach { it.consume() } }
 ```
 
-See [KI-002](KI-002_Viewer-Pinch-Zoom-NaN-Fix.md) for the NaN-offset corruption guard on the same handler.
+See [KI-02](KI-02-VIEWER-PINCH-ZOOM-NAN-FIX.md) for the NaN-offset corruption guard on the same handler.
 
 **Last verified:** 2026-07-11

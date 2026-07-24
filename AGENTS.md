@@ -6,16 +6,20 @@ Single bootstrap file for all AI agents working on this repo.
 
 ## Bootstrap (read in order, stop if any fails)
 
-1. **Behavior rules** → [conductor/rules/ai_behavior.md](conductor/rules/ai_behavior.md) — think-before-code, simplicity, surgical.
+1. **Behavior rules** → [conductor/rules/ai_behavior.md](conductor/rules/ai_behavior.md) — think-before-code, correctness-first, simplicity.
 2. **Operational + project rules** → [conductor/rules/CORE_RULES.md](conductor/rules/CORE_RULES.md) — git safety, token economy, no-inline-FQN, KI/planning discipline, Hilt/Room/SAF/Timber/build. Self-contained.
 3. **Project context** → [conductor/index.md](conductor/index.md) — documentation map + architecture, rules, workflows.
-4. **Knowledge index** → [conductor/ki/KI_INDEX.md](conductor/ki/KI_INDEX.md) — one-line KI summaries. Fetch individual `KI-NNN_*.md` files **only** when the current task matches an index entry.
+4. **Knowledge index** → [conductor/knowledge/INDEX.md](conductor/knowledge/INDEX.md) — one-line KI summaries. Fetch individual `KI-NN-*.md` files **only** when the current task matches an index entry.
 
 ## Knowledge Items
 
-- [KI-001: Viewer Pinch-to-Zoom & Pan](conductor/ki/KI-001_Viewer-Pinch-Zoom-Fix.md)
-- [KI-002: Viewer Pinch-to-Zoom NaN State Corruption Fix](conductor/ki/KI-002_Viewer-Pinch-Zoom-NaN-Fix.md)
-- [KI-003: Token Audit & Pruning](conductor/ki/KI-003_Token-Audit-and-Pruning.md)
+- [KI-01: Viewer Pinch-to-Zoom & Pan](conductor/knowledge/KI-01-VIEWER-PINCH-ZOOM-FIX.md)
+- [KI-02: Viewer Pinch-to-Zoom NaN State Corruption Fix](conductor/knowledge/KI-02-VIEWER-PINCH-ZOOM-NAN-FIX.md)
+- [KI-03: Token Audit & Pruning](conductor/knowledge/KI-03-TOKEN-AUDIT-AND-PRUNING.md)
+- [KI-04: Log Filters Catalogue](conductor/knowledge/KI-04-LOG-FILTERS.md)
+- [KI-TBD: Future Work Index](conductor/knowledge/KI-TBD.md)
+
+Full index (read this first, not the list above): [conductor/knowledge/INDEX.md](conductor/knowledge/INDEX.md)
 
 ## Rules & Workflows
 
@@ -25,7 +29,10 @@ On-demand — load only when the task matches:
 |------|-----------|
 | [conductor/rules/ai_behavior.md](conductor/rules/ai_behavior.md) | All tasks — universal AI behavior rules |
 | [conductor/rules/CORE_RULES.md](conductor/rules/CORE_RULES.md) | All non-trivial tasks — operational + project rules |
+| [conductor/rules/architecture.md](conductor/rules/architecture.md) | Touching module structure, layers, DI, or persistence |
 | [conductor/rules/COMPOSE_RULES.md](conductor/rules/COMPOSE_RULES.md) | Touching any `@Composable` / screen |
+| [conductor/rules/PREVIEW_STANDARD.md](conductor/rules/PREVIEW_STANDARD.md) | Adding or auditing any `@Preview` |
+| [conductor/rules/CI.md](conductor/rules/CI.md) | Before opening a PR / merging |
 | [conductor/rules/INSTRUMENTED_TEST_STANDARD.md](conductor/rules/INSTRUMENTED_TEST_STANDARD.md) | Writing or changing Compose UI tests |
 | [conductor/workflows/INDEX.md](conductor/workflows/INDEX.md) | Running a workflow (`/clean`, `/remove_filter`, `/update_kis`) |
 
@@ -36,8 +43,11 @@ On-demand — load only when the task matches:
 
 ## Invariants
 
-- `conductor/rules/ai_behavior.md` — behavioral rules (think-before-code, surgical, simplicity).
+- `conductor/rules/ai_behavior.md` — behavioral rules (think-before-code, correctness-first, simplicity).
 - `conductor/rules/CORE_RULES.md` — operational + project rules (git safety, token economy, KI/planning discipline). **Self-contained — no external/global rules file.**
 - Project-specific context in `conductor/index.md`.
 - Layering: `UI → VM → Domain → Data`.
+- **All app code must be logged** so a failure can be root-caused from a log capture alone. `debug` may log sensitive values in full; **`release` is the only variant that must redact** — and redacted never means silent (`CORE_RULES.md` §8.2 + §8.3).
+- **Never `fallbackToDestructiveMigration()`** — every schema change ships a version bump + `Migration` + exported schema + passing migration test in the same turn (`CORE_RULES.md` §13).
+- Every bug fix ships a pinning regression test in the same turn (`CORE_RULES.md` §12).
 - `NO commit without explicit approval.`

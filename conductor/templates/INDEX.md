@@ -12,3 +12,11 @@
 | Drafting a commit message | COMMIT_TEMPLATE.md |
 | Planning what to test before writing tests | TEST_SCOPE_TEMPLATE.md |
 | Procedural runbook (clean / filter removal) | `../workflows/INDEX.md` |
+
+## Conventions
+
+- One markdown file per template; filename ends in `_TEMPLATE.md`.
+- Each template opens with a one-line description and ends with at least one filled-in example.
+- Slash-command mappings live in the AI tool's own config (`slashCmds[]`), not here.
+- Templates are read on demand — keep each ≤ ~120 lines.
+

@@ -1,4 +1,4 @@
-# KI-002: Viewer Pinch-to-Zoom NaN State Corruption Fix
+# KI-02: Viewer Pinch-to-Zoom NaN State Corruption Fix
 
 [CLAUDE.md](../../CLAUDE.md)
 

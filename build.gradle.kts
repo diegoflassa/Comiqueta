@@ -3,15 +3,6 @@ apply(from = "./config/keystore.gradle.kts")
 @Suppress("UNCHECKED_CAST")
 val verifyKeystore = extra["verifyKeystore"] as () -> Unit
 
-buildscript {
-    dependencies {
-        classpath(libs.google.services.library)
-        classpath(libs.firebase.crashlytics.gradle.library)
-        classpath(libs.firebase.perf.plugin.library)
-        classpath(libs.firebase.appdistribution.gradle.library)
-    }
-}
-
 plugins {
     alias(libs.plugins.com.osacky.doctor)
     alias(libs.plugins.org.jetbrains.kotlinx.kover)

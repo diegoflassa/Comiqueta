@@ -4,14 +4,14 @@ Read only when creating or revising a Knowledge Item. Not needed for normal task
 
 ## Creating a KI
 
-File: `conductor/ki/KI-NNN_Human-Readable-Name.md` (NNN = zero-padded, name uses Title-Case-With-Hyphens)
+File: `conductor/knowledge/KI-NN-UPPER-KEBAB-NAME.md` — `NN` is the zero-padded number, the name is UPPERCASE-WITH-HYPHENS (e.g. `KI-04-LOG-FILTERS.md`). Non-numbered KIs use a bare name: `KI-TBD.md`, `KI-AUTHORING.md`.
 
-Then add a row to the index table in `KI_INDEX.md`.
+Then add a row to the index table in `INDEX.md`.
 
 **Template:**
 
 ```markdown
-# KI-NNN: Human Readable Title
+# KI-NN: Human Readable Title
 
 **Scope:** <modules / files affected>
 **Last verified:** YYYY-MM-DD
@@ -38,7 +38,7 @@ Then add a row to the index table in `KI_INDEX.md`.
 
 ## Keeping the index up to date
 
-**Every create, rename, or revision of a KI must be immediately followed by a matching update to `KI_INDEX.md`.** Never leave the index stale. Specifically:
+**Every create, rename, or revision of a KI must be immediately followed by a matching update to `INDEX.md`.** Never leave the index stale. Specifically:
 
 - **New KI** — add a row with all five columns: ID, filename, Topic, When to read, Key files.
 - **Renamed KI** — update the filename cell in the index row.

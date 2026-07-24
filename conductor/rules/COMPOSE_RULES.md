@@ -125,7 +125,7 @@
 ## 16. AI Output Style (when generating Compose for this repo)
 
 - One composable per file. Shared/reusable composables go in the core UI module's `components/`; feature-local components stay in their feature module.
-- No comments unless behaviour is non-obvious (see `ai_behavior.md` §3 Surgical Changes).
+- No comments unless behaviour is non-obvious (see `ai_behavior.md` §6 Human-Voice Comments).
 - Functions ≤ 80 lines. Split if larger.
 - No deprecated APIs.
 

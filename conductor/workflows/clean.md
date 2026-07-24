@@ -23,7 +23,7 @@
 ## Procedure
 
 1. **Diff narrows the scope.** `git diff --name-only main...HEAD` ⇒ act only on those files.
-2. **Per file**: apply the checklist above with `Edit` (surgical), never `Write` (full rewrite).
+2. **Per file**: apply the checklist above with `Edit` (targeted), never `Write` (full rewrite).
 3. **Report**:
    - Lines removed (`Timber.d` / commented code / println / unused imports).
    - Files touched.

@@ -17,23 +17,22 @@ Minimum code that solves the problem. Nothing speculative.
 - No "flexibility" or error handling for impossible scenarios.
 - If 200 lines could be 50, rewrite.
 
-## 3. Surgical Changes
-Touch only what you must. Clean up only your own mess.
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style.
-- Remove imports/vars your changes orphaned; leave pre-existing dead code alone (mention, don't delete).
-- Every changed line must trace to the user's request.
+## 3. Correctness First
+All changes must be done the most correct way, regardless of the effort involved.
+- Pick the most-correct end-state. Never trade correctness for a smaller diff or for less work.
+- If the right fix is large, do the right fix. Say so before starting when it widens scope, but never ship a patch you already know is wrong.
+- If your change reveals a real defect in adjacent code, fix it or surface it explicitly — "it wasn't in scope" is not a reason to leave something broken.
+- Match existing style, and remove imports/vars your changes orphaned.
 
 ## 4. Goal-Driven Execution
 Define success criteria. Loop until verified.
 - "Add validation" → write tests for invalid inputs, make them pass.
-- "Fix the bug" → write a reproducing test, make it pass.
+- "Fix the bug" → write a reproducing test, make it pass (`CORE_RULES.md §12`).
 - "Refactor X" → tests pass before and after.
 - For multi-step tasks, state a brief plan with verify checks per step.
 
 ## 5. KI Sync (MANDATORY)
-For every code change, update the related KI(s) **in the same turn** — drift between code and KI causes silent regressions. Identify affected KIs via `conductor/ki/KI_INDEX.md`; update only what changed. Full discipline: `CORE_RULES.md §6`.
+For every code change, update the related KI(s) **in the same turn** — drift between code and KI causes silent regressions. Identify affected KIs via `conductor/knowledge/INDEX.md`; update only what changed. Full discipline: `CORE_RULES.md §6`.
 
 ## 6. Human-Voice Comments
 Write comments the way a developer on this team would, not the way an AI summarizes code.
@@ -44,4 +43,4 @@ Write comments the way a developer on this team would, not the way an AI summari
 - **Explain WHY, never WHAT.** Only comment a hidden constraint, a non-obvious invariant, or a decision whose reason would surprise a reader who doesn't know the history.
 - **No doc references in code comments.** Never mention KIs, conductor docs, plan files, or ticket IDs in source comments — that belongs in git history. Comments must stand alone.
 
-**Working if:** fewer unnecessary diff lines, fewer rewrites, clarifying questions before implementation rather than after, KIs that match the code.
+**Working if:** the most-correct end-state regardless of diff size, no known-wrong patches shipped to save effort, clarifying questions before implementation rather than after, KIs that match the code.
