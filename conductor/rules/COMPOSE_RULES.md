@@ -18,8 +18,9 @@
 - Primitive state APIs are mandatory: `mutableIntStateOf` / `mutableFloatStateOf` / `mutableLongStateOf` / `mutableDoubleStateOf`. Never `mutableStateOf(0)`.
 - Hoist state. A `@Composable` that takes a `XxxUiState` and `(Event) -> Unit` callbacks is the correct shape. See `INSTRUMENTED_TEST_STANDARD.md` § Two-layer composition.
 - `collectAsStateWithLifecycle()` always. Never `collectAsState()`.
-- `rememberSaveable` for any state that must survive config changes / process death.
+- `rememberSaveable` **per field, never for a whole `XxxUIState` object** — and only for state the user would otherwise have to re-enter or re-find by hand. Save what the user paid for with their own time and what is still true after the process died: the current page index (as `PageCurlState` already does), a search query, the id of the comic or category being worked on, navigation arguments. **Never save** transient or externally-owned state — loading/scanning flags, dialog or bottom-sheet visibility, SAF-permission-granted or worker-running booleans, or an operation's result. Those describe what the dead process was *doing*, so restoring them shows a spinner nothing will dismiss, or a "scan in progress" flag whose real subject died with the process. Anything not explicitly saved must re-derive to its default. Recovering an interrupted scan is a persistence concern, not a saved-state one — see [`architecture.md` § Persistence & I/O](architecture.md).
 - `derivedStateOf { ... }` for any computed value whose inputs change less often than the reads.
+- **State derivation belongs in the ViewModel.** Mapping, filtering, sorting, grouping, formatting, and any `if` / `when` chain that turns domain data into what the screen renders is computed in the ViewModel and arrives as a ready field on `XxxUIState`. Wrapping it in `remember { }` fixes the recomposition cost but leaves it in the wrong layer — it is then reachable only through an instrumented test when it is plain unit-test material. `XxxScreen` reads its state and decides how to *look*, nothing more. (§12 already requires this for list data; it holds for every derived field.)
 
 ## 3. Recomposition
 
@@ -90,6 +91,7 @@
 - Custom controls expose role: `Modifier.semantics { role = Role.Button }`.
 - Test tags (`Modifier.testTag(...)`) are NOT a substitute for `contentDescription`. Both are needed; one for tests, one for users.
 - Minimum touch target: 48dp × 48dp. Wrap small icons with `Modifier.minimumInteractiveComponentSize()` or explicit padding.
+- **A clickable icon is an `IconButton`.** Never `Icon` + `Modifier.clickable` for an icon-only action: that makes the touch target the icon's own bounds — typically 24dp, half the minimum above — with no ripple and no `Role.Button` semantics, while `IconButton` gives all three for free. In the viewer this is worse than a missed tap: the tap-to-turn interaction claims the whole page area, so a tap that misses an undersized icon falls through and turns the page instead of doing what the user aimed at. The app is also read one-handed for long stretches, where thumb accuracy is at its worst. Applies to every icon-only affordance: close ×, back arrow, favourite toggle, overflow, clear-field. When the click really belongs to a larger row or card surface, put it on that surface and leave the icon decorative with `contentDescription = null` — never both.
 
 ## 12. Lists, Paging, Large Data
 
@@ -119,6 +121,8 @@
 - `runBlocking` in composition.
 - Mutating state during composition (setting a `MutableState` from a child without an event handler).
 - `Box` for a layout that is really a `Column` / `Row` with alignment.
+- A clickable `Box` / `Row` / `Column` hand-built to replace a Material 3 component that would have worked — see [CORE_RULES §9](CORE_RULES.md).
+- `Icon` + `Modifier.clickable` for an icon-only action — use `IconButton` (§11).
 - Nested `LazyColumn` inside `LazyColumn` — use a single lazy list with `item { }` + `items { }`.
 - Hardcoded `Color(0x...)`, hardcoded user-facing strings, hardcoded `contentDescription`.
 

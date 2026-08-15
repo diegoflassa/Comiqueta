@@ -13,3 +13,4 @@ Omit the `(CODE)` suffix when no ticket exists. On a release cut, retitle `## Un
 ## Unreleased
 
 - Aligned `conductor/` structure and rules with the shared cross-project reference layout
+- Added seven AI-code-review rules to `conductor/rules/`: cancellation re-throw, named seam interfaces over lambdas, selective saved state, ViewModel-side derivation, `IconButton` for icon-only actions, Material 3 over a hand-rolled `Box`, enum over an all-object sealed hierarchy

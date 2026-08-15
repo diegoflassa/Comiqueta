@@ -30,11 +30,31 @@ Minimize tokens every task. Read only what you need (targeted `grep`/`glob`, lin
 2. **Focus** — read only the target range.
 3. **Note** — record findings in context (or a KI); don't re-read.
 
-## 5. No Inline Fully-Qualified Names (MANDATORY)
+## 5. Readability & Simplicity (MANDATORY)
+
+Avoid clever tricks, overly terse one-liners, or complex language constructs that save a few lines at the cost of obviousness. **Prefer code readability instead.** Code is read far more often than it is written. Clear, straightforward code reduces bugs and helps the next developer (or AI) understand the intent instantly.
+
+## 6. Kotlin Code Style
+
+### 5.1 No Inline Fully-Qualified Names (MANDATORY)
 
 Never reference a project type by its FQN inside an expression, generic, or annotation argument (e.g. a `hiltViewModel<…>()` or `R.drawable.…` written with a full package path). Add a top-of-file `import` and use the simple name. **Exception:** KDoc cross-references (`[fully.qualified.Symbol]`) require the FQN — that is correct.
 
 **Rationale:** inline FQNs bloat call sites, hide real dependencies from the import block, and break IDE refactor/rename.
+
+### 5.2 Enum When Every Case Is Stateless (MANDATORY)
+
+If every subtype of a `sealed class` / `sealed interface` is a bare `object` / `data object`, it is an `enum class`. A sealed hierarchy earns its cost only when at least one case carries data that distinguishes two instances of that same case — `StatisticsUIState.Success(stats)` and `.Error(message)`, or `DragInteraction`'s `StartEndDragInteraction` / `GestureDragInteraction`. `DragInteraction.PointerBehavior` is the other side of the same coin: two stateless cases, so it is correctly an `enum class` nested inside that sealed interface. A hierarchy of only `data object`s belongs on that side too.
+
+What the enum buys that an all-objects sealed hierarchy does not:
+
+- `entries` — iterate the cases for an exhaustive UI mapping, a settings picker, or a format filter, without maintaining a hand-written `listOf(...)` that silently goes stale when a case is added.
+- `valueOf` / `name` — free round-trip for Room columns and DataStore keys in both directions; a sealed hierarchy needs a hand-written `TypeConverter` for the same thing.
+- `when` exhaustiveness with none of the per-case declaration noise.
+
+**Promote to sealed the moment one case needs a payload.** That is the signal, and it is a mechanical change. Do not model as sealed pre-emptively "in case a case grows a field later" (`ai_behavior.md` §2).
+
+**Carve-out — the presentation state machine stays sealed.** Per-screen `XxxIntent` / `XxxEffect` / `XxxUIState` (`ViewerIntent`, `HomeEffect`, `SettingsIntent`, …) stay sealed even while every case is a `data object`: [`architecture.md` § MVI Contract](architecture.md) mandates that shape per screen, those hierarchies reliably grow payload-carrying cases as a screen gains fields, and the ViewModel and route composable do `is`-checks against them. Navigation keys (`Screen`, `NavigationIntent`, `NavigationEffect`) are in the same bucket — they are `@Serializable` `NavKey`s, not a value set. This subsection scopes to **domain and data outcome types** in `core/domain` / `core/data` — not to the MVI contract or navigation.
 
 ## 6. KI Sync Rule (GLOBAL — MANDATORY)
 
@@ -200,6 +220,7 @@ Filter names are public string contracts. Any rename or removal updates, **in th
 
 - **No inline reusable widgets.** Never define a reusable UI element as a local function or private composable inside a screen file. Extract it to its own file.
 - **Placement:** a composable used by 2+ modules goes in `core/ui/`; one used by a single feature goes in `feature-<name>/ui/components/`.
+- **Build on the Material 3 component, not on a `Box`.** When the thing being built *is* a button, text field, card, chip, checkbox, or dialog, start from the Material 3 composable and restyle it through its `colors` / `shape` / `border` / `contentPadding` parameters. Fall back to a `Box` / `Row` / `Column` with `.background().clip().clickable()` only when the design genuinely cannot be expressed through those parameters, and say why in a one-line comment at the declaration. A hand-rolled clickable `Box` silently drops the 48dp minimum touch target, ripple / state-layer feedback, `Role` semantics for TalkBack, `enabled` handling that also blocks the click, and focus traversal for an attached keyboard. Reproducing the *visual* result is not the bar — none of those behaviours show up in a screenshot or in a `@Preview`, which is exactly why they get lost.
 - **Previews are mandatory.** Every widget file carries at least one `@Preview` per [`PREVIEW_STANDARD.md`](PREVIEW_STANDARD.md). A widget without one is incomplete.
 - Recomposition / stability / memory rules: [`COMPOSE_RULES.md`](COMPOSE_RULES.md). Screen test-friendliness: [`INSTRUMENTED_TEST_STANDARD.md`](INSTRUMENTED_TEST_STANDARD.md).
 
@@ -257,7 +278,7 @@ Omit the `(CODE)` suffix when no ticket exists. On a release cut, retitle `## Un
 
 Comiqueta, Slotify, and BipSale share one AI-workflow rule set and one developer. Whenever a **shared** rule is added, updated, or deleted in any of the three, apply the equivalent change to the other two **in the same turn**.
 
-**What counts as shared:** §0 Stability · §2 Git Safety · §3 Token Economy · §4 Large File Protocol · §5 No Inline FQN · §6 KI Sync (all sub-sections) · §7 Planning + META_PLANNING + Lifecycle · §8.1–8.5 log filter format, coverage, redaction-by-variant, protection, rename · §9 Composable Extraction · §10 String Ownership (the ownership model, not the key namespaces) · §12 Regression Test · §13 DB Migration Safety (Comiqueta ↔ BipSale only — Slotify has no Room) · §14 Changelog · this section · everything in `ai_behavior.md` · everything in [`GRADLE_RULES.md`](GRADLE_RULES.md).
+**What counts as shared:** §0 Stability · §2 Git Safety · §3 Token Economy · §4 Large File Protocol · §5 Kotlin Code Style (5.1 No Inline FQN, 5.2 Enum-vs-sealed) · §6 KI Sync (all sub-sections) · §7 Planning + META_PLANNING + Lifecycle · §8.1–8.5 log filter format, coverage, redaction-by-variant, protection, rename · §9 Composable Extraction · §10 String Ownership (the ownership model, not the key namespaces) · §12 Regression Test · §13 DB Migration Safety (Comiqueta ↔ BipSale only — Slotify has no Room) · §14 Changelog · this section · everything in `ai_behavior.md` · everything in [`GRADLE_RULES.md`](GRADLE_RULES.md).
 
 **What is NOT shared** — adapt or omit, never copy verbatim: module graphs, DI framework (Hilt vs Koin), logging API (`TimberLogger` vs `Timber` vs `Logger`/Kermit), persistence (Room/SAF vs Room/Retrofit vs Supabase), build config, locale sets, and everything in `architecture.md`.
 
