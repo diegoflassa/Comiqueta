@@ -30,19 +30,19 @@ Minimize tokens every task. Read only what you need (targeted `grep`/`glob`, lin
 2. **Focus** — read only the target range.
 3. **Note** — record findings in context (or a KI); don't re-read.
 
-## 5. Readability & Simplicity (MANDATORY)
+## 5. Code Style & Readability
+
+### 5.1 Readability & Simplicity (MANDATORY)
 
 Avoid clever tricks, overly terse one-liners, or complex language constructs that save a few lines at the cost of obviousness. **Prefer code readability instead.** Code is read far more often than it is written. Clear, straightforward code reduces bugs and helps the next developer (or AI) understand the intent instantly.
 
-## 6. Kotlin Code Style
-
-### 5.1 No Inline Fully-Qualified Names (MANDATORY)
+### 5.2 No Inline Fully-Qualified Names (MANDATORY)
 
 Never reference a project type by its FQN inside an expression, generic, or annotation argument (e.g. a `hiltViewModel<…>()` or `R.drawable.…` written with a full package path). Add a top-of-file `import` and use the simple name. **Exception:** KDoc cross-references (`[fully.qualified.Symbol]`) require the FQN — that is correct.
 
 **Rationale:** inline FQNs bloat call sites, hide real dependencies from the import block, and break IDE refactor/rename.
 
-### 5.2 Enum When Every Case Is Stateless (MANDATORY)
+### 5.3 Enum When Every Case Is Stateless (MANDATORY)
 
 If every subtype of a `sealed class` / `sealed interface` is a bare `object` / `data object`, it is an `enum class`. A sealed hierarchy earns its cost only when at least one case carries data that distinguishes two instances of that same case — `StatisticsUIState.Success(stats)` and `.Error(message)`, or `DragInteraction`'s `StartEndDragInteraction` / `GestureDragInteraction`. `DragInteraction.PointerBehavior` is the other side of the same coin: two stateless cases, so it is correctly an `enum class` nested inside that sealed interface. A hierarchy of only `data object`s belongs on that side too.
 
@@ -278,7 +278,7 @@ Omit the `(CODE)` suffix when no ticket exists. On a release cut, retitle `## Un
 
 Comiqueta, Slotify, and BipSale share one AI-workflow rule set and one developer. Whenever a **shared** rule is added, updated, or deleted in any of the three, apply the equivalent change to the other two **in the same turn**.
 
-**What counts as shared:** §0 Stability · §2 Git Safety · §3 Token Economy · §4 Large File Protocol · §5 Kotlin Code Style (5.1 No Inline FQN, 5.2 Enum-vs-sealed) · §6 KI Sync (all sub-sections) · §7 Planning + META_PLANNING + Lifecycle · §8.1–8.5 log filter format, coverage, redaction-by-variant, protection, rename · §9 Composable Extraction · §10 String Ownership (the ownership model, not the key namespaces) · §12 Regression Test · §13 DB Migration Safety (Comiqueta ↔ BipSale only — Slotify has no Room) · §14 Changelog · this section · everything in `ai_behavior.md` · everything in [`GRADLE_RULES.md`](GRADLE_RULES.md).
+**What counts as shared:** §0 Stability · §2 Git Safety · §3 Token Economy · §4 Large File Protocol · §5 Code Style & Readability (5.1 Readability, 5.2 No Inline FQN, 5.3 Enum-vs-sealed) · §6 KI Sync (all sub-sections) · §7 Planning + META_PLANNING + Lifecycle · §8.1–8.5 log filter format, coverage, redaction-by-variant, protection, rename · §9 Composable Extraction · §10 String Ownership (the ownership model, not the key namespaces) · §12 Regression Test · §13 DB Migration Safety (Comiqueta ↔ BipSale only — Slotify has no Room) · §14 Changelog · this section · everything in `ai_behavior.md` · everything in [`GRADLE_RULES.md`](GRADLE_RULES.md).
 
 **What is NOT shared** — adapt or omit, never copy verbatim: module graphs, DI framework (Hilt vs Koin), logging API (`TimberLogger` vs `Timber` vs `Logger`/Kermit), persistence (Room/SAF vs Room/Retrofit vs Supabase), build config, locale sets, and everything in `architecture.md`.
 
