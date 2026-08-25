@@ -43,4 +43,23 @@ Write comments the way a developer on this team would, not the way an AI summari
 - **Explain WHY, never WHAT.** Only comment a hidden constraint, a non-obvious invariant, or a decision whose reason would surprise a reader who doesn't know the history.
 - **No doc references in code comments.** Never mention KIs, conductor docs, plan files, or ticket IDs in source comments — that belongs in git history. Comments must stand alone.
 
+## 7. Deliverable Text Comes in a Box
+
+Any text produced **for the user to use somewhere else** is returned inside a fenced code block, so it can
+be copied in one gesture.
+
+- **Applies to:** handoff prompts, commit messages, PR bodies, status updates, messages written for another
+  person, config snippets, translated strings, doc text destined for a file the user will paste it into —
+  anything answering "write me a ...".
+- **The box holds the deliverable verbatim and nothing else.** Commentary, caveats and questions go
+  outside it, before or after. A box the user has to edit before pasting is a box that failed.
+- **One box per deliverable.** Two texts means two boxes, never one box with a separator inside.
+- **Never nest a triple-backtick fence inside a box** — it closes it early. Indent inner code by four
+  spaces, or fence the outer box with `~~~` instead.
+- **Not affected:** ordinary answers, explanations, reasoning, and edits written straight into files.
+  Wrapping a conversational reply in a box helps nobody and makes it harder to read.
+
+**Why:** a deliverable interleaved with prose gets retyped or half-pasted. A box is one click, and drawing
+its edges also forces a decision about where the artefact ends and the commentary begins.
+
 **Working if:** the most-correct end-state regardless of diff size, no known-wrong patches shipped to save effort, clarifying questions before implementation rather than after, KIs that match the code.
