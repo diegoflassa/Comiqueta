@@ -1,8 +1,7 @@
-@file:Suppress("UnusedFlow")
-
 package dev.diegoflassa.comiqueta.domain.usecase
 
-import dev.diegoflassa.comiqueta.core.data.database.entity.CategoryEntity
+import com.google.common.truth.Truth.assertThat
+import dev.diegoflassa.comiqueta.core.domain.model.Category
 import dev.diegoflassa.comiqueta.core.domain.repository.ICategoryRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -15,8 +14,15 @@ import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import com.google.common.truth.Truth.assertThat // Using Google Truth
 
+/**
+ * The use case is a pass-through onto [ICategoryRepository]. What is worth pinning is exactly that:
+ * it must hand back the repository's own flow without filtering, sorting or re-wrapping it, because
+ * the Home screen relies on the repository's ordering.
+ *
+ * This suite previously mocked `CategoryEntity`, the Room row. The contract has been the domain
+ * [Category] for some time, so it no longer compiled — see CORE_RULES §6 on stale artefacts.
+ */
 @ExperimentalCoroutinesApi
 @RunWith(MockitoJUnitRunner::class)
 class LoadCategoriesUseCaseTest {
@@ -32,37 +38,30 @@ class LoadCategoriesUseCaseTest {
     }
 
     @Test
-    fun `invoke should call repository and return its flow of categories`() = runTest {
-        // Arrange
+    fun `invoke returns the repository categories untouched and in order`() = runTest {
         val expectedCategories = listOf(
-            CategoryEntity(id = 1, name = "DC Comics"),
-            CategoryEntity(id = 2, name = "Marvel")
+            Category(id = 1L, name = "DC Comics", createdAt = 1_000L),
+            Category(id = 2L, name = "Marvel", createdAt = 2_000L)
         )
-        val expectedFlow = flowOf(expectedCategories)
+        whenever(mockCategoryRepository.getAllCategories()).thenReturn(flowOf(expectedCategories))
 
-        whenever(mockCategoryRepository.getAllCategories()).thenReturn(expectedFlow)
+        val result = loadCategoriesUseCase().first()
 
-        // Act
-        val resultFlow = loadCategoriesUseCase()
-
-        // Assert
-        assertThat(resultFlow.first()).isEqualTo(expectedCategories)
+        // Order matters: the screen renders the chips in emission order, so an accidental sort here
+        // would silently reshuffle the filter row.
+        assertThat(result).containsExactlyElementsIn(expectedCategories).inOrder()
         verify(mockCategoryRepository).getAllCategories()
     }
 
     @Test
-    fun `invoke when repository returns empty list should return empty list flow`() = runTest {
-        // Arrange
-        val expectedCategories = emptyList<CategoryEntity>()
-        val expectedFlow = flowOf(expectedCategories)
+    fun `invoke propagates an empty list rather than swallowing the emission`() = runTest {
+        whenever(mockCategoryRepository.getAllCategories()).thenReturn(flowOf(emptyList()))
 
-        whenever(mockCategoryRepository.getAllCategories()).thenReturn(expectedFlow)
+        val result = loadCategoriesUseCase().first()
 
-        // Act
-        val resultFlow = loadCategoriesUseCase()
-
-        // Assert
-        assertThat(resultFlow.first()).isEqualTo(expectedCategories)
+        // "No categories yet" and "categories never loaded" render differently, so the empty
+        // emission has to survive the use case.
+        assertThat(result).isEmpty()
         verify(mockCategoryRepository).getAllCategories()
     }
 }

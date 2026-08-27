@@ -40,4 +40,17 @@ configure<LibraryExtension> {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
+
+    testOptions {
+        unitTests {
+            // The ViewModel suites construct real UI states, and those defaults read Android
+            // constants (Uri.EMPTY, android.util.Log levels). Against the stub android.jar every
+            // such member throws "not mocked", so without this the suites cannot run on the JVM
+            // at all. Returning defaults keeps them host-side instead of forcing Robolectric.
+            isReturnDefaultValues = true
+            // Robolectric reads the merged resources of the module under test; without this the
+            // suites that run under it cannot resolve R.string lookups made on error paths.
+            isIncludeAndroidResources = true
+        }
+    }
 }

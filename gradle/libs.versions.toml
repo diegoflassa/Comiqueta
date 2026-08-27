@@ -38,6 +38,7 @@ org-mockito-kotlin = "6.3.0"
 app-cash-turbine = "1.2.1"
 androidx-paging-common = "3.5.1"
 com-google-truth = "1.4.5"
+org-robolectric = "4.16.1"
 
 #Firebase
 firebase-bom = "34.18.0"
@@ -182,6 +183,7 @@ org-mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref
 app-cash-turbine = { module = "app.cash.turbine:turbine", version.ref = "app-cash-turbine" }
 androidx-paging-common = { module = "androidx.paging:paging-common-ktx", version.ref = "androidx-paging-common" }
 com-google-truth = { module = "com.google.truth:truth", version.ref = "com-google-truth" }
+org-robolectric = { module = "org.robolectric:robolectric", version.ref = "org-robolectric" }
 
 #Firebase
 com-google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }

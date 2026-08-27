@@ -18,6 +18,12 @@ dependencies {
     //Common Testing
     testImplementation(libs.junit)
     testImplementation(libs.ax.test.ext.junit.ktx)
+    testImplementation(libs.org.jetbrains.kotlinx.coroutines.test)
+    testImplementation(libs.org.mockito.core)
+    testImplementation(libs.org.mockito.inline)
+    testImplementation(libs.org.mockito.kotlin)
+    testImplementation(libs.com.google.truth)
+    testImplementation(libs.org.robolectric)
     androidTestImplementation(libs.ax.test.runner)
     androidTestImplementation(libs.ax.test.uiautomator)
     androidTestImplementation(libs.ax.benchmark.macro.junit4)
