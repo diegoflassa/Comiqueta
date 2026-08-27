@@ -47,8 +47,12 @@ fun BannerAdView(
 
                 val activity = activityContext as? Activity
 
+                // getCurrentOrientationAnchoredAdaptiveBannerAdSize is deprecated in
+                // play-services-ads 25.x along with the rest of the fixed-height anchored family.
+                // getLargeAnchoredAdaptiveBannerAdSize is the supported replacement and picks the
+                // orientation itself, so the "current orientation" part of the old name is implicit.
                 val adSize = activity?.let { currentActivity ->
-                    AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+                    AdSize.getLargeAnchoredAdaptiveBannerAdSize(
                         currentActivity,
                         AdSize.FULL_WIDTH
                     )

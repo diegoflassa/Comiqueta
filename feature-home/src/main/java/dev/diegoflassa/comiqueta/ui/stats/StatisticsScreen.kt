@@ -18,8 +18,8 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.ImportContacts
-import androidx.compose.material.icons.filled.LibraryBooks
-import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,7 +40,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.diegoflassa.comiqueta.core.domain.model.CollectionStats
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
@@ -109,7 +109,7 @@ private fun StatisticsContent(stats: CollectionStats) {
                 StatRow(
                     label = stringResource(R.string.stats_total_comics),
                     value = stats.totalComics.toString(),
-                    icon = Icons.Default.LibraryBooks
+                    icon = Icons.AutoMirrored.Filled.LibraryBooks
                 )
                 StatRow(
                     label = stringResource(R.string.stats_read_comics),
@@ -119,12 +119,12 @@ private fun StatisticsContent(stats: CollectionStats) {
                 StatRow(
                     label = stringResource(R.string.stats_in_progress_comics),
                     value = stats.inProgressComics.toString(),
-                    icon = Icons.Default.MenuBook
+                    icon = Icons.AutoMirrored.Filled.MenuBook
                 )
                 StatRow(
                     label = stringResource(R.string.stats_unread_comics),
                     value = stats.unreadComics.toString(),
-                    icon = Icons.Default.LibraryBooks
+                    icon = Icons.AutoMirrored.Filled.LibraryBooks
                 )
                 StatRow(
                     label = stringResource(R.string.stats_favorite_comics),

@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.ump.ConsentDebugSettings
 import com.google.android.ump.ConsentInformation
@@ -67,12 +68,10 @@ class MainActivity : ComponentActivity() {
 
     private fun configureAdRequestFlags() {
         val requestConfigurationBuilder = RequestConfiguration.Builder()
-        requestConfigurationBuilder.setTagForChildDirectedTreatment(
-            RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
-        )
-        requestConfigurationBuilder.setTagForUnderAgeOfConsent(
-            RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
-        )
+        // Replaces the deprecated setTagForChildDirectedTreatment/setTagForUnderAgeOfConsent int
+        // pair: play-services-ads 25.x folds both into one AgeRestrictedTreatment enum, and
+        // UNSPECIFIED is what the two former UNSPECIFIED constants meant together.
+        requestConfigurationBuilder.setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         requestConfigurationBuilder.setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_PG)
         val requestConfiguration = requestConfigurationBuilder.build()
         MobileAds.setRequestConfiguration(requestConfiguration)

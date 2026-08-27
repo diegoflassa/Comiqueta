@@ -1,17 +1,19 @@
 # KI-04: App Log Filters Catalogue
 
 **Scope:** all modules (cross-cutting)
-**Last verified:** 2026-07-13 (full-repo grep sweep — 18 distinct filter tags catalogued across 21 files; found a real compliance gap, see §Compliance gaps below)
+**Last verified:** 2026-08-27 (`[Comiqueta][Ime]` added; 17 log sites across 6 files stopped emitting raw SAF URIs, paths and file names, and the SAF take/release outcome moved off `logD` — see §Compliance gaps)
 
 ## Problem
 
-This KI is the **single source of truth** for every runtime log filter the app emits: the filter tag, the class it lives in, and what it lets an engineer diagnose from `logcat`. **Every filter listed here is protected** — none may be stripped by `/remove_filter`, `/clean`, or any "log hygiene" sweep unless the user explicitly names it and confirms (see `CORE_RULES.md` §8 "Log Filter Management" and `workflows/remove_filter.md`).
+This KI is the **single source of truth** for every runtime log filter the app emits: the filter tag, the class it lives in, and what it lets an engineer diagnose from `logcat`. **Every filter listed here is protected** — none may be stripped by `/remove_filter`, `/clean`, or any "log hygiene" sweep unless the user explicitly names it and confirms (see `LOGGING_RULES.md` §8 "Log Filter Management" and `workflows/remove_filter.md`).
 
-## Filter convention (CORE_RULES.md §8)
+## Filter convention (LOGGING_RULES.md §8)
 
 - **Format:** `[FILTER_PAI][FILTRO_FILHO]` → in this project, `[Comiqueta][FILTER_NAME]`. One filter per log message, leading the message.
 - **Emitted via** `TimberLogger.logD/logI/logW/logE/logA(CLASS, "[Comiqueta][FILTER_NAME] message")` — never raw `Timber.*` or `android.util.Log` outside the `TimberLogger`/`CrashReportingTree` wrapper files themselves.
 - `logI` / `logW` / `logE` are intentional production signal and are never stripped regardless of filter.
+- **Long messages are split, not truncated.** `TimberLogger` routes every message through `LogChunker`, which cuts on a UTF-8 byte budget and repeats the filter on each piece as `[Comiqueta][Filter][part 2/5]`. A `grep` on a filter therefore returns the whole message. Timber's own splitter counts characters and drops the filter, so it could not do this.
+- **Redaction is a call-site helper**, `LogRedaction` (§8.3): `uri`, `path`, `fileName`, `text`. Only `release` redacts. A SAF tree URI embeds the library path and that routinely contains the device owner's real name, so `uri=${'$'}{LogRedaction.uri(uri)}` is the required shape — never `${'$'}uri`.
 - **MANDATORY:** every new log with a filter MUST be added to the catalogue below in the same turn.
 
 ## Catalogue
@@ -21,6 +23,7 @@ This KI is the **single source of truth** for every runtime log filter the app e
 | Filter | Primary class | What it monitors | Level |
 |---|---|---|---|
 | `[Comiqueta][MyApplication]` | `app/.../MyApplication.kt` | App process bootstrap: `onCreate` entry, Clarity session-recording SDK init, propagating the Clarity session URL to Crashlytics. | Mixed I/W/E — production signal |
+| `[Comiqueta][Ime]` | `core/.../extensions/ContextExtensions.kt` | The keyboard show/hide pair failing to resolve a Window — i.e. being called with an application or service Context, which has none. Previously this branch returned silently, so a keyboard that never appeared looked like a broken field rather than a miswired call. | `logW` |
 | `[Comiqueta][Main]` | `app/.../MainActivity.kt` | AdMob bootstrap: `RequestConfiguration`, UMP consent-info update/status, consent form shown/errors, MobileAds SDK init status, ad-request gating. | Mixed D/I/W/E — production signal |
 
 ### Ads (`feature-ads`)
@@ -99,7 +102,7 @@ No 3-segment `[Comiqueta][X][Y]` tags exist. No `android.util.Log`/raw `Timber.*
 
 Filter names are **public string contracts**. Renaming or removing any one requires updating, **in the same turn**:
 1. this KI (the row),
-2. `CORE_RULES.md` §8 (Log Filter Management), if it names the filter as an example,
+2. `LOGGING_RULES.md` §8 (Log Filter Management), if it names the filter as an example,
 3. `workflows/remove_filter.md`, if it names the filter,
 4. every production `TimberLogger.log*` call site that emits the tag,
 5. every test assertion on the removed/renamed tag.

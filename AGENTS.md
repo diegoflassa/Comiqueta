@@ -7,9 +7,10 @@ Single bootstrap file for all AI agents working on this repo.
 ## Bootstrap (read in order, stop if any fails)
 
 1. **Behavior rules** → [conductor/rules/ai_behavior.md](conductor/rules/ai_behavior.md) — think-before-code, correctness-first, simplicity.
-2. **Operational + project rules** → [conductor/rules/CORE_RULES.md](conductor/rules/CORE_RULES.md) — git safety, token economy, no-inline-FQN, KI/planning discipline, Hilt/Room/SAF/Timber/build. Self-contained.
-3. **Project context** → [conductor/index.md](conductor/index.md) — documentation map + architecture, rules, workflows.
-4. **Knowledge index** → [conductor/knowledge/INDEX.md](conductor/knowledge/INDEX.md) — one-line KI summaries. Fetch individual `KI-NN-*.md` files **only** when the current task matches an index entry.
+2. **Operational + project rules** → [conductor/rules/CORE_RULES.md](conductor/rules/CORE_RULES.md) — git safety, token economy, code style, KI discipline, regression tests. The rule set spans sibling files under `conductor/rules/` — CORE_RULES holds the master index mapping every `§N` to its file. Self-contained: this repository needs no other checkout.
+3. **Rules index** → [conductor/rules/INDEX.md](conductor/rules/INDEX.md) — which rules file owns which topic, and a topic→section lookup. Load a rules file on match; jump to the `§N` you need rather than reading whole.
+4. **Project context** → [conductor/index.md](conductor/index.md) — documentation map + architecture, rules, workflows.
+5. **Knowledge index** → [conductor/knowledge/INDEX.md](conductor/knowledge/INDEX.md) — one-line KI summaries. Fetch individual `KI-NN-*.md` files **only** when the current task matches an index entry.
 
 ## Knowledge Items
 
@@ -47,7 +48,7 @@ On-demand — load only when the task matches:
 - `conductor/rules/CORE_RULES.md` — operational + project rules (git safety, token economy, KI/planning discipline). **Self-contained — no external/global rules file.**
 - Project-specific context in `conductor/index.md`.
 - Layering: `UI → VM → Domain → Data`.
-- **All app code must be logged** so a failure can be root-caused from a log capture alone. `debug` may log sensitive values in full; **`release` is the only variant that must redact** — and redacted never means silent (`CORE_RULES.md` §8.2 + §8.3).
+- **All app code must be logged** so a failure can be root-caused from a log capture alone. `debug` may log sensitive values in full; **`release` is the only variant that must redact** — and redacted never means silent (`LOGGING_RULES.md` §8.2 + §8.3).
 - **Never `fallbackToDestructiveMigration()`** — every schema change ships a version bump + `Migration` + exported schema + passing migration test in the same turn (`CORE_RULES.md` §13).
 - Every bug fix ships a pinning regression test in the same turn (`CORE_RULES.md` §12).
 - `NO commit without explicit approval.`

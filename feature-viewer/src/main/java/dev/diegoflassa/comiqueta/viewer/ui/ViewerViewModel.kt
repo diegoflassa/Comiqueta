@@ -14,6 +14,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.diegoflassa.comiqueta.core.data.preferences.PreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsRepository
+import dev.diegoflassa.comiqueta.core.data.timber.LogRedaction
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.data.util.CoverUtils
 import dev.diegoflassa.comiqueta.core.domain.usecase.comic.IGetComicUseCase
@@ -287,7 +288,7 @@ class ViewerViewModel @Inject constructor(
     private fun handleLoadComic(uri: Uri) {
         viewModelScope.launch {
             if (currentComicUri == uri) {
-                TimberLogger.logI(TAG, "[Comiqueta][Viewer] LoadComic: Comic $uri already loaded. Skipping.")
+                TimberLogger.logI(TAG, "[Comiqueta][Viewer] LoadComic: comic already loaded, skipping uri=${LogRedaction.uri(uri)}")
                 return@launch
             }
             try {
@@ -341,7 +342,7 @@ class ViewerViewModel @Inject constructor(
                 _uiState.update { it.copy(comicPath = Uri.EMPTY) }
             } catch (ex: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(ex)
-                TimberLogger.logE(TAG, "[Comiqueta][Viewer] LoadComic (getComicInfo): Error loading comic $uri", ex)
+                TimberLogger.logE(TAG, "[Comiqueta][Viewer] LoadComic (getComicInfo): error loading comic uri=${LogRedaction.uri(uri)}", ex)
                 val errorMessage = ex.localizedMessage ?: "Failed to load comic"
                 _uiState.update { it.copy(error = errorMessage, comicPath = Uri.EMPTY) }
                 _effect.send(ViewerEffect.ShowError(errorMessage))

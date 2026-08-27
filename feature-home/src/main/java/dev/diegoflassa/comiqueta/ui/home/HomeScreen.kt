@@ -840,7 +840,7 @@ fun ComicsContentForPreview(
                         ViewMode.LIST -> {
                             items(
                                 comics.size,
-                                key = { index -> comics[index].filePath.toString() }) { index ->
+                                key = { index -> comics[index].filePath }) { index ->
                                 ComicListItem(
                                     comic = comics[index],
                                     aspectRatio = COMIC_COVER_ASPECT_RATIO,
@@ -872,7 +872,7 @@ fun ComicsContentForPreview(
                                 ) {
                                     items(
                                         count = comics.size,
-                                        key = { index -> comics[index].filePath.toString() }
+                                        key = { index -> comics[index].filePath }
                                     ) { index ->
                                         ComicCoverItem(
                                             comic = comics[index],

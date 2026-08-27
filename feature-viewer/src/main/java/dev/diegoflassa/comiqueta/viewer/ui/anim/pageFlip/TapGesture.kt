@@ -37,30 +37,30 @@ internal fun Modifier.tapGesture(
         // Use Initial pass to see events before Zoom logic consumes them
         val down = awaitFirstDown(pass = androidx.compose.ui.input.pointer.PointerEventPass.Initial, requireUnconsumed = false)
         
+        // The loop ends only by finding the release or by leaving the gesture entirely, so `up` is
+        // non-null on every path that reaches the code below. Looping on the null check rather than
+        // on `true` is what lets the compiler see that: the old `while (true)` + `break` shape needed
+        // a follow-up `if (up == null)` that could never fire, which the compiler flagged as a
+        // condition that is always false.
         var up: androidx.compose.ui.input.pointer.PointerInputChange? = null
         try {
             // Wait for up or cancellation using Initial pass manually
-            while (true) {
+            while (up == null) {
                 val event = awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
                 val change = event.changes.firstOrNull { it.id == down.id }
                 if (change == null) {
                     // Pointer lost (cancelled?)
                     return@awaitEachGesture
                 }
-                
+
                 if (!change.pressed) {
                     up = change
-                    break
                 }
                 // A consumed change is deliberately not treated as a cancellation: the zoom
                 // handler consumes on the slightest wobble, and the distance check below is
                 // what separates a tap from a drag.
             }
         } catch (e: Exception) {
-            return@awaitEachGesture
-        }
-
-        if (up == null) {
             return@awaitEachGesture
         }
         

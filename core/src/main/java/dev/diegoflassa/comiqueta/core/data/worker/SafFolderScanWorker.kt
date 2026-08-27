@@ -29,6 +29,7 @@ import dev.diegoflassa.comiqueta.core.data.database.dao.ComicsDao
 import dev.diegoflassa.comiqueta.core.data.database.entity.ComicEntity
 import dev.diegoflassa.comiqueta.core.data.preferences.PreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsFolderRepository
+import dev.diegoflassa.comiqueta.core.data.timber.LogRedaction
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.data.util.CoverUtils
 import dev.diegoflassa.comiqueta.core.model.ComicFileType
@@ -163,7 +164,7 @@ class SafFolderScanWorker @AssistedInject constructor(
             for (folderUri in folderUrisToScan) {
                 if (!isActive) break
 
-                TimberLogger.logD(TAG, "[Comiqueta][SafFolderScanWorker] Processing folder URI: $folderUri")
+                TimberLogger.logD(TAG, "[Comiqueta][SafFolderScanWorker] processing folder uri=${LogRedaction.uri(folderUri)}")
                 val rootDoc = try {
                     DocumentFile.fromTreeUri(appContext, folderUri)
                 } catch (ex: Exception) {
@@ -226,11 +227,11 @@ class SafFolderScanWorker @AssistedInject constructor(
                             )
                         }
                     }
-                    TimberLogger.logD(TAG, "[Comiqueta][SafFolderScanWorker] Scan finished for URI: $folderUri")
+                    TimberLogger.logD(TAG, "[Comiqueta][SafFolderScanWorker] scan finished uri=${LogRedaction.uri(folderUri)}")
                 } catch (ex: Exception) {
                     FirebaseCrashlytics.getInstance().recordException(ex)
                     val scanErrorMessage = "Error scanning folder: ${rootDoc.name}"
-                    TimberLogger.logE(TAG, "[Comiqueta][SafFolderScanWorker] $scanErrorMessage (URI: $folderUri)", ex)
+                    TimberLogger.logE(TAG, "[Comiqueta][SafFolderScanWorker] $scanErrorMessage uri=${LogRedaction.uri(folderUri)}", ex)
                     if (firstErrorMessage == null) firstErrorMessage = scanErrorMessage
                     anyFolderScanFailed = true
                 }
@@ -345,11 +346,11 @@ class SafFolderScanWorker @AssistedInject constructor(
                     }
                 }
             } else {
-                TimberLogger.logW(TAG, "[Comiqueta][SafFolderScanWorker] Parent URI is not a directory or invalid: $parentUri")
+                TimberLogger.logW(TAG, "[Comiqueta][SafFolderScanWorker] parent uri is not a directory or invalid uri=${LogRedaction.uri(parentUri)}")
             }
         } catch (e: Exception) {
             FirebaseCrashlytics.getInstance().recordException(e)
-            TimberLogger.logE(TAG, "[Comiqueta][SafFolderScanWorker] Error counting files for $parentUri", e)
+            TimberLogger.logE(TAG, "[Comiqueta][SafFolderScanWorker] error counting files uri=${LogRedaction.uri(parentUri)}", e)
         }
         return count
     }
@@ -491,7 +492,7 @@ class SafFolderScanWorker @AssistedInject constructor(
                     }
 
                     if (needsExtraction) {
-                        TimberLogger.logD(TAG, "[Comiqueta][SafFolderScanWorker] Extracting cover/metadata for $fileName")
+                        TimberLogger.logD(TAG, "[Comiqueta][SafFolderScanWorker] extracting cover/metadata file=${LogRedaction.fileName(fileName)}")
                         if (fileExtension == "pdf" || fileExtension == "cbz" || fileExtension == "cbr") {
                             coverImageUri = extractAndSaveCoverImage(file, fileExtension)
                         }
@@ -560,7 +561,7 @@ class SafFolderScanWorker @AssistedInject constructor(
             }
         }
         if (comicsFoundInDir > 0) {
-            TimberLogger.logI(TAG, "[Comiqueta][SafFolderScanWorker] Found $comicsFoundInDir comic(s) in directory: ${dir.name}")
+            TimberLogger.logI(TAG, "[Comiqueta][SafFolderScanWorker] found $comicsFoundInDir comic(s) in dir=${LogRedaction.fileName(dir.name)}")
         }
         return processed
     }

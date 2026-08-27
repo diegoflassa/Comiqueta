@@ -1,4 +1,4 @@
-@file:Suppress("unused", "DEPRECATION")
+@file:Suppress("unused")
 
 package dev.diegoflassa.comiqueta.core.data.extensions
 
@@ -14,16 +14,16 @@ import android.content.res.Configuration
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.PowerManager
-import android.util.DisplayMetrics
 import android.view.View
-import android.view.WindowInsets
 import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import dev.diegoflassa.comiqueta.core.ui.extensions.findActivity
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import java.net.InetAddress
@@ -187,45 +187,37 @@ fun Context.keyguardManager(): KeyguardManager? =
 fun Context.powerManager(): PowerManager? =
     ContextCompat.getSystemService(this, PowerManager::class.java)
 
-data class Size(val width: Int, val height: Int)
-
-@Suppress("DEPRECATION")
-fun Context.tamanhoDaTela(): Size {
-    val windowManager = ContextCompat.getSystemService(this, WindowManager::class.java)
-    val size = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        val metrics = windowManager?.currentWindowMetrics
-        val windowInsets = metrics?.windowInsets
-        val insets = windowInsets?.getInsetsIgnoringVisibility(
-            WindowInsets.Type.navigationBars()
-                    or WindowInsets.Type.displayCutout()
-        )
-
-        val insetsWidth: Int = (insets?.right ?: 0) + (insets?.left ?: 0)
-        val insetsHeight: Int = (insets?.top ?: 0) + (insets?.bottom ?: 0)
-        val bounds = metrics?.bounds
-        Size(
-            (bounds?.width() ?: 0) - insetsWidth,
-            (bounds?.height() ?: 0) - insetsHeight
-        )
-    } else {
-        val displayMetrics = DisplayMetrics()
-        windowManager?.defaultDisplay?.getMetrics(displayMetrics)
-        val height = displayMetrics.heightPixels
-        val width = displayMetrics.widthPixels
-        Size(width, height)
-    }
-    return size
-}
-
 fun Context.orientacaoDaTela(): Int = resources.configuration.orientation
 
-fun Context.hideKeyboard(view: View) {
-    val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-    inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-}
+// InputMethodManager.SHOW_IMPLICIT is deprecated, and the documented replacement for the pair is the
+// window insets controller: the IME is a system window like any other, so it is asked to appear
+// rather than told through a manager. WindowCompat.getInsetsController wants the Window named
+// explicitly — ViewCompat.getWindowInsetsController(View), which infers it, is itself deprecated for
+// getting this wrong inside dialogs.
+fun Context.hideKeyboard(view: View) = imeController(view)?.hide(WindowInsetsCompat.Type.ime())
 
 fun Context.showKeyboard(view: EditText) {
     view.requestFocus()
-    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+    imeController(view)?.show(WindowInsetsCompat.Type.ime())
+}
+
+/**
+ * The insets controller for [view]'s window, or null when this context is not inside an Activity —
+ * an application or service context has no window to control.
+ *
+ * Logged rather than returned silently: a keyboard that does not appear is reported as "the field is
+ * broken", and without this line there is nothing in the capture to say the call was made at all
+ * (`LOGGING_RULES.md` §8.2 — no silently swallowed branch).
+ */
+private fun Context.imeController(view: View): WindowInsetsControllerCompat? {
+    val window = findActivity()?.window
+    if (window == null) {
+        TimberLogger.logW(
+            "ContextExtensions",
+            "[Comiqueta][Ime] no Activity window for this Context (${this::class.simpleName}); " +
+                "IME request ignored",
+        )
+        return null
+    }
+    return WindowCompat.getInsetsController(window, view)
 }

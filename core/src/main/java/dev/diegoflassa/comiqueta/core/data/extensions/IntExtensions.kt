@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package dev.diegoflassa.comiqueta.core.data.extensions
 
 import androidx.compose.runtime.Composable

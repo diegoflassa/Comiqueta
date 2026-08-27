@@ -7,20 +7,20 @@ description: Targeted removal of log statements carrying a specific [Filter] tok
 
 > Invoked as `/remove_filter <FILTER_NAME>`. Removes `TimberLogger.logD` / `logV` calls tagged with a specific filter **while protecting application logic**. Also the runbook for adding a filter.
 
-Filter format, PII rules, and the catalogue contract: [`CORE_RULES.md §8`](../rules/CORE_RULES.md). Catalogue SOT: [`KI-04-LOG-FILTERS.md`](../knowledge/KI-04-LOG-FILTERS.md).
+Filter format, PII rules, and the catalogue contract: [`LOGGING_RULES.md §8`](../rules/LOGGING_RULES.md). Catalogue SOT: [`KI-04-LOG-FILTERS.md`](../knowledge/KI-04-LOG-FILTERS.md).
 
 ---
 
 ## 1. Filter Classification
 
 - **Protected (all catalogued filters).** Every filter in KI-04 is load-bearing for post-incident diagnosis and **MUST NOT** be removed unless the user names that exact filter and confirms.
-- **Unprotected.** This project has none by policy — a filter that exists in code but is missing from KI-04 gets catalogued, not deleted. Ticket-scoped filters (`[Comiqueta][BUG-123]`) are forbidden outright by `CORE_RULES.md §8.1`.
+- **Unprotected.** This project has none by policy — a filter that exists in code but is missing from KI-04 gets catalogued, not deleted. Ticket-scoped filters (`[Comiqueta][BUG-123]`) are forbidden outright by `LOGGING_RULES.md §8.1`.
 
 ## 2. Adding a Filter
 
 1. **Log format:** `TimberLogger.logD(CLASS, "[Comiqueta][FILTER_NAME] message")`.
 2. **Update the SOT:** add the filter to [`KI-04-LOG-FILTERS.md`](../knowledge/KI-04-LOG-FILTERS.md) with its primary class, what it monitors, and level.
-3. **Update rules:** amend `CORE_RULES.md §8` only if it names the filter as an example.
+3. **Update rules:** amend `LOGGING_RULES.md §8` only if it names the filter as an example.
 4. **Synchronize:** update every call site and test assertion in the same turn.
 
 ## 3. Removing a Filter

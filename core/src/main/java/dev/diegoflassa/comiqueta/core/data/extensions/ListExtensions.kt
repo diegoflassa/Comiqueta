@@ -1,4 +1,4 @@
-@file:Suppress("unused", "DEPRECATION")
+@file:Suppress("unused")
 
 package dev.diegoflassa.comiqueta.core.data.extensions
 

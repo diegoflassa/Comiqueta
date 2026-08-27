@@ -169,7 +169,10 @@ class ComicsRepository @Inject constructor(
             val cbrCount = args[6] as Int
             val pdfCount = args[7] as Int
             val preferences = args[8] as Preferences
-            val topAuthorsList = args[9] as List<AuthorCount>
+            // combine() hands back Array<Any?>, so element 9 can only be narrowed by
+            // inspecting it. filterIsInstance checks each element instead of asserting the
+            // whole list, which is what made the plain cast unchecked.
+            val topAuthorsList = (args[9] as List<*>).filterIsInstance<AuthorCount>()
 
             val lastScanTotalFiles = preferences[PreferencesKeys.LAST_SCAN_TOTAL_FILES] ?: 0
             val lastScanProcessedComics = preferences[PreferencesKeys.LAST_SCAN_PROCESSED_COMICS] ?: 0

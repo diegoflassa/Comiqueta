@@ -73,6 +73,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.ump.UserMessagingPlatform
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dev.diegoflassa.comiqueta.settings.R
+import dev.diegoflassa.comiqueta.core.data.timber.LogRedaction
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.navigation.NavigationViewModel
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
@@ -159,11 +160,11 @@ fun SettingsScreen(
                     Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             try {
                 contentResolver.takePersistableUriPermission(uri, takeFlags)
-                TimberLogger.logD(tag, "[Comiqueta][Settings] Persistable URI permission granted for $uri")
+                TimberLogger.logD(tag, "[Comiqueta][Settings] persistable permission granted uri=${LogRedaction.uri(uri)}")
                 settingsViewModel.processIntent(SettingsIntent.FolderSelected(uri))
             } catch (se: SecurityException) {
                 FirebaseCrashlytics.getInstance().recordException(se)
-                TimberLogger.logE(tag, "[Comiqueta][Settings] Failed to take persistable URI permission for $uri", se)
+                TimberLogger.logE(tag, "[Comiqueta][Settings] failed to take persistable permission uri=${LogRedaction.uri(uri)}", se)
                 Toast.makeText(
                     context,
                     folderAddFailedTemplate.format(uri.toString()),
@@ -748,7 +749,7 @@ fun ComicsFolderUriItem(
         try {
             Uri.decode(path)
         } catch (e: IllegalArgumentException) {
-            TimberLogger.logW(tag, "[Comiqueta][Settings] Failed to decode path: $path", e)
+            TimberLogger.logW(tag, "[Comiqueta][Settings] failed to decode path=${LogRedaction.path(path)}", e)
             path // Fallback to the original path if decoding fails
         }
     }

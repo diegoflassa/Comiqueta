@@ -6,7 +6,7 @@
 
 ## Scope (what `/clean` touches)
 
-1. **Debug logs** — remove `Timber.d(...)` / `Timber.v(...)` calls. Never remove `Timber.i/.w/.e` — those are intentional.
+1. **Debug logs** — remove `TimberLogger.logD(...)` / `logV(...)` calls. Never remove `logI` / `logW` / `logE` — those are intentional production signal (`LOGGING_RULES.md` §8.4, §8.6). Raw `Timber.*` and `android.util.Log` are forbidden outside the wrapper (§8), so a raw call found here is a defect to report, not a log to strip.
 2. **Commented-out code** — delete dead blocks committed by accident. Preserve `// TODO` / `// FIXME` markers.
 3. **Unused imports / orphaned vars** — only those orphaned by *this branch's* changes. Pre-existing dead code is left alone.
 4. **Stray `println` / `System.out.print`** — always remove.
@@ -25,7 +25,7 @@
 1. **Diff narrows the scope.** `git diff --name-only main...HEAD` ⇒ act only on those files.
 2. **Per file**: apply the checklist above with `Edit` (targeted), never `Write` (full rewrite).
 3. **Report**:
-   - Lines removed (`Timber.d` / commented code / println / unused imports).
+   - Lines removed (`TimberLogger.logD` / commented code / println / unused imports).
    - Files touched.
    - Any items surfaced but not auto-fixed (hardcoded strings, missing `@Preview`s, suspect logic).
 4. **Stop before `git add` / `git commit`.** Only the user authorizes staging.

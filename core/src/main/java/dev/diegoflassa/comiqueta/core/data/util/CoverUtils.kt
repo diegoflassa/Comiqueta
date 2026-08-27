@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.net.toUri
+import dev.diegoflassa.comiqueta.core.data.timber.LogRedaction
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import java.io.File
 import java.io.FileOutputStream
@@ -48,7 +49,7 @@ object CoverUtils {
             val file = File(path)
             if (file.exists() && file.parentFile?.name == COVERS_DIR_NAME) {
                 file.delete()
-                TimberLogger.logD(TAG, "[Comiqueta][CoverUtils] Deleted old cover: $path")
+                TimberLogger.logD(TAG, "[Comiqueta][CoverUtils] deleted old cover path=${LogRedaction.path(path)}")
             }
         } catch (e: Exception) {
             TimberLogger.logE(TAG, "[Comiqueta][CoverUtils] Error deleting old cover: ${e.message}", e)

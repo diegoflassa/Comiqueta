@@ -121,7 +121,7 @@
 - `runBlocking` in composition.
 - Mutating state during composition (setting a `MutableState` from a child without an event handler).
 - `Box` for a layout that is really a `Column` / `Row` with alignment.
-- A clickable `Box` / `Row` / `Column` hand-built to replace a Material 3 component that would have worked — see [CORE_RULES §9](CORE_RULES.md).
+- A clickable `Box` / `Row` / `Column` hand-built to replace a Material 3 component that would have worked — see [UI_RULES §9](UI_RULES.md).
 - `Icon` + `Modifier.clickable` for an icon-only action — use `IconButton` (§11).
 - Nested `LazyColumn` inside `LazyColumn` — use a single lazy list with `item { }` + `items { }`.
 - Hardcoded `Color(0x...)`, hardcoded user-facing strings, hardcoded `contentDescription`.

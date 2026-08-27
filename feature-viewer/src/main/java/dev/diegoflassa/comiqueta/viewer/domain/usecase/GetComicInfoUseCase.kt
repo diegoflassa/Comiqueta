@@ -7,6 +7,7 @@ import android.os.ParcelFileDescriptor
 import android.util.Xml
 import androidx.documentfile.provider.DocumentFile
 import com.github.junrar.Archive as JunrarArchive
+import dev.diegoflassa.comiqueta.core.data.timber.LogRedaction
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.model.ComicFileType
 import dev.diegoflassa.comiqueta.viewer.model.ComicInfo
@@ -261,13 +262,13 @@ class GetComicInfoUseCase @Inject constructor(
                 }
 
             } catch (ex: Exception) {
-                TimberLogger.logE("GetComicInfoUseCase", "[Comiqueta][GetComicInfo] Error getting comic info for $uri", ex)
+                TimberLogger.logE("GetComicInfoUseCase", "[Comiqueta][GetComicInfo] error getting comic info uri=${LogRedaction.uri(uri)}", ex)
                 throw IOException("Failed to parse comic: ${ex.message}", ex)
             } finally {
                 try {
                     pfd?.close()
                 } catch (ioe: IOException) {
-                    TimberLogger.logE("GetComicInfoUseCase", "[Comiqueta][GetComicInfo] Error closing PFD for $uri", ioe)
+                    TimberLogger.logE("GetComicInfoUseCase", "[Comiqueta][GetComicInfo] error closing PFD uri=${LogRedaction.uri(uri)}", ioe)
                 }
             }
             ComicInfo(

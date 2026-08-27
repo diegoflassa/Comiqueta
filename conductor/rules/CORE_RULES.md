@@ -4,6 +4,64 @@
 
 ---
 
+---
+
+## Index
+
+Jump by number. The rule set spans several files under `conductor/rules/`; this table is the
+single lookup for all of them. Load only the file the row points at.
+
+| § | Rule | Lives in |
+|---|---|---|
+| **0** | [Stability & Non-Regression](#0-stability--non-regression-absolute) **(ABSOLUTE)** | — |
+| **1** | [Standards](#1-standards) | — |
+| **2** | [Git Safety](#2-git-safety-absolute) **(ABSOLUTE)** | — |
+| **3** | [Token Economy](#3-token-economy) | — |
+| **4** | [Large File Protocol (>500 lines)](#4-large-file-protocol-500-lines) | — |
+| **5** | [Code Style & Readability](#5-code-style--readability) | — |
+|     **5.1** |     [Readability & Simplicity](#51-readability--simplicity-mandatory) *(M)* | — |
+|     **5.2** |     [No Inline Fully-Qualified Names](#52-no-inline-fully-qualified-names-mandatory) *(M)* | — |
+|     **5.3** |     [Enum When Every Case Is Stateless](#53-enum-when-every-case-is-stateless-mandatory) *(M)* | — |
+| **6** | [KI Sync Rule](#6-ki-sync-rule-global--mandatory) *(M)* | — |
+|     **6.1** |     [Write KIs as if every change was always the original intent](#61-write-kis-as-if-every-change-was-always-the-original-intent) | — |
+|     **6.2** |     [KIs must be self-sufficient](#62-kis-must-be-self-sufficient) | — |
+|     **6.3** |     [Optimise for targeted reads](#63-optimise-for-targeted-reads) | — |
+| **7** | [Planning Protocol](PLANNING_RULES.md#7-planning-protocol) | [PLANNING_RULES](PLANNING_RULES.md) |
+|     **7.1** |     [META_PLANNING Protocol](PLANNING_RULES.md#71-meta_planning-protocol-global-rule) | [PLANNING_RULES](PLANNING_RULES.md) |
+|     **7.1a** |     [Multi-Edition Plan Sync](PLANNING_RULES.md#71a-multi-edition-plan-sync-global-rule) | [PLANNING_RULES](PLANNING_RULES.md) |
+|     **7.2** |     [Plan Lifecycle](PLANNING_RULES.md#72-plan-lifecycle) | [PLANNING_RULES](PLANNING_RULES.md) |
+|     **7.3** |     [Deferred items and plans link BOTH ways](PLANNING_RULES.md#73-deferred-items-and-plans-link-both-ways-mandatory) *(M)* | [PLANNING_RULES](PLANNING_RULES.md) |
+|     **7.4** |     [The deferred-item backlog holds ONLY work still to be done](PLANNING_RULES.md#74-the-deferred-item-backlog-holds-only-work-still-to-be-done-mandatory) *(M)* | [PLANNING_RULES](PLANNING_RULES.md) |
+|     **7.5** |     [Agent-generated planning artefacts are NOT plannings](PLANNING_RULES.md#75-agent-generated-planning-artefacts-are-not-plannings-mandatory) *(M)* | [PLANNING_RULES](PLANNING_RULES.md) |
+| **8** | [Logging — TimberLogger Only](LOGGING_RULES.md#8-logging--timberlogger-only) | [LOGGING_RULES](LOGGING_RULES.md) |
+|     **8.1** |     [Adding a log](LOGGING_RULES.md#81-adding-a-log-mandatory--read-before-writing-any-timberloggerlog-call) *(M)* | [LOGGING_RULES](LOGGING_RULES.md) |
+|     **8.2** |     [Coverage — everything must be diagnosable from logs alone](LOGGING_RULES.md#82-coverage--everything-must-be-diagnosable-from-logs-alone-mandatory) *(M)* | [LOGGING_RULES](LOGGING_RULES.md) |
+|     **8.3** |     [Redaction by build variant](LOGGING_RULES.md#83-redaction-by-build-variant-mandatory) *(M)* | [LOGGING_RULES](LOGGING_RULES.md) |
+|     **8.4** |     [Protected filters](LOGGING_RULES.md#84-protected-filters) | [LOGGING_RULES](LOGGING_RULES.md) |
+|     **8.5** |     [Renaming or removing a filter](LOGGING_RULES.md#85-renaming-or-removing-a-filter) | [LOGGING_RULES](LOGGING_RULES.md) |
+|     **8.6** |     [Choosing the level - what survives into `release`](LOGGING_RULES.md#86-choosing-the-level---what-survives-into-release-mandatory) *(M)* | [LOGGING_RULES](LOGGING_RULES.md) |
+|     **8.7** |     [Long messages are split, not truncated](LOGGING_RULES.md#87-long-messages-are-split-not-truncated-mandatory) *(M)* | [LOGGING_RULES](LOGGING_RULES.md) |
+|     **8.8** |     [Redaction helpers](LOGGING_RULES.md#88-redaction-helpers-mandatory) *(M)* | [LOGGING_RULES](LOGGING_RULES.md) |
+| **9** | [Composable Extraction](UI_RULES.md#9-composable-extraction-global--all-compose-screens) | [UI_RULES](UI_RULES.md) |
+| **10** | [String Resource Ownership](UI_RULES.md#10-string-resource-ownership-global--mandatory) *(M)* | [UI_RULES](UI_RULES.md) |
+| **11** | [Extension Functions](#11-extension-functions) | — |
+| **12** | [Regression Test Rule](#12-regression-test-rule-global--mandatory) *(M)* | — |
+| **13** | [Database Migration Safety](#13-database-migration-safety-global--mandatory) *(M)* | — |
+| **14** | [Changelog Rule](#14-changelog-rule-global--mandatory) *(M)* | — |
+| **15** | [Cross-Project Rule Sync](#15-cross-project-rule-sync-global--mandatory) *(M)* | — |
+| **16** | [Reference Document Ownership](DOC_GOVERNANCE.md#16-reference-document-ownership-global---mandatory) *(M)* | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
+|     **16.1** |     [A new version never overwrites the old one](DOC_GOVERNANCE.md#161-a-new-version-never-overwrites-the-old-one-mandatory) *(M)* | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
+|     **16.2** |     [No machine-absolute paths in a tracked document](DOC_GOVERNANCE.md#162-no-machine-absolute-paths-in-a-tracked-document-mandatory) **(ABSOLUTE)** | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
+| **17** | [Rule Placement](DOC_GOVERNANCE.md#17-rule-placement-global---mandatory) *(M)* | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
+|     **17.1** |     [Heading level, and the index row](DOC_GOVERNANCE.md#171-heading-level-and-the-index-row-mandatory) *(M)* | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
+|     **17.2** |     [A rules file has a token budget](DOC_GOVERNANCE.md#172-a-rules-file-has-a-token-budget-mandatory) *(M)* | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
+| **18** | [Agent Surface Parity](DOC_GOVERNANCE.md#18-agent-surface-parity-global---mandatory) *(M)* | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
+| **19** | [Single Activation Per Control](UI_RULES.md#19-single-activation-per-control-global---mandatory) *(M)* | [UI_RULES](UI_RULES.md) |
+
+*(M) = MANDATORY. "—" in the last column means this file.*
+
+---
+
 ## 0. Stability & Non-Regression (ABSOLUTE)
 
 Preserving existing functionality is the top priority of any change. Before writing logic, do an impact analysis (race conditions, state leaks, UI regressions). **This mandate overrides any conflicting rule.**
@@ -93,151 +151,6 @@ Keep KIs **small and focused** so an AI only loads what it needs:
 
 > **Rationale:** KIs are the reference an AI reads when implementing. A planning can diverge from a KI silently and cause regressions. Plannings are temporary; KIs persist. The KI must always reflect the current implementation contract, written in present tense, self-contained, and small enough to load targeted reads.
 
-## 7. Planning Protocol
-
-- **Storage:** all plans in `conductor/plannings/`. Completed/obsolete → `conductor/plannings/archived/` (**never delete**). Keep `conductor/plannings/INDEX.md` current.
-- **Naming:** `[CODE]_[desc]_plan.md` if a ticket exists, else `[feature]_[desc]_plan.md`.
-- **Create a plan when** work spans 3+ files, crosses layers (UI+VM+data), fixes a blocking bug, gates behind a flag, or the approach is uncertain. Content: scope, steps, testing checklist, blockers, dependencies.
-- **META_PLANNING** (`META_PLANNING_*.md`) is disposable scaffolding: synthesise the multi-model proposals into one canonical plan, write it, then delete the META_PLANNING and update `INDEX.md`. Never execute a META_PLANNING as-is.
-
-### 7.1 META_PLANNING Protocol (GLOBAL RULE)
-
-A `META_PLANNING_*.md` file is a **consolidation prompt**: it collects planning proposals produced by multiple AI models and instructs one AI to synthesise them into a single canonical execution plan.
-
-**Purpose:** META_PLANNINGs are never executed as-is. They exist only to produce a real plan.
-
-**Execution protocol (mandatory):**
-
-1. **Read the META_PLANNING file** in full.
-2. **Synthesise** the proposals into a single canonical `[feature_name]_plan.md` inside `conductor/plannings/` following naming rules.
-3. **The synthesised plan is the output** — write it with full scope, implementation steps, testing checklist, blockers, and dependencies.
-4. **Delete the META_PLANNING file** after the synthesised plan is written and confirmed. META_PLANNINGs are disposable scaffolding; the canonical plan is the artefact that persists.
-5. **Update `conductor/plannings/INDEX.md`**: remove the META_PLANNING row, add the new canonical plan row with status `🔵 Backlog`.
-6. **Do NOT start implementing** during the META_PLANNING synthesis turn unless the user explicitly asks. Synthesis = planning only.
-7. **One surviving edition at completion.** When a synthesis produces **multiple editions of the same
-   plan** (e.g. a Sonnet edition and a Gemini edition — same task set, same numbering, different
-   executor tuning), all editions stay live and in sync while the work is in progress (§7.1a). **Once
-   the planning is finished** — every task closed, or the plan declared obsolete — archive **exactly
-   one** edition to `conductor/plannings/archived/` and **delete** the others.
-    - **Which one survives:** prefer the **Claude-tuned** edition. If no Claude edition exists, keep
-      the edition that was actually executed.
-    - **Before deleting**, port any execution notes, revision history, or decisions that exist *only*
-      in a doomed edition into the surviving one. The survivor must be a complete record on its own.
-    - **Timing is strict:** never delete a sibling edition while any task is still open — the
-      editions are two views of one live backlog until the last task closes.
-    - This is a **narrow carve-out** from §7.2's never-delete rule. It applies only to redundant
-      editions of a *single* plan, never to distinct plans.
-
-> **Rationale:** META_PLANNINGs accumulate noise. The synthesis step produces a clean, deduplicated, actionable plan that any AI can execute without re-reading the original proposals.
-
-### 7.1a Multi-Edition Plan Sync (GLOBAL RULE)
-
-When one task set is published as **more than one planning file** (e.g. a Sonnet edition and a Gemini
-edition), those files are **two views of ONE backlog, not two backlogs**. They must never disagree.
-
-- **Same task IDs, same numbering, forever.** Task IDs are authoritative — never renumber them in one
-  edition without renumbering every sibling identically.
-- **Mirror every advance in the same turn.** When a task is completed or advanced in one edition,
-  update *all* sibling editions in that same turn: the task-index row, the task body/header, and a
-  mirrored revision-history note.
-- **Each edition must carry this rule in its own text**, so an executor that opens only one edition
-  still learns it has siblings to update.
-- **One source of truth.** Where the task set is also tracked elsewhere (KI-TBD, a plan's own
-  tracker), that tracker wins. If editions drift from it or from each other, reconcile *every*
-  edition to the tracker.
-- **At completion**, collapse the editions down to one survivor per §7.1 step 7.
-
-### 7.2 Plan Lifecycle
-
-- ❌ **NEVER DELETE** completed or obsolete plans from `conductor/plannings/`. **Sole exception:**
-  redundant *editions* of one plan collapse to a single survivor at completion — see §7.1 step 7.
-- ✅ **MOVE** completed or expired plans to `conductor/plannings/archived/` for permanent record.
-- **Status Transitions:**
-  - **Ready → Active**: Update plan with start date, update `INDEX.md` status.
-  - **Active → Completed**: Create/update corresponding KI, link bidirectionally, move to archived.
-  - **Active → Obsolete**: Archive immediately if plan is superseded or ticket closed without implementation.
-
----
-
-## 8. Logging — TimberLogger Only
-
-**Mandatory.** Every log goes through `TimberLogger.logD/logI/logW/logE/logA(CLASS, "…")`. Raw `Timber.*` and `android.util.Log` are forbidden outside the wrapper files themselves (`TimberLogger.kt`, `CrashReportingTree.kt`).
-
-### 8.1 Adding a log (MANDATORY — read before writing any `TimberLogger.log*` call)
-
-1. **Tag = class name.** Pass the class constant as the first argument (`CLASS`). Never compute a tag dynamically.
-2. **Every log message carries exactly one scenario filter as its leading bracket tag:**
-   ```kotlin
-   TimberLogger.logD(CLASS, "[Comiqueta][FILTER_NAME] message")
-   ```
-   The format is `[FILTRO_PAI][FILTRO_FILHO]`. Here the **parent is always `[Comiqueta]`** (the app root) and the **child names the flow being diagnosed** — `[Comiqueta][Viewer]`, `[Comiqueta][SafFolderScanWorker]`, `[Comiqueta][Home]`. When a flow is large enough to need step-level granularity, append a third segment naming the exact step: `[Comiqueta][Viewer][DECODE]`.
-3. **The filter names what is being diagnosed — never a ticket.** `[Comiqueta][BUG-123]` is forbidden; ticket context belongs in git history, not in runtime logs.
-4. **One filter per log.** Use a second child tag only when a single log line genuinely spans two distinct scenarios, and combine them **without spaces**: `[Comiqueta][Viewer][Comics]`.
-5. **Sensitive values follow the build-variant policy in §8.3** — not a blanket ban.
-6. **Catalogue it in the same turn.** Every new filter MUST be added to [`KI-04-LOG-FILTERS.md`](../knowledge/KI-04-LOG-FILTERS.md) — the SOT — before the turn ends. This applies project-wide without exception.
-7. **Never leave a log untagged.** A `TimberLogger.log*` call with no `[Comiqueta][…]` prefix is a defect, not a style choice — see the compliance-gap table in KI-04.
-
-### 8.2 Coverage — everything must be diagnosable from logs alone (MANDATORY)
-
-**All app code must be logged well enough that an AI can root-cause any problem from a log capture alone**, without reproducing the failure and without reading the source. Concretely, each of these gets a log:
-
-- **Every use case / repository / worker call that can fail or branch on external state** — entry and outcome.
-- **Every failure branch.** No silently swallowed error, ever — every `catch`, every `runCatching { }.onFailure { }`, every `else` that handles an error case.
-- **Every state transition the user can perceive** — navigation, scan start/progress/completion, paging `loadState` changes, permission grants and denials.
-- **Every external boundary crossing** — SAF document-tree traversal and permission take/release, Room write results, WorkManager enqueue and completion, decode success/failure per page.
-
-A branch that can fail and logs nothing is a defect of the same severity as a missing regression test (§12). When adding a feature, the reviewer question is: *if this breaks on a user's device, does the log tell me where?* If not, the logging is incomplete.
-
-### 8.3 Redaction by build variant (MANDATORY)
-
-| Build | Sensitive values | Rule |
-|---|---|---|
-| `debug` | **Allowed in full** | Raw SAF URIs, full file paths, user directory names, comic metadata. Debug builds run only on a developer machine. |
-| `release` | **Forbidden** | **The only variant that must redact.** No personal file paths, user directory names, account identifiers, or full SAF URIs — a comic library path routinely contains the user's real name. |
-
-**Redacted must never mean silent.** A release build has to stay diagnosable — log the *shape* instead of the value:
-
-- **counts and sizes** (`foldersScanned=4`, `comicsFound=812`, `pageBytes=1048576`)
-- **status / result / error codes** (`result=SUCCESS`, `SecurityException on takePersistableUriPermission`)
-- **file extension or format only** (`format=CBZ`), never the file name
-- **non-reversible identifiers** — a Room row id is fine; a path segment is not
-
-Emit the `[REDACTED]` placeholder rather than dropping the field, so the message shape stays readable and greppable across variants. A release log that says only `scan failed` is as useless as no log at all and violates §8.2.
-
-> **Enforcement seam:** redaction is decided at the log call site, based on the build variant — never by post-processing in `CrashReportingTree`. `release` is the only variant that redacts; when in doubt about a value in a release path, redact it and log its shape.
-
-### 8.4 Protected filters
-
-**Every filter listed in [`KI-04-LOG-FILTERS.md`](../knowledge/KI-04-LOG-FILTERS.md) is protected.** None may be stripped by `/remove_filter`, `/clean`, or any "log hygiene" sweep unless the user explicitly names that exact filter and confirms. A filter present in code but absent from the catalogue is still protected — catalogue it rather than deleting it.
-
-`logI` / `logW` / `logE` are intentional production signal and are **never** touched by `/remove_filter`, regardless of filter.
-
-### 8.5 Renaming or removing a filter
-
-Filter names are public string contracts. Any rename or removal updates, **in the same turn**: the KI-04 row, this section if it names the filter, [`workflows/remove_filter.md`](../workflows/remove_filter.md) if it names the filter, every production `TimberLogger.log*` call site, and every test assertion on the tag. One-turn change or none.
-
-## 9. Composable Extraction (GLOBAL — all Compose screens)
-
-- **No inline reusable widgets.** Never define a reusable UI element as a local function or private composable inside a screen file. Extract it to its own file.
-- **Placement:** a composable used by 2+ modules goes in `core/ui/`; one used by a single feature goes in `feature-<name>/ui/components/`.
-- **Build on the Material 3 component, not on a `Box`.** When the thing being built *is* a button, text field, card, chip, checkbox, or dialog, start from the Material 3 composable and restyle it through its `colors` / `shape` / `border` / `contentPadding` parameters. Fall back to a `Box` / `Row` / `Column` with `.background().clip().clickable()` only when the design genuinely cannot be expressed through those parameters, and say why in a one-line comment at the declaration. A hand-rolled clickable `Box` silently drops the 48dp minimum touch target, ripple / state-layer feedback, `Role` semantics for TalkBack, `enabled` handling that also blocks the click, and focus traversal for an attached keyboard. Reproducing the *visual* result is not the bar — none of those behaviours show up in a screenshot or in a `@Preview`, which is exactly why they get lost.
-- **Previews are mandatory.** Every widget file carries at least one `@Preview` per [`PREVIEW_STANDARD.md`](PREVIEW_STANDARD.md). A widget without one is incomplete.
-- Recomposition / stability / memory rules: [`COMPOSE_RULES.md`](COMPOSE_RULES.md). Screen test-friendliness: [`INSTRUMENTED_TEST_STANDARD.md`](INSTRUMENTED_TEST_STANDARD.md).
-
-## 10. String Resource Ownership (GLOBAL — MANDATORY)
-
-**Every user-facing string is an Android string resource. No hardcoded literals in Compose**, `contentDescription` included.
-
-- **Package-owned strings** live in the owning module's `res/values/strings_<package>.xml`, named after the package that uses them (e.g. `strings_viewer.xml`). Each file opens with a comment declaring its owner package, so the Kotlin↔resource binding is explicit:
-  ```xml
-  <!-- Owner package: br.com.diegolassa.comiqueta.viewer -->
-  ```
-  When a screen or package is deleted, its strings file is deleted in the same commit.
-- **Single-screen modules** may keep a monolithic `strings.xml`. Once a module reaches 2+ screens or ~20 keys, split per the rule above in the same turn the second screen lands.
-- **Shared strings** used by 2+ modules live in `core`'s `strings_common.xml` with a `common_` prefix. Do **not** pre-seed speculatively — promote a key only when the second module needs it, and delete the per-module copies in the same turn.
-- **Key naming:** `<module>_<package>_<role>` (e.g. `viewer_page_error_decode`). Stable across translations; never embed locale-specific wording in the key.
-- **Locales:** EN, PT, ES, DE. **Every locale folder declares every key.** A key present in one locale and missing from another is a bug, not a fallback strategy.
-
 ## 11. Extension Functions
 
 Use them when they make the call site read better and keep behaviour next to its type: reusable transforms/mappers (`Entity.toDomain()`), domain↔UI adapters, small helpers on stdlib/platform types. Place in a file named after the receiver (`StringExt.kt`, `DpExtensions.kt`), in the module where it's used. Keep pure and single-purpose; an extension needing injected deps belongs in a class. Don't wrap a single call site or hide where work happens.
@@ -278,10 +191,29 @@ Omit the `(CODE)` suffix when no ticket exists. On a release cut, retitle `## Un
 
 Comiqueta, Slotify, and BipSale share one AI-workflow rule set and one developer. Whenever a **shared** rule is added, updated, or deleted in any of the three, apply the equivalent change to the other two **in the same turn**.
 
-**What counts as shared:** §0 Stability · §2 Git Safety · §3 Token Economy · §4 Large File Protocol · §5 Code Style & Readability (5.1 Readability, 5.2 No Inline FQN, 5.3 Enum-vs-sealed) · §6 KI Sync (all sub-sections) · §7 Planning + META_PLANNING + Lifecycle · §8.1–8.5 log filter format, coverage, redaction-by-variant, protection, rename · §9 Composable Extraction · §10 String Ownership (the ownership model, not the key namespaces) · §12 Regression Test · §13 DB Migration Safety (Comiqueta ↔ BipSale only — Slotify has no Room) · §14 Changelog · this section · everything in `ai_behavior.md` · everything in [`GRADLE_RULES.md`](GRADLE_RULES.md).
+**What counts as shared:** §0 Stability · §2 Git Safety · §3 Token Economy · §4 Large File Protocol · §5 Code Style & Readability (5.1 Readability, 5.2 No Inline FQN, 5.3 Enum-vs-sealed) · §6 KI Sync (all sub-sections) · §7 Planning + META_PLANNING + Lifecycle · §8.1–8.5 log filter format, coverage, redaction-by-variant, protection, rename · byte-budget log chunking and call-site redaction helpers (the *mechanism* is shared; the helper set is per-project, because what counts as sensitive differs) · §9 Composable Extraction · §10 String Ownership (the ownership model, not the key namespaces) · §12 Regression Test · §13 DB Migration Safety (Comiqueta ↔ BipSale only — Slotify has no Room) · §14 Changelog · this section · everything in `ai_behavior.md` · everything in [`GRADLE_RULES.md`](GRADLE_RULES.md).
 
 **What is NOT shared** — adapt or omit, never copy verbatim: module graphs, DI framework (Hilt vs Koin), logging API (`TimberLogger` vs `Timber` vs `Logger`/Kermit), persistence (Room/SAF vs Room/Retrofit vs Supabase), build config, locale sets, and everything in `architecture.md`.
 
-**Counterpart mapping:** the three trees are structurally identical — the same relative path in each repo is the counterpart (`conductor/rules/CORE_RULES.md` ↔ `conductor/rules/CORE_RULES.md`, and so on).
+**Counterpart mapping:** the trees are structurally identical - the same relative path in each repo is the
+counterpart (`conductor/rules/CORE_RULES.md` ↔ `conductor/rules/CORE_RULES.md`, and so on).
+
+**Each project stays self-contained (MANDATORY).** Sync means *the same rule is written into each repo in
+full*, in that repo's own words, with that repo's own stack and numbering - never a pointer to another repo.
+Three consequences, all binding:
+
+- **Section numbers are not expected to match across projects**, and are never renumbered to make them match
+  (§17.1). A rule that landed later here simply carries a higher number; cite by number *within* this file
+  only.
+- **No file in this repository may cite a path in another one** (§16.2). If another project holds material
+  this one needs, the relevant part is copied into `conductor/references/` and the copy is cited.
+- **A clone of this repository alone is complete.** Any task in it can be done without opening another
+  checkout. That is the test to apply before writing any cross-project reference: if the answer needs the
+  other repo on disk, the rule is not synced - it is coupled.
+
+Mirroring is a *process* obligation between three separate, independent projects. It never creates a runtime
+or documentation dependency between them.
 
 > **Rationale:** the same clarification should never be needed twice. Divergent workflow rules make an AI behave differently in each repo for no reason.
+
+---

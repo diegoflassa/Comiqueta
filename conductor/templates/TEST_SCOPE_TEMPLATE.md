@@ -1,7 +1,7 @@
 # Test Scope Template
 
 Run scoped tests only. Full suite only when explicitly requested.
-For commands, see [index.md § WORKFLOWS](../index.md#workflows).
+For commands, see [index.md § WORKFLOWS](../workflows/INDEX.md).
 
 ## Scope Selection
 

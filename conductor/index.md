@@ -16,7 +16,9 @@ Documentation hub for Comiqueta across all AI models.
 
 ## Documentation Map
 
-### Rules (Read First)
+### Rules (Read First) → [Rules Index](rules/INDEX.md)
+
+> Jump by number. Every rules file opens with a numeric index; cite sections as `§N`, never by line.
 
 - **[ai_behavior.md](rules/ai_behavior.md)** — AI behavior rules (think-first, correctness-first, simplicity)
 - **[CORE_RULES.md](rules/CORE_RULES.md)** — operational + project rules (git safety, token economy, no-inline-FQN, KI/planning discipline, logging, strings, regression tests, DB migration safety, changelog, cross-project sync)
@@ -43,13 +45,29 @@ Coverage state → [TEST_COVERAGE.md](knowledge/TEST_COVERAGE.md) · Deferred wo
 | [r8-analyzer](skills/r8-analyzer/SKILL.md) | R8/ProGuard keep-rule audit + APK size | Optimizing size, debugging release minification |
 | [perfetto-trace-analysis](skills/perfetto-trace-analysis/SKILL.md) | Runtime jank / latency / memory root-cause | Investigating janky transitions, slow loads, memory spikes |
 
+
+### Agent Surface (`.agent/`) — Antigravity
+
+> `.agent/rules/*.md` are **pointers** into `conductor/rules/`, never copies (`DOC_GOVERNANCE.md` §18).
+> `.agent/workflows/*.md` mirror `conductor/workflows/`. **Never add `.agent/` to `.gitignore`** — rule
+> discovery honours gitignore silently, and an ignored directory means no rules load at all.
+
+| Path | Holds | Frontmatter |
+|---|---|---|
+| `.agent/rules/00-always.md` | Git safety, layering, stability — the only always-loaded rule | `trigger: always_on` |
+| `.agent/rules/*.md` | One pointer per rule that binds at a recognisable moment | `trigger: model_decision` or `glob` |
+| `.agent/workflows/*.md` | Procedures invoked by name | `description` only |
+
+Antigravity parses exactly three keys — `description`, `trigger`, `globs`. Anything else is ignored
+silently, and **omitting `trigger` defaults to `always_on`**.
+
 ### References (Lazy-Load) → [Index](references/INDEX.md)
 
 ### Analysis (Lazy-Load) → [Index](analysis/INDEX.md)
 
 ### Plans & Workflows → [Plans](plannings/INDEX.md) | [Workflows](workflows/INDEX.md) | [Templates](templates/INDEX.md)
 
-> **META_PLANNING files** (`META_PLANNING_*.md` in `plannings/`) are synthesis scaffolding. Synthesise → write the canonical plan → delete the META_PLANNING. Protocol: [CORE_RULES.md §7.1](rules/CORE_RULES.md).
+> **META_PLANNING files** (`META_PLANNING_*.md` in `plannings/`) are synthesis scaffolding. Synthesise → write the canonical plan → delete the META_PLANNING. Protocol: [PLANNING_RULES.md §7.1](rules/PLANNING_RULES.md).
 
 ---
 

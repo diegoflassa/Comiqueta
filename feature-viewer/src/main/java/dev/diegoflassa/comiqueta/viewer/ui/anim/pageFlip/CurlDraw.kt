@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.drawscope.rotateRad
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.unit.dp
 import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.utils.Polygon
 import dev.diegoflassa.comiqueta.viewer.ui.anim.pageFlip.utils.lineLineIntersection
@@ -235,7 +236,7 @@ private fun CacheDrawScope.prepareShadow(
 
     // Prepare shadow paint with a shadow layer
     val paint = Paint().apply {
-        val frameworkPaint = asFrameworkPaint()
+        val frameworkPaint = nativePaint
         frameworkPaint.color = transparent
         frameworkPaint.setShadowLayer(
             config.shadowRadius.toPx(),
@@ -269,7 +270,7 @@ private fun prepareShadowApi28(
             polygon
                 .offset(radius).toPath()
                 .asAndroidPath(),
-            paint.asFrameworkPaint()
+            paint.nativePaint
         )
     }
 }

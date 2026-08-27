@@ -8,6 +8,10 @@
 - **[remove_filter.md](remove_filter.md)** — `/remove_filter <FILTER>`. Targeted removal of debug-level `TimberLogger.logD`/`logV` calls tagged with a specific `[TAG]` token. Never touches `logI`/`logW`/`logE`.
 - **[update_kis.md](update_kis.md)** — `/update_kis`. Create or update KIs from knowledge accumulated during the session. Present-tense, self-sufficient, no planning markers.
 
+- **[rules_status.md](rules_status.md)** — `/rules_status`. Audit the rule set for contradictions, dead index rows, stale `.agent/` pointers and machine-absolute paths. Read-only.
+- **[token_audit.md](token_audit.md)** — `/token_audit`. Measure every context file against its budget and report what should be split, including the always-loaded floor.
+- **[continuation_prompt.md](continuation_prompt.md)** — `/continuation_prompt`. Produce a one-block handoff prompt carrying all state needed to resume in another session.
+
 ## Execution rules
 
 1. Read the workflow file first — don't improvise.

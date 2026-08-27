@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.diegoflassa.comiqueta.core.data.preferences.PreferencesKeys
 import dev.diegoflassa.comiqueta.core.data.repository.IComicsRepository
+import dev.diegoflassa.comiqueta.core.data.timber.LogRedaction
 import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.domain.usecase.IEnqueueSafFolderScanWorkerUseCase
 import dev.diegoflassa.comiqueta.core.domain.usecase.folder.IAddMonitoredFolderUseCase
@@ -343,7 +344,7 @@ open class SettingsViewModel @Inject constructor(
                 )
                 _effect.send(SettingsEffect.ShowToast(context.getString(R.string.folder_added, Uri.decode(uri.toString()))))
             } else {
-                TimberLogger.logW("SettingsViewModel", "[Comiqueta][Settings] Failed to add folder via UseCase: $uri.")
+                TimberLogger.logW("SettingsViewModel", "[Comiqueta][Settings] failed to add folder via use case uri=${LogRedaction.uri(uri)}")
                 _effect.send(
                     SettingsEffect.ShowToast(
                         context.getString(R.string.folder_add_failed, Uri.decode(uri.toString()))
@@ -352,7 +353,7 @@ open class SettingsViewModel @Inject constructor(
             }
         } catch (ex: Exception) {
             FirebaseCrashlytics.getInstance().recordException(ex)
-            TimberLogger.logE("SettingsViewModel", "[Comiqueta][Settings] Error adding folder $uri via UseCase", ex)
+            TimberLogger.logE("SettingsViewModel", "[Comiqueta][Settings] error adding folder uri=${LogRedaction.uri(uri)}", ex)
             _effect.send(SettingsEffect.ShowToast(context.getString(R.string.error_adding_folder, ex.message)))
         } finally {
             loadPersistedFolders()
