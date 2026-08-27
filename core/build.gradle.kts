@@ -131,10 +131,6 @@ dependencies {
     //DataStore
     implementation(libs.ax.datastore.preferences)
 
-    //App Search
-    implementation(libs.ax.appsearch)
-    implementation(libs.ax.appsearch.compiler)
-    implementation(libs.ax.appsearch.local.storage)
 
     //Apache Commons Compress
     implementation(libs.org.apache.commons.compress)

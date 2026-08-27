@@ -93,15 +93,16 @@ internal fun Modifier.dragGesture(
                 PointerBehavior.PageEdge -> NewEdgeCreator.PageEdge()
             },
             getConfig = { start, end ->
-                val config = if (forwardTargetRect.contains(start) && end.x < start.x) {
+                // The enabled flags are checked here and not only in onDrag: while the viewer is
+                // zoomed in, navigation is off and a matched config would still reset() the curl
+                // edges, which recreates the page subtree and wipes the in-flight zoom/pan state.
+                val config = if (isEnabledForward.value && forwardTargetRect.contains(start) && end.x < start.x) {
                     forwardConfig
-                } else if (backwardTargetRect.contains(start) && end.x > start.x) {
+                } else if (isEnabledBackward.value && backwardTargetRect.contains(start) && end.x > start.x) {
                     backwardConfig
                 } else {
                     null
                 }
-
-                val direction = if (config == forwardConfig) "forward" else if (config == backwardConfig) "backward" else "none"
 
                 if (config != null) {
                     scope.launch {

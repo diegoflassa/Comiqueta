@@ -52,12 +52,9 @@ internal fun Modifier.tapGesture(
                     up = change
                     break
                 }
-                
-                if (change.isConsumed) {
-                     // Even if consumed (by Zoom), we continue to track it for Tap purposes
-                     // But if it's consumed as a DRAG, we might want to respect that?
-                     // However, Zoom consumes on "wobble". We want to ignore wobble.
-                }
+                // A consumed change is deliberately not treated as a cancellation: the zoom
+                // handler consumes on the slightest wobble, and the distance check below is
+                // what separates a tap from a drag.
             }
         } catch (e: Exception) {
             return@awaitEachGesture

@@ -140,12 +140,18 @@ class MainActivity : ComponentActivity() {
     private fun initializeMobileAdsSdkIfNeeded() {
         if (::consentInformation.isInitialized && consentInformation.canRequestAds()) {
             if (isMobileAdsInitializeCalled.compareAndSet(false, true)) {
-                MobileAds.initialize(this.applicationContext) { initializationStatus ->
-                    TimberLogger.logI(
-                        tag,
-                        "[Comiqueta][Main] MobileAds initialized. Status: ${initializationStatus.adapterStatusMap}"
-                    )
-                    showAds = true
+                // MobileAds.initialize() blocks for ~1s on first run (it loads the GMS
+                // dynamite module and DroidGuard). Calling it on the main thread cost ~84
+                // dropped frames at startup, so it goes to a background thread as Google
+                // recommends. The completion callback still returns on the main thread.
+                lifecycleScope.launch(Dispatchers.IO) {
+                    MobileAds.initialize(applicationContext) { initializationStatus ->
+                        TimberLogger.logI(
+                            tag,
+                            "[Comiqueta][Main] MobileAds initialized. Status: ${initializationStatus.adapterStatusMap}"
+                        )
+                        showAds = true
+                    }
                 }
             } else {
                 // SDK already initialized, consent is still valid

@@ -61,7 +61,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
@@ -171,10 +170,11 @@ fun ViewerScreenContent(
     val globalZoomOffsetX = uiState.zoomOffsetX
     val globalZoomOffsetY = uiState.zoomOffsetY
     
-    // Track if zoom is active (local state for gesture handling)
-    // isPinchGestureInProgress tracks multi-touch contact independently from scale
-    var isPinchGestureInProgress by remember { mutableStateOf(false) }
-    val globalIsPinchZoomActive = globalZoomScale > 1.01f || isPinchGestureInProgress
+    // Set for as long as the page gesture handler owns the touches - a pinch, or a
+    // single-finger pan while zoomed in. It is local so the lock takes effect on the very
+    // first event, without waiting for the zoom scale to round-trip through the ViewModel.
+    var isTransformGestureInProgress by remember { mutableStateOf(false) }
+    val isPageNavigationLocked = globalZoomScale > 1.01f || isTransformGestureInProgress
     val pageCurlState = rememberPageCurlState(initialCurrent = uiState.currentPage)
 
     val density = LocalDensity.current
@@ -305,8 +305,8 @@ fun ViewerScreenContent(
                         )
 
                         // Disable page navigation when zoomed to allow panning
-                        LaunchedEffect(globalIsPinchZoomActive) {
-                            val navigationEnabled = !globalIsPinchZoomActive
+                        LaunchedEffect(isPageNavigationLocked) {
+                            val navigationEnabled = !isPageNavigationLocked
                             pageCurlConfig.dragForwardEnabled = navigationEnabled
                             pageCurlConfig.dragBackwardEnabled = navigationEnabled
                             pageCurlConfig.tapForwardEnabled = navigationEnabled
@@ -368,180 +368,154 @@ fun ViewerScreenContent(
                                 val isThisPageActuallyLoading: Boolean =
                                     uiState.isLoadingPage.contains(pageIndex1) || (pageIndex2 != -1 && uiState.isLoadingPage.contains(pageIndex2))
 
-                                val imageDisplayModifier = retain(
-                                    pageIndexInCurl,
-                                    (currentBitmap1 != null),
-                                    pageCurlState.current
-                                ) {
-                                    Modifier
-                                        .fillMaxSize()
-                                        .pointerInput(
-                                            pageIndexInCurl,
-                                            (currentBitmap1 != null),
-                                            pageCurlState.current
-                                        ) {
-                                            if (pageIndexInCurl == pageCurlState.current) {
-                                                if (currentBitmap1 != null) {
-                                                    awaitPointerEventScope {
-                                                        var localPinchActive = false
-                                                        try {
-                                                            while (true) {
-                                                                val event =
-                                                                    awaitPointerEvent(PointerEventPass.Main)
-
-                                                                val changes = event.changes
-                                                                if (changes.isEmpty()) {
-                                                                    continue
-                                                                }
-
-                                                                val pressedCount = changes.count { it.pressed }
-
-                                                                // Detect start of multi-touch gesture
-                                                                if (pressedCount >= 2 && !localPinchActive) {
-                                                                    localPinchActive = true
-                                                                    isPinchGestureInProgress = true
-                                                                }
-
-                                                                // Detect end of all touches after a pinch
-                                                                if (localPinchActive && pressedCount == 0) {
-                                                                    localPinchActive = false
-                                                                    isPinchGestureInProgress = false
-                                                                    // Reset zoom if close to 1.0 OR if offsets are NaN (corrupted state)
-                                                                    if (itemScale <= 1.05f || itemOffsetX.isNaN() || itemOffsetY.isNaN()) {
-                                                                        itemScale = 1f
-                                                                        itemOffsetX = 0f
-                                                                        itemOffsetY = 0f
-                                                                    }
-                                                                    changes.forEach { it.consume() }
-                                                                    continue
-                                                                }
-
-                                                                val oldLocalItemScale = itemScale
-                                                                if (changes.size >= 2 || oldLocalItemScale > 1f || localPinchActive) {
-                                                                    val zoomFactor =
-                                                                        if (pressedCount >= 2) event.calculateZoom() else 1f
-                                                                    // One finger pans; the delta is only applied while itemScale > 1f below,
-                                                                    // so an un-zoomed single-finger drag still falls through to page turns.
-                                                                    val panDelta =
-                                                                        if (pressedCount >= 1) event.calculatePan() else Offset.Zero
-
-                                                                    val newLocalItemScale =
-                                                                        (oldLocalItemScale * zoomFactor).coerceIn(
-                                                                            1f,
-                                                                            5f
-                                                                        )
-
-                                                                    itemScale = newLocalItemScale
-
-                                                                    if (itemScale > 1f) {
-                                                                        val containerWidthPx =
-                                                                            constraints.maxWidth.toFloat()
-                                                                        val containerHeightPx =
-                                                                            constraints.maxHeight.toFloat()
-
-                                                                        val primaryWidth = currentBitmap1.width.toFloat()
-                                                                        val primaryHeight = currentBitmap1.height.toFloat()
-                                                                        val imageAspectRatio = if (currentBitmap2 != null) {
-                                                                            (primaryWidth + currentBitmap2.width.toFloat()) / primaryHeight
-                                                                        } else {
-                                                                            primaryWidth / primaryHeight
-                                                                        }
-
-                                                                        val containerAspectRatio =
-                                                                            containerWidthPx / containerHeightPx
-                                                                        val fittedImageWidth: Float
-                                                                        val fittedImageHeight: Float
-                                                                        if (imageAspectRatio > containerAspectRatio) {
-                                                                            fittedImageWidth =
-                                                                                containerWidthPx
-                                                                            fittedImageHeight =
-                                                                                fittedImageWidth / imageAspectRatio
-                                                                        } else {
-                                                                            fittedImageHeight =
-                                                                                containerHeightPx
-                                                                            fittedImageWidth =
-                                                                                fittedImageHeight * imageAspectRatio
-                                                                        }
-                                                                        val scaledImageWidth =
-                                                                            fittedImageWidth * itemScale
-                                                                        val scaledImageHeight =
-                                                                            fittedImageHeight * itemScale
-                                                                        val maxTranslateX =
-                                                                            (scaledImageWidth - containerWidthPx).coerceAtLeast(
-                                                                                0f
-                                                                            ) / 2f
-                                                                        val maxTranslateY =
-                                                                            (scaledImageHeight - containerHeightPx).coerceAtLeast(
-                                                                                0f
-                                                                            ) / 2f
-
-                                                                        // Only apply centroid-based zoom pivot when 2+ fingers
-                                                                        // are pressed. calculateCentroid() returns Offset.Unspecified
-                                                                        // (NaN) when finger count drops to 0/1, which poisons
-                                                                        // all subsequent offset math (NaN * 0 = NaN).
-                                                                        if (pressedCount >= 2) {
-                                                                            val centroid =
-                                                                                event.calculateCentroid(
-                                                                                    useCurrent = true
-                                                                                )
-                                                                            if (!centroid.x.isNaN() && !centroid.y.isNaN()) {
-                                                                                val scaleDelta = itemScale / oldLocalItemScale - 1
-                                                                                itemOffsetX -= (centroid.x - itemOffsetX) * scaleDelta
-                                                                                itemOffsetY -= (centroid.y - itemOffsetY) * scaleDelta
-                                                                            }
-                                                                        }
-                                                                        itemOffsetX += panDelta.x
-                                                                        itemOffsetY += panDelta.y
-                                                                        itemOffsetX =
-                                                                            itemOffsetX.coerceIn(
-                                                                                -maxTranslateX,
-                                                                                maxTranslateX
-                                                                            )
-                                                                        itemOffsetY =
-                                                                            itemOffsetY.coerceIn(
-                                                                                -maxTranslateY,
-                                                                                maxTranslateY
-                                                                            )
-                                                                    } else {
-                                                                        itemOffsetX = 0f
-                                                                        itemOffsetY = 0f
-                                                                    }
-
-                                                                    // Consume ALL events during a pinch gesture to prevent
-                                                                    // the drag handler from interpreting residual finger
-                                                                    // movement as a page turn
-                                                                    if (localPinchActive || itemScale > 1.01f) {
-                                                                        changes.forEach { it.consume() }
-                                                                    }
-                                                                }
-                                                            }
-                                                        } catch (e: CancellationException) {
-                                                        // Reset pinch state on cancellation to avoid stuck state
-                                                        if (localPinchActive) {
-                                                            localPinchActive = false
-                                                            isPinchGestureInProgress = false
-                                                        }
-                                                        throw e
-                                                    } catch (e: Throwable) {
-                                                        if (localPinchActive) {
-                                                            localPinchActive = false
-                                                            isPinchGestureInProgress = false
-                                                        }
-                                                    } finally {
-                                                        if (localPinchActive) {
-                                                            localPinchActive = false
-                                                            isPinchGestureInProgress = false
-                                                        }
-                                                    }
-                                                }
-                                            } else {
-
-                                            }
-                                        } else {
+                                val imageDisplayModifier = Modifier
+                                    .fillMaxSize()
+                                    .pointerInput(
+                                        pageIndexInCurl,
+                                        (currentBitmap1 != null),
+                                        pageCurlState.current
+                                    ) {
+                                        if (pageIndexInCurl != pageCurlState.current) {
                                             if (itemScale > 1f) {
                                                 itemScale = 1f
                                                 itemOffsetX = 0f
                                                 itemOffsetY = 0f
+                                            }
+                                            return@pointerInput
+                                        }
+                                        val bitmap1 = currentBitmap1 ?: return@pointerInput
+
+                                        awaitPointerEventScope {
+                                            var owningGesture = false
+                                            try {
+                                                while (true) {
+                                                    val event =
+                                                        awaitPointerEvent(PointerEventPass.Main)
+
+                                                    val changes = event.changes
+                                                    if (changes.isEmpty()) {
+                                                        continue
+                                                    }
+
+                                                    val pressedCount = changes.count { it.pressed }
+
+                                                    if (pressedCount == 0) {
+                                                        // Gesture finished. Drop a residual (or NaN-corrupted)
+                                                        // zoom back to 1x and release the navigation lock.
+                                                        if (itemScale <= 1.05f || itemOffsetX.isNaN() || itemOffsetY.isNaN()) {
+                                                            itemScale = 1f
+                                                            itemOffsetX = 0f
+                                                            itemOffsetY = 0f
+                                                        }
+                                                        if (owningGesture) {
+                                                            owningGesture = false
+                                                            isTransformGestureInProgress = false
+                                                            changes.forEach { it.consume() }
+                                                        }
+                                                        continue
+                                                    }
+
+                                                    val oldLocalItemScale = itemScale
+
+                                                    // Two fingers always transform. One finger only pans, and only
+                                                    // while zoomed in - at 1x it has to fall through unconsumed so
+                                                    // the page curl handler can turn the page.
+                                                    if (pressedCount < 2 && oldLocalItemScale <= 1f && !owningGesture) {
+                                                        continue
+                                                    }
+
+                                                    // Claim the gesture. This locks page navigation for as long as
+                                                    // the fingers are down, instead of waiting for the zoom scale to
+                                                    // round-trip through the ViewModel.
+                                                    if (!owningGesture) {
+                                                        owningGesture = true
+                                                        isTransformGestureInProgress = true
+                                                    }
+
+                                                    val zoomFactor =
+                                                        if (pressedCount >= 2) event.calculateZoom() else 1f
+                                                    // Offset.Zero whenever the pointer set changed, so adding or
+                                                    // lifting a finger never jumps the page.
+                                                    val panDelta = event.calculatePan()
+
+                                                    itemScale =
+                                                        (oldLocalItemScale * zoomFactor).coerceIn(1f, 5f)
+
+                                                    if (itemScale > 1f) {
+                                                        val containerWidthPx =
+                                                            constraints.maxWidth.toFloat()
+                                                        val containerHeightPx =
+                                                            constraints.maxHeight.toFloat()
+
+                                                        val primaryWidth = bitmap1.width.toFloat()
+                                                        val primaryHeight = bitmap1.height.toFloat()
+                                                        val imageAspectRatio = if (currentBitmap2 != null) {
+                                                            (primaryWidth + currentBitmap2.width.toFloat()) / primaryHeight
+                                                        } else {
+                                                            primaryWidth / primaryHeight
+                                                        }
+
+                                                        val containerAspectRatio =
+                                                            containerWidthPx / containerHeightPx
+                                                        val fittedImageWidth: Float
+                                                        val fittedImageHeight: Float
+                                                        if (imageAspectRatio > containerAspectRatio) {
+                                                            fittedImageWidth = containerWidthPx
+                                                            fittedImageHeight =
+                                                                fittedImageWidth / imageAspectRatio
+                                                        } else {
+                                                            fittedImageHeight = containerHeightPx
+                                                            fittedImageWidth =
+                                                                fittedImageHeight * imageAspectRatio
+                                                        }
+                                                        val maxTranslateX =
+                                                            (fittedImageWidth * itemScale - containerWidthPx)
+                                                                .coerceAtLeast(0f) / 2f
+                                                        val maxTranslateY =
+                                                            (fittedImageHeight * itemScale - containerHeightPx)
+                                                                .coerceAtLeast(0f) / 2f
+
+                                                        // Only pivot on the centroid while 2+ fingers are pressed.
+                                                        // calculateCentroid() returns Offset.Unspecified (NaN) below
+                                                        // that, which poisons all later offset math (NaN * 0 = NaN).
+                                                        if (pressedCount >= 2) {
+                                                            val centroid =
+                                                                event.calculateCentroid(useCurrent = true)
+                                                            if (!centroid.x.isNaN() && !centroid.y.isNaN()) {
+                                                                val scaleDelta =
+                                                                    itemScale / oldLocalItemScale - 1
+                                                                itemOffsetX -= (centroid.x - itemOffsetX) * scaleDelta
+                                                                itemOffsetY -= (centroid.y - itemOffsetY) * scaleDelta
+                                                            }
+                                                        }
+                                                        itemOffsetX = (itemOffsetX + panDelta.x)
+                                                            .coerceIn(-maxTranslateX, maxTranslateX)
+                                                        itemOffsetY = (itemOffsetY + panDelta.y)
+                                                            .coerceIn(-maxTranslateY, maxTranslateY)
+                                                    } else {
+                                                        itemOffsetX = 0f
+                                                        itemOffsetY = 0f
+                                                    }
+
+                                                    // Consume everything we handled so the page curl detector
+                                                    // cancels instead of reading this as a swipe.
+                                                    changes.forEach { it.consume() }
+                                                }
+                                            } catch (e: CancellationException) {
+                                                if (owningGesture) {
+                                                    owningGesture = false
+                                                    isTransformGestureInProgress = false
+                                                }
+                                                throw e
+                                            } catch (e: Throwable) {
+                                                if (owningGesture) {
+                                                    owningGesture = false
+                                                    isTransformGestureInProgress = false
+                                                }
+                                            } finally {
+                                                if (owningGesture) {
+                                                    isTransformGestureInProgress = false
+                                                }
                                             }
                                         }
                                     }
@@ -551,7 +525,6 @@ fun ViewerScreenContent(
                                         translationX = itemOffsetX
                                         translationY = itemOffsetY
                                     }
-                            }
 
                                 if (currentBitmap1 != null) {
                                     Row(

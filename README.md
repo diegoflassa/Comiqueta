@@ -159,9 +159,19 @@ See [CORE_RULES.md](conductor/rules/CORE_RULES.md) for coding standards:
 - **[Workflows](conductor/workflows/INDEX.md)** — Build, test, and distribution commands.
 
 ### Knowledge Items
+
+Start at [`conductor/knowledge/INDEX.md`](conductor/knowledge/INDEX.md) and load **only** what the task
+matches — the index exists so you never read the whole set.
+
 - [KI-01: Viewer Pinch-to-Zoom Fix](conductor/knowledge/KI-01-VIEWER-PINCH-ZOOM-FIX.md) — Multi-touch gesture lifecycle fix
 - [KI-02: Viewer Pinch-to-Zoom NaN State Corruption Fix](conductor/knowledge/KI-02-VIEWER-PINCH-ZOOM-NAN-FIX.md) — IEEE 754 floating-point edge case handling
 - [KI-03: Token Audit & Pruning](conductor/knowledge/KI-03-TOKEN-AUDIT-AND-PRUNING.md) — Context optimization strategies
+- [KI-04: Log Filters](conductor/knowledge/KI-04-LOG-FILTERS.md) — the catalogue of every `[Comiqueta][X]` log tag; **every new filter is added here in the same turn**
+
+Also in `conductor/knowledge/`: [`KI-TBD.md`](conductor/knowledge/KI-TBD.md) (everything deferred or not
+yet built), [`TEST_COVERAGE.md`](conductor/knowledge/TEST_COVERAGE.md) (per-module inventory and known
+gaps), and [`KI-AUTHORING.md`](conductor/knowledge/KI-AUTHORING.md) (the template — a KI is a
+present-tense spec, never a changelog).
 
 ## 🔧 Troubleshooting
 
@@ -189,9 +199,54 @@ powershell -File ./appDistributionUploadDebug.ps1
 powershell -File ./appDistributionUploadRelease.ps1
 ```
 
+## ⚙️ Build Configuration
+
+Every SDK level, version and application id lives in one Kotlin object rather than in the module build
+files: `build-logic/src/main/java/dev/diegoflassa/buildLogic/Configuracoes.kt`. Change it there, not in
+`app/build.gradle.kts`.
+
+| Setting | Value |
+|---|---|
+| `APPLICATION_ID` | `dev.diegoflassa.comiqueta` |
+| `MINIMUM_SDK` | 29 (Android 10) |
+| `COMPILE_SDK` / `TARGET_SDK` | 37 |
+| Java / JVM target | 21 |
+| Kotlin | 2.4.0 |
+
+**`VERSION_CODE` auto-increments on build** and is persisted to a properties file — it is not a constant
+you edit by hand, and a build will change it under you. Convention plugins in `build-logic/` (`android-
+application-convention`, `android-library-convention`, `detekt-convention`) apply this to every module,
+which is why individual build files stay nearly empty.
+
+## 🧭 Project Family
+
+Comiqueta, **Slotify** and **BipSale** are maintained by one developer and share a single AI-workflow
+rule set. [`conductor/rules/CORE_RULES.md`](conductor/rules/CORE_RULES.md) §14 is binding: when a
+**shared** rule changes in one repo, the same change lands in the other two in the same turn. The three
+trees are structurally identical, so the same relative path is the counterpart in each.
+
+| Project | What it is | Platform | Package |
+|---|---|---|---|
+| **Slotify** | Salon/clinic scheduling — agenda, customers, packages, stock | Kotlin Multiplatform (Android + iOS) | `br.com.slotify` |
+| **Comiqueta** | Comics viewer with multi-format archive support | Android | `dev.diegoflassa.comiqueta` |
+| **BipSale** | QR-code point of sale, offline-first with Excel export | Android | `dev.diegoflassa.bipsale` |
+
+**Shared** — change one, change all three: stability, git safety, token economy, code style, KI-sync
+discipline, planning protocol, log-filter format, composable extraction, string-resource ownership, the
+regression-test rule, the changelog rule, and everything in `ai_behavior.md` and `GRADLE_RULES.md`.
+
+**Not shared** — adapt or omit, never copy: module graphs, DI framework, logging API, persistence, build
+types, locale sets, and everything in `architecture.md`. Slotify is Kotlin Multiplatform on Koin;
+Comiqueta and BipSale are Android-only on Hilt.
+
 ## 📄 License
 
 This project is proprietary software. All rights reserved.
+
+> **No `LICENSE` file is present in the repository.** The statement above is the only license notice, and
+> a bare assertion in a README is weaker than a file. Adding one would make the intent unambiguous. Note
+> the siblings disagree: BipSale's README says MIT while its `LICENSE` file is Apache 2.0, and Slotify
+> states nothing at all.
 
 ## 👨‍💻 Contributing
 

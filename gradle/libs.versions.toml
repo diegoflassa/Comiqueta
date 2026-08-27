@@ -2,7 +2,7 @@
 
 #Common
 gradle = "9.2.1"
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 
 #Project build.gradle
 hilt-android-gradle-plugin = "2.60.1"
@@ -14,13 +14,13 @@ androidx-room = "2.8.4"
 
 #Project build.gradle
 google-services = "4.5.0"
-firebase-crashlytics-gradle = "3.0.7"
+firebase-crashlytics-gradle = "3.0.8"
 firebase-perf-plugin = "2.0.2"
 
 #Common
 core-ktx = "1.19.0"
 material = "1.14.0"
-ui-text-google-fonts = "1.11.4"
+ui-text-google-fonts = "1.12.0"
 
 #Common Testing
 junit = "4.13.2"
@@ -36,33 +36,33 @@ org-mockito-core = "5.23.0"
 org-mockito-inline = "5.2.0"
 org-mockito-kotlin = "6.3.0"
 app-cash-turbine = "1.2.1"
-androidx-paging-common = "3.5.0"
+androidx-paging-common = "3.5.1"
 com-google-truth = "1.4.5"
 
 #Firebase
-firebase-bom = "34.16.0"
+firebase-bom = "34.18.0"
 
 #Timber
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2026.06.01"
-ax-constraintlayout-compose = "1.1.1"
+compose-bom = "2026.08.00"
+ax-constraintlayout-compose = "1.1.2"
 ax-activity-compose = "1.13.0"
 lifecycle-viewmodel-compose = "2.11.0"
-ax-navigation-compose = "2.9.8"
+ax-navigation-compose = "2.10.0"
 kotlinx-serialization-json = "1.11.0"
-ax-paging-runtime-ktx = "3.5.0"
-ax-paging-compose = "3.5.0"
+ax-paging-runtime-ktx = "3.5.1"
+ax-paging-compose = "3.5.1"
 
 #Compose Testing
 org-mockito-android = "5.23.0"
 
 #Compose Navigation 3
-ax-navigation3-runtime = "1.1.4"
-ax-navigation3-ui = "1.1.4"
+ax-navigation3-runtime = "1.1.7"
+ax-navigation3-ui = "1.1.7"
 ax-navigation3-viewmodel = "2.11.0"
-ax-navigation3-adaptive = "1.3.0-rc01"
+ax-navigation3-adaptive = "1.3.0"
 
 #Room
 room-runtime = "2.8.4"
@@ -81,7 +81,7 @@ hilt-work = "1.4.0"
 hilt-android-testing = "2.60.1"
 
 #OkHttp
-okhttp-bom = "5.4.0"
+okhttp-bom = "5.5.0"
 
 #Moshi
 moshi-kotlin = "1.15.2"
@@ -123,7 +123,7 @@ ax-startup-runtime = "1.2.0"
 org-apache-commons-compress = "1.28.0"
 
 #Rar files
-org-github-junrar = "7.6.0"
+org-github-junrar = "8.1.0"
 
 #App Update
 com-google-android-play-app-update = "2.1.0"
@@ -135,13 +135,13 @@ play-services-ads-api = "25.4.0"
 com-google-android-ump-messaging-platform = "4.0.0"
 
 #Other
-clarity-compose = "3.8.3"
+clarity-compose = "3.9.0"
 io-coil-kt-coil-compose = "2.7.0"
 
 #Plugins
 #Root build.gradle
 com-osacky-doctor = "0.12.1"
-org-jetbrains-kotlinx-kover = "0.9.8"
+org-jetbrains-kotlinx-kover = "0.9.9"
 jlleitschuh-ktlint = "14.2.0"
 arturbosch-detekt = "1.23.8"
 
