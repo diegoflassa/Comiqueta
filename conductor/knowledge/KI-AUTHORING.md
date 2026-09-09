@@ -15,6 +15,7 @@ Then add a row to the index table in `INDEX.md`.
 
 **Scope:** <modules / files affected>
 **Last verified:** YYYY-MM-DD
+**Reflects code:** `<short-sha>`
 
 ## Problem
 <what knowledge gap or bug>
@@ -33,6 +34,12 @@ Then add a row to the index table in `INDEX.md`.
 
 - Write in **present tense** — a KI is a canonical spec, not a changelog. No "Phase X added…", "Task Y changed…"; state what the code IS.
 - Keep a single `**Last verified:** YYYY-MM-DD` line — no dated history chains.
+- **Stamp the commit under it:** `**Reflects code:** `<short-sha>``, naming the commit the KI was
+  checked against. A date says when someone touched the document; the commit says which code it was
+  checked against, and only the second answers "is this wrong, or just old?". Refresh it in the same
+  turn you edit the KI, and **only for what you actually re-read** — a bulk re-stamp is a false
+  statement. Never invent one: `git log -1 -- <file>` is the answer. Full discipline:
+  `CORE_RULES.md §6.4`.
 - **Self-sufficient** — no links to `conductor/plannings/*` (those get deleted); inline what the KI needs.
 - If a KI grows past ~400 lines or spans multiple sub-packages, **split it** along sub-package boundaries (overview parent + parts). Full discipline: `CORE_RULES.md §6`.
 

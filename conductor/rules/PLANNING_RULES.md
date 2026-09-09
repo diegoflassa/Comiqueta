@@ -145,3 +145,106 @@ creation criteria — 3+ files, crosses layers, fixes a blocking bug, uncertain 
 into `conductor/plannings/` **before execution starts**, and that file is what every later turn cites.
 Never cite a brain-directory path from a plan, a KI or a commit message: it resolves for one machine and
 one conversation and for nothing else (§16.2).
+
+---
+
+## 24. Model Assignment for Deferred Tasks (GLOBAL - MANDATORY)
+
+**Any task written down to be executed later must name the model that will execute it.** The trigger
+is deferral, not size: the moment work is recorded for a future turn — a plan step, a backlog row, a
+`KI-TBD.md` item, a handover prompt — it stops being "whatever model picks it up" and becomes a
+routing decision, made now by whoever still has the context.
+
+A task with no model named is not routed. It gets taken by whichever model opens the file next, which
+in practice is whichever one happened to open the session — and that is how a migration touching
+money or auth ends up attempted by the model chosen that morning for lint fixes.
+
+### 24.1 One model per task, decided per task (MANDATORY)
+
+A plan of eight tasks makes eight independent choices, not one choice applied eight times. Plans mix
+trivial mechanical edits with exhaustive cross-layer work, and a single plan-wide model is wrong at
+both ends: it burns the top tier on renames and under-serves the one task that actually needed it.
+
+Where a plan genuinely does route uniformly, that is still eight recorded choices that happened to
+agree — say so at the head of the plan and keep the per-task annotation anyway, so a row stays
+correct when it is later moved, split, or copied into another plan.
+
+### 24.2 Annotation format (MANDATORY)
+
+Three fields: **Model · Think · Effort**.
+
+| Field | Values | Meaning |
+|---|---|---|
+| Model | one model from the pool declared at the head of the plan | who executes the task |
+| Think | `ON` / `OFF` | whether extended thinking is required |
+| Effort | `Low` / `Medium` / `High` | reasoning budget for the run |
+
+It appears in **two** places per task: in the plan's routing table, and again at the head of the task
+body. The duplication is deliberate — a task body is read on its own, far from the table, and a
+reader who must scroll back to a table to learn how to run the task will not scroll back.
+
+**The pool is declared, never assumed.** Antigravity's model picker changes without notice, so a plan
+names the models it was routed against at its head, with the date. A stale pool is visible; an
+implicit one is not.
+
+### 24.3 Correctness first (MANDATORY)
+
+**Pick the model most likely to execute that specific task correctly.** Cost and speed are not the
+criterion. They enter only as a tiebreaker between two candidates genuinely equally likely to
+succeed — and when they do, name both and say why the cheaper one still suffices.
+
+- When a task sits between two tiers, go **up**, not down.
+- When a task has an easy phase and a hard phase, split it into two tasks with two models rather than
+  averaging them into one.
+- **State a one-line justification beside every choice** — why this model is enough, or why a stronger
+  one is required. A bare model name records the conclusion and discards the reasoning, so the next
+  person to touch the row cannot tell whether it was judged or copied.
+
+### 24.4 Two routings per task: preferred and fallback (MANDATORY)
+
+**Every deferred task carries two routings.** §24.1 still holds — the choice is made per task —
+but each task records it twice:
+
+| Option | Meaning | Written as |
+|---|---|---|
+| **A — preferred** | the model to use when it is available | `A: <model> · <Think> · <Effort>` |
+| **B — fallback** | what to use when A is rate-limited, deprecated, or missing from the picker | `B: <model> · <Think> · <Effort>` |
+
+Both appear in both places §24.2 requires. In the table the routings alone suffice; at the head of
+the task body **each option carries its own one-line justification**. Two model names sharing one
+sentence is one recommendation written twice, not two.
+
+Why two: the available pool is an operational constraint that changes without warning — a quota is
+hit mid-plan, a preview model is withdrawn, an account loses a provider. A task carrying only the
+routing that was legal the day it was written gets silently substituted by whoever opens it next, and
+the recorded reasoning is lost. Recording both means the substitution **was judged in advance by
+whoever had the context**.
+
+- **The two options may name the same model** — say so in both rows rather than inventing a different
+  pick for variety.
+- **They may also disagree sharply, and that is the point.** Say which capability drove the split:
+  large-context sweep, deep non-deterministic reasoning, long mechanical edit.
+- **Neither may be left blank or "same as above".** An unrouted option is an unrouted task.
+
+### 24.5 Prefer the cheapest model that still guarantees the outcome (MANDATORY)
+
+§24.3 says correctness decides, and it still does. This is about what happens *after* two
+candidates are both judged able to deliver the same correct result: **route to the cheaper one.**
+
+- **Reach for the top tier because the task needs it, not by default.** Reflexively routing everything
+  to the strongest model is not caution — it stops the routing decision from carrying any information.
+- **A better-specified task can legitimately lower the tier.** Where the risk that justified the top
+  tier is *underspecification* — an ambiguous contract, an unstated invariant, an unnamed file — remove
+  that risk in the plan instead of buying a bigger model: name the files, quote the contract, state
+  the invariant, list the acceptance checks, point at the exemplar to copy. **The instructions must be
+  written into the task body before the downgrade is recorded** — a downgrade justified by guidance
+  nobody wrote is just a downgrade.
+- **The bound, and it is absolute: never trade quality for tier.** If the risk is *judgement* rather
+  than specification — cross-cutting synthesis, non-deterministic concurrency, a decision that must
+  not be improvised, a money path — no amount of extra instruction substitutes for capability, and the
+  task stays at the tier §24.3 chose.
+- **Record the reasoning, not just the outcome.** A tier that dropped with no recorded justification
+  reads as an unreviewed cost cut, and the next executor cannot tell whether it was judged or guessed.
+- **Applies to both options of §24.4, independently**, and **is revisited when the task changes**:
+  if scope grows or the contract turns out ambiguous, the tier goes back up before execution, not
+  after a failed attempt.

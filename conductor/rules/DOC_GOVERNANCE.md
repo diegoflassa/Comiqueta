@@ -151,3 +151,19 @@ diverge by default, and nothing detects it.
 - **Workflows are procedures, not rules.** A repeatable sequence the user invokes by name belongs in
   `.agent/workflows/`, mirroring `conductor/workflows/`. Adding, renaming or deleting either updates the
   catalogue in [`../index.md`](../index.md) in the same turn.
+
+### 18.1 Frontmatter fails silently, so verify it (MANDATORY)
+
+`description` is a YAML **plain scalar**, so **a colon followed by a space anywhere inside it ends the
+scalar and breaks the parse** — `e.g.: `, `note: `, `Applies: when…`. The file then does not load,
+with no error and no warning: it simply never appears. Use an em dash instead, or wrap the whole
+description in double quotes.
+
+The same silence covers every other authoring mistake here — an unknown key, a mistyped `trigger`, a
+malformed `globs`. So **verify, never assume**: after adding or editing anything under `.agent/`,
+confirm it actually registered instead of trusting that it did. A rule nobody can see is
+indistinguishable from a rule nobody wrote, and it fails in the direction that looks like success.
+
+**Relative links resolve from the file's own directory** — `.agent/rules/<name>.md` is two levels
+below the repo root, so a link into the docs is `../../conductor/<…>`. Verify the depth; a wrong one
+still renders as a link and fails only when someone follows it.

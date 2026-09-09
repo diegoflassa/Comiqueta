@@ -26,6 +26,7 @@ single lookup for all of them. Load only the file the row points at.
 |     **6.1** |     [Write KIs as if every change was always the original intent](#61-write-kis-as-if-every-change-was-always-the-original-intent) | — |
 |     **6.2** |     [KIs must be self-sufficient](#62-kis-must-be-self-sufficient) | — |
 |     **6.3** |     [Optimise for targeted reads](#63-optimise-for-targeted-reads) | — |
+|     **6.4** |     [Every KI declares the commit it was written against](#64-every-ki-declares-the-commit-it-was-written-against-mandatory) *(M)* | — |
 | **7** | [Planning Protocol](PLANNING_RULES.md#7-planning-protocol) | [PLANNING_RULES](PLANNING_RULES.md) |
 |     **7.1** |     [META_PLANNING Protocol](PLANNING_RULES.md#71-meta_planning-protocol-global-rule) | [PLANNING_RULES](PLANNING_RULES.md) |
 |     **7.1a** |     [Multi-Edition Plan Sync](PLANNING_RULES.md#71a-multi-edition-plan-sync-global-rule) | [PLANNING_RULES](PLANNING_RULES.md) |
@@ -56,7 +57,13 @@ single lookup for all of them. Load only the file the row points at.
 |     **17.1** |     [Heading level, and the index row](DOC_GOVERNANCE.md#171-heading-level-and-the-index-row-mandatory) *(M)* | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
 |     **17.2** |     [A rules file has a token budget](DOC_GOVERNANCE.md#172-a-rules-file-has-a-token-budget-mandatory) *(M)* | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
 | **18** | [Agent Surface Parity](DOC_GOVERNANCE.md#18-agent-surface-parity-global---mandatory) *(M)* | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
+|     **18.1** |     [Frontmatter fails silently, so verify it](DOC_GOVERNANCE.md#181-frontmatter-fails-silently-so-verify-it-mandatory) *(M)* | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
 | **19** | [Single Activation Per Control](UI_RULES.md#19-single-activation-per-control-global---mandatory) *(M)* | [UI_RULES](UI_RULES.md) |
+| **20** | [Text Encoding and Shell Output](AGENT_IO_RULES.md#20-text-encoding-and-shell-output-global---mandatory) *(M)* | [AGENT_IO_RULES](AGENT_IO_RULES.md) |
+| **21** | [Chunked Writing of Long Artefacts](AGENT_IO_RULES.md#21-chunked-writing-of-long-artefacts-global---mandatory) *(M)* | [AGENT_IO_RULES](AGENT_IO_RULES.md) |
+| **22** | [Token Economy Discipline](AGENT_IO_RULES.md#22-token-economy-discipline-global---mandatory) *(M)* | [AGENT_IO_RULES](AGENT_IO_RULES.md) |
+| **23** | [Credentials Never Enter the Repository](SECURITY_RULES.md#23-credentials-never-enter-the-repository-global---mandatory) *(M)* | [SECURITY_RULES](SECURITY_RULES.md) |
+| **24** | [Model Assignment for Deferred Tasks](PLANNING_RULES.md#24-model-assignment-for-deferred-tasks-global---mandatory) *(M)* | [PLANNING_RULES](PLANNING_RULES.md) |
 
 *(M) = MANDATORY. "—" in the last column means this file.*
 
@@ -81,6 +88,8 @@ Never run `git add`/`commit`/`mv`/`rm` or any staging/commit command unless the 
 ## 3. Token Economy
 
 Minimize tokens every task. Read only what you need (targeted `grep`/`glob`, line-ranges over whole files). Skip files already in context. Run independent tool calls in parallel. Prefer `Edit` over `Write` for existing files. Keep responses terse — no preamble/recap/pleasantries. Use `file:line` refs instead of quoting blocks.
+
+The full spec — when a re-read is correct, batched documentation sync, what the compiler owns, and the habits that keep the session's cached prefix intact — is [AGENT_IO_RULES.md](AGENT_IO_RULES.md) §22. The paragraph above is the operative summary; if it is enough to act on, do not open that section.
 
 ## 4. Large File Protocol (>500 lines)
 
@@ -150,6 +159,40 @@ Keep KIs **small and focused** so an AI only loads what it needs:
 - Trim aggressively: drop historical change-narratives, duplicated patterns already documented in `rules/`, and planning markers. **Never** trim the substantive specs needed to make code changes — file purpose, contracts, business rules, test cases.
 
 > **Rationale:** KIs are the reference an AI reads when implementing. A planning can diverge from a KI silently and cause regressions. Plannings are temporary; KIs persist. The KI must always reflect the current implementation contract, written in present tense, self-contained, and small enough to load targeted reads.
+
+### 6.4 Every KI declares the commit it was written against (MANDATORY)
+
+Directly under the `**Last verified:**` line, every KI carries **exactly one** stamp line:
+
+```markdown
+**Reflects code:** `4d6be06f` (2026-09-08)
+```
+
+Nothing else — no explanatory paragraph, no `Earlier:` / `Previous:` chains, no parenthesised
+history. The document's changelog is `git log --follow <file>`; repeating it at the top of the KI is
+a token cost paid on **every** read, for information git already holds more precisely.
+
+**Why the commit and not just the date.** A date says *when someone touched the document*; the commit
+says *which code it was checked against*. Those are different things, and it is the second that
+answers the only question that matters when a KI and the code disagree: **"is this wrong, or just
+old?"** With the commit, anyone runs `git log <commit>..HEAD -- <module path>` and knows exactly what
+landed since — the suspicion stops being a hunch and becomes a list of commits.
+
+- **Refresh the stamp in the same turn you edit the KI**, together with §6 above. A stale stamp is
+  worse than none, because it asserts a guarantee that no longer holds.
+- **Only re-stamp what you actually re-read against the code.** The stamp asserts that the content
+  matches that commit. Running a script across 40 KIs and re-stamping all of them is a false
+  statement — precisely the false confidence the stamp exists to prevent. If you touched one section,
+  the stamp stays at the state you verified.
+- **A file outside git** (`KI-TBD.md`) has no commit of its own: the stamp records which commit the
+  repository was on when the stamp was written.
+- **Never invent a commit.** `git log -1 -- <file>` is the answer.
+- **No other dated history anywhere in the document** — not at the top, not mid-file. A header note
+  like `**TICKET-123 (2026-09-02):** …` is a changelog in disguise. If the fact matters, rewrite it in
+  the present tense inside the section it belongs to; if it does not, git keeps it.
+
+> **Existing KIs predate this rule** and carry `**Last verified:**` only. They are stamped as each one
+> is next touched — never in a bulk pass, per the second bullet above.
 
 ## 11. Extension Functions
 

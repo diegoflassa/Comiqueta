@@ -27,6 +27,8 @@ Documentation hub for Comiqueta across all AI models.
 - **[GRADLE_RULES.md](rules/GRADLE_RULES.md)** — Gradle build-tooling standards (Kotlin DSL, version catalog, convention plugins, caching, wrapper validation)
 - **[PREVIEW_STANDARD.md](rules/PREVIEW_STANDARD.md)** — `@Preview` standard (device profiles, theme wrapper, localized mock data, ≥2 states)
 - **[INSTRUMENTED_TEST_STANDARD.md](rules/INSTRUMENTED_TEST_STANDARD.md)** — screens must be instrumented-test friendly
+- **[AGENT_IO_RULES.md](rules/AGENT_IO_RULES.md)** — agent execution I/O (§20–§22: text encoding and shell output, chunked writing of long artefacts, full token-economy spec)
+- **[SECURITY_RULES.md](rules/SECURITY_RULES.md)** — repository safety (§23: what never gets committed, placeholders, what to do when a secret is already in git)
 - **[CI.md](rules/CI.md)** — manual pre-PR checklist
 
 ### Knowledge (SOT) → [Full Index](knowledge/INDEX.md)
