@@ -46,6 +46,13 @@ Coverage state → [TEST_COVERAGE.md](knowledge/TEST_COVERAGE.md) · Deferred wo
 | [android-cli](skills/android-cli/SKILL.md) | ADB / device orchestration (deploy, logcat, screenshots) | Running on device, capturing screenshots |
 | [r8-analyzer](skills/r8-analyzer/SKILL.md) | R8/ProGuard keep-rule audit + APK size | Optimizing size, debugging release minification |
 | [perfetto-trace-analysis](skills/perfetto-trace-analysis/SKILL.md) | Runtime jank / latency / memory root-cause | Investigating janky transitions, slow loads, memory spikes |
+| [adaptive](skills/adaptive/SKILL.md) | Adaptive Compose layouts for window-size classes, foldables, large screens | Building UI that must reflow across form factors |
+| [android-intent-security](skills/android-intent-security/SKILL.md) | Intent-surface security — exported components, `PendingIntent`, deep links, redirection | Auditing or adding any Intent, exported component, or deep link |
+| [android-profiler](skills/android-profiler/SKILL.md) | Record + analyse Android Studio Profiler / Perfetto traces — CPU, memory, jank, power | Deep runtime perf work beyond a quick trace read |
+| [engage-sdk-integration](skills/engage-sdk-integration/SKILL.md) | Integrate + debug the Play Engage SDK — content clusters, recommendations, continuation | Publishing content to Engage / Continue / Recommendations surfaces |
+| [navigation-event](skills/navigation-event/SKILL.md) | Intercept back gestures, run Predictive Back animations via `NavigationEventDispatcher` | Adding or changing back / predictive-back behaviour |
+| [play-billing-library-version-upgrade](skills/play-billing-library-version-upgrade/SKILL.md) | Upgrade / migrate Google Play Billing Library across major versions | Bumping the Play Billing dependency |
+| [play-policy-insights](skills/play-policy-insights/SKILL.md) | Audit the app against Google Play policy — data safety, permissions, account deletion | Before a Play Store submission or policy review |
 
 
 ### Agent Surface (`.agent/`) — Antigravity

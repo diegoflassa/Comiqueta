@@ -30,3 +30,10 @@ Per-module test inventory, known gaps, and verification commands live in [`TEST_
 | [perfetto-trace-analysis](../skills/perfetto-trace-analysis/SKILL.md) | Runtime jank / latency / memory root-cause via traces |
 | [android-cli](../skills/android-cli/SKILL.md) | ADB / device orchestration (deploy, logcat, screenshots) |
 | [edge-to-edge](../skills/edge-to-edge/SKILL.md) | Compose system-bar / IME inset handling |
+| [adaptive](../skills/adaptive/SKILL.md) | Adaptive Compose layouts for window-size classes, foldables, large screens |
+| [android-intent-security](../skills/android-intent-security/SKILL.md) | Intent-surface security — exported components, `PendingIntent`, deep links, redirection |
+| [android-profiler](../skills/android-profiler/SKILL.md) | Record + analyse Android Studio Profiler / Perfetto traces — CPU, memory, jank, power |
+| [engage-sdk-integration](../skills/engage-sdk-integration/SKILL.md) | Integrate + debug the Play Engage SDK — content clusters, recommendations, continuation |
+| [navigation-event](../skills/navigation-event/SKILL.md) | Intercept back gestures, run Predictive Back animations via `NavigationEventDispatcher` |
+| [play-billing-library-version-upgrade](../skills/play-billing-library-version-upgrade/SKILL.md) | Upgrade / migrate Google Play Billing Library across major versions |
+| [play-policy-insights](../skills/play-policy-insights/SKILL.md) | Audit the app against Google Play policy — data safety, permissions, account deletion |

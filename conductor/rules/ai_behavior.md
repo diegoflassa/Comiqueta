@@ -62,4 +62,16 @@ be copied in one gesture.
 **Why:** a deliverable interleaved with prose gets retyped or half-pasted. A box is one click, and drawing
 its edges also forces a decision about where the artefact ends and the commentary begins.
 
+## 8. Task List When Starting Work
+Immediately after starting each new task of multi-step work, show and update the task list with three explicit groups:
+- **Previous tasks:** everything already completed.
+- **Current task:** exactly one just-started task.
+- **Tasks awaiting execution:** everything still pending.
+
+Make this update the moment the new task begins, before running any part of it. When a task finishes, move it to previous; as soon as the next one starts, show the list again with that next task as current.
+
+**The same applies to the subtasks of any task.** If a task breaks into subtasks, each subtask is the current unit: show the list when it starts — subtasks nested under their owning task, exactly one marked current — and repeat the display for every following subtask. Never collapse a block of subtasks into a single step.
+
+This section covers the **start** of a task or subtask. When each one finishes, mark it done in the same turn — in the plan file, where one exists — and then **stop and ask the operator before starting the next task or subtask**. Authorization for the whole job does not waive this stop; build/commit authorization never comes bundled with it.
+
 **Working if:** the most-correct end-state regardless of diff size, no known-wrong patches shipped to save effort, clarifying questions before implementation rather than after, KIs that match the code.
