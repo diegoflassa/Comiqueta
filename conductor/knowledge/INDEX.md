@@ -20,7 +20,7 @@ Do NOT pre-load. Index first, fetch on match.
 
 Per-module test inventory, known gaps, and verification commands live in [`TEST_COVERAGE.md`](TEST_COVERAGE.md).
 
-## Skills (Lazy-Load) → `../skills/`
+## Skills (Lazy-Load) → [`.agents/skills/`](../../.agents/skills/)
 
 > Read a skill only when its exclusive purpose is the active task. Never pre-load.
 
