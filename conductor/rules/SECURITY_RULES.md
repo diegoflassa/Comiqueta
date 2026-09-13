@@ -68,7 +68,7 @@ by field, file and line.
 
 ### 23.4 Nothing here is tool-enforced today (recorded on purpose)
 
-There is no `gitleaks`, no `detect-secrets`, and no pre-commit hook in this repository: the only
-control is this rule being read. Adopting a scanner is a backlog item with an owner. Until it exists,
+There is no `gitleaks` and no `detect-secrets`. A local pre-commit hook (`tools/hooks/check_secrets.py`)
+blocks Bearer tokens, private keys and service-account JSON on staged files. The rest of this rule is still read. Adopting a scanner is a backlog item with an owner. Until it exists,
 every diff review that touches `conductor/`, `README.md`, or any example script gets an eye passed
 over key-shaped values — UUIDs, long base64, `Bearer `.

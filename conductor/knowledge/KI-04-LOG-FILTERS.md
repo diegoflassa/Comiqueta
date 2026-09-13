@@ -5,7 +5,7 @@
 
 ## Problem
 
-This KI is the **single source of truth** for every runtime log filter the app emits: the filter tag, the class it lives in, and what it lets an engineer diagnose from `logcat`. **Every filter listed here is protected** — none may be stripped by `/remove_filter`, `/clean`, or any "log hygiene" sweep unless the user explicitly names it and confirms (see `LOGGING_RULES.md` §8 "Log Filter Management" and `workflows/remove_filter.md`).
+This KI is the **single source of truth** for every runtime log filter the app emits: the filter tag, the class it lives in, and what it lets an engineer diagnose from `logcat`. **Every filter listed here is protected** — none may be stripped by `/remove-filter`, `/clean`, or any "log hygiene" sweep unless the user explicitly names it and confirms (see `LOGGING_RULES.md` §8 "Log Filter Management" and `workflows/remove-filter.md`).
 
 ## Filter convention (LOGGING_RULES.md §8)
 
@@ -103,7 +103,7 @@ No 3-segment `[Comiqueta][X][Y]` tags exist. No `android.util.Log`/raw `Timber.*
 Filter names are **public string contracts**. Renaming or removing any one requires updating, **in the same turn**:
 1. this KI (the row),
 2. `LOGGING_RULES.md` §8 (Log Filter Management), if it names the filter as an example,
-3. `workflows/remove_filter.md`, if it names the filter,
+3. `workflows/remove-filter.md`, if it names the filter,
 4. every production `TimberLogger.log*` call site that emits the tag,
 5. every test assertion on the removed/renamed tag.
 

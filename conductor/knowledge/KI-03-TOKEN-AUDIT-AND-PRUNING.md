@@ -19,7 +19,7 @@ Keep the AI **working set** lean — the docs an agent loads to generate code: `
 - Remove dead links the moment a target file is deleted.
 - Don't duplicate a rule across files — keep one canonical home and link to it.
 
-## Running an audit (`/token_audit`)
+## Running an audit (`/token-audit`)
 
 1. Measure bytes/tokens of `index.md`, `rules/*`, and `knowledge/INDEX.md`.
 2. Flag anything over budget; move detail into a lazy-loaded KI or trim redundancy.

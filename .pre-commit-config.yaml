@@ -1,0 +1,14 @@
+repos:
+  - repo: local
+    hooks:
+      - id: check-agent-docs
+        name: check agent docs
+        language: python
+        entry: python tools/hooks/check_agent_docs.py
+        files: \.md$
+        pass_filenames: true
+      - id: check-secret-shapes
+        name: check credential shapes
+        language: python
+        entry: python tools/hooks/check_secrets.py
+        pass_filenames: true

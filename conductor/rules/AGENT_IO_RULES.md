@@ -8,7 +8,7 @@ How an AI agent must read, write and report in this repository. It owns three ru
 | **21** | [Chunked Writing of Long Artefacts](#21-chunked-writing-of-long-artefacts-global---mandatory) |
 | **22** | [Token Economy Discipline](#22-token-economy-discipline-global---mandatory) |
 
-These are execution mechanics, not behaviour — `ai_behavior.md` owns behaviour. They live in their
+These are execution mechanics, not behaviour — `AI_BEHAVIOR.md` owns behaviour. They live in their
 own file because no other rules file owns the subject and because `CORE_RULES.md` is close enough to
 its token budget ([DOC_GOVERNANCE.md](DOC_GOVERNANCE.md) §17.2) that folding them in would
 push it over.
@@ -100,7 +100,7 @@ may already be half written, and **a half-written file looks like a valid one**.
 
 **This is not licence to deliver half the work.** The rule governs *how* content crosses the tool
 boundary, not how much content the task requires. A document that needs 400 lines gets 400 lines, in
-chunks — trimming scope to fit one response violates `ai_behavior.md` and the correctness-first rule.
+chunks — trimming scope to fit one response violates `AI_BEHAVIOR.md` and the correctness-first rule.
 
 **It applies to reading too.** Dumping a 2,000-line file to change two lines is the same defect
 inverted, and §22 already forbids it: locate by search, edit by anchor.
@@ -191,7 +191,7 @@ everything before it. Two habits protect it.
   `test*`, `connectedAndroidTest`, an ADB install, dependency resolution — runs in the background and
   is polled, rather than waited on with a raised timeout.
 - **Do not edit `AGENTS.md`, `CLAUDE.md`, the files under `conductor/rules/`, or anything under
-  `.agent/` mid-session** unless editing them *is* the task. They sit in the cached stable prefix,
+  `.agents/` mid-session** unless editing them *is* the task. They sit in the cached stable prefix,
   and touching them invalidates everything after.
 - **Group the reads the task will need at the start** instead of trickling them in one at a time.
 

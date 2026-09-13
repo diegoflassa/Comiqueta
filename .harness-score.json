@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "SNS-01": "off",
+    "SNS-02": "off",
+    "SNS-04": "off",
+    "HYG-08": "off"
+  }
+}

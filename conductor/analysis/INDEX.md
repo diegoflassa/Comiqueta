@@ -16,7 +16,9 @@ The analysis file then stays as provenance — it is never the source of truth.
 
 ## Available Analyses
 
-_None yet._
+| File | When to read |
+|---|---|
+| [harness-score-gradle-detection.md](harness-score-gradle-detection.md) | T7 draft: Gradle detection gaps to file upstream against harness-score v1.6.5. Not filed. |
 
 ---
 

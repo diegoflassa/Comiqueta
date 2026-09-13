@@ -123,34 +123,63 @@ Both cannot be obeyed, so one is silently ignored - and it will be whichever the
 ## 18. Agent Surface Parity (GLOBAL - MANDATORY)
 
 More than one agent surface reads this repository: `AGENTS.md` + `conductor/` (Claude Code, Gemini CLI,
-Copilot) and `.agent/rules/` + `.agent/workflows/` (Antigravity). Two surfaces holding the same rule
-diverge by default, and nothing detects it.
+Copilot) and `.agents/` (Antigravity, which also accepts `.agent/`; this repository uses `.agents/`, the name
+Antigravity lists first and the one Codex and harness-score read). Two surfaces holding the same rule diverge by default, and nothing
+detects it.
 
-- **`conductor/rules/` is the single source of truth.** Every file under `.agent/rules/` is a **pointer**: a
+Antigravity discovers three kinds of file under `.agents/`, and each has exactly one job:
+
+| Path | Holds | Frontmatter |
+|---|---|---|
+| `.agents/rules/*.md` | Only what must load without the model choosing it - `always_on`, or `glob` for a kind of file | `description`, `trigger`, `globs` |
+| `.agents/skills/<name>/SKILL.md` | Every rule that binds at a recognisable moment, and every procedure - loaded when its `description` matches the task | `name`, `description` |
+| `.agents/workflows/*.md` | Slash commands the user invokes by name, each following a runbook in `conductor/workflows/` or a template in `conductor/templates/` | `description` |
+
+- **`conductor/rules/` is the single source of truth.** Every rule or skill under `.agents/` is a **pointer**: a
   checklist of at most ~25 lines plus a link to the section that owns the spec. Never a second copy of the
-  rule text.
-- **Frontmatter is the whole interface.** Antigravity parses exactly three keys - `description`, `trigger`,
-  `globs`. Anything else is ignored silently. `description` is the only thing the model matches on, so it
-  states **what the rule covers and when it applies**, never just a title.
+  rule text. A skill carries a full procedure only where no rules file owns one (`handoff`, `initialize`,
+  `planning`).
+- **A skill never lives under `conductor/`.** Antigravity discovers skills only at
+  `.agents/skills/<name>/SKILL.md`; anywhere else a skill is inert prose that no agent loads.
+- **Frontmatter is the whole interface.** Antigravity parses exactly the keys in the table above - anything
+  else is ignored silently. `description` is the only thing the model matches on, so it states **what the file
+  covers and when it applies**, never just a title.
 - **`trigger` is chosen by when the rule binds**, never by how important it feels:
 
   | `trigger` | Use for |
   |---|---|
   | `always_on` | Only what must hold on every turn - git safety, layering, stability. It is paid on every turn. |
-  | `model_decision` | The default. A rule binding at a recognisable moment: adding a log, closing a bug fix. |
-  | `glob` | A rule anchored to a kind of file; set `globs` alongside it. |
-  | `manual` | A procedure invoked by name. |
+  | `glob` | A rule anchored to a kind of file; set `globs` alongside it, quoted. |
+  | `model_decision` | Valid, and not used here: a rule binding at a recognisable moment - adding a log, closing a bug fix - is a skill. |
+  | `manual` | Valid, and not used here: a procedure invoked by name is a workflow. |
 
   **Omitting `trigger` defaults to `always_on`** - an omission silently makes the rule permanent context.
-- **When a rule's trigger condition changes, its pointer's `description` is updated in the same turn.** A
-  pointer with a stale description is worse than a missing one: it fires on the wrong tasks and stays quiet
-  on the right ones.
-- **Never add `.agent/` to `.gitignore`.** Rule discovery honours gitignore with no error and no warning, so
-  an ignored directory produces a repo whose rules simply never load and an agent that never knows. Ignore
-  individual files inside it if needed; never the directory.
+- **When a rule's or skill's trigger condition changes, its `description` is updated in the same turn.** A
+  stale description is worse than a missing one: it fires on the wrong tasks and stays quiet on the right ones.
+- **Only the surfaces this repository is worked with.** Antigravity reads `.agents/`, and Claude Code reads
+  `CLAUDE.md` and `.claude/`. No folder, file or frontmatter key for any other agent runtime is added. Claude
+  Code does not discover `.agents/` on its own, so `AGENTS.md` names every skill and file-anchored rule an
+  agent must open, and `CLAUDE.md` imports `AGENTS.md`.
+- **Hooks enforce what the rules only say.** Claude Code runs committed scripts from `.claude/settings.json`:
+  `tools/hooks/guard_git.py` (PreToolUse) asks before a git write or a recursive forced delete (CORE_RULES §2), and before a Gradle build (CORE_RULES §1);
+  `tools/hooks/check_agent_docs.py` (PostToolUse) reports frontmatter and link problems in an edited AI document.
+  A hook never denies and never blocks silently - it asks, or it reports - and `tools/hooks/test_hooks.py` pins it.
+  Antigravity's counterpart is `.agents/hooks.json`, shipped with `"enabled": false` until its tool names
+  are confirmed in the IDE (`run_command` / `write_to_file` are guesses). A matcher naming the wrong tool
+  fails open, so it stays off.
+- **A subagent only when a fresh context is the point.** Claude Code reads subagents from `.claude/agents/<name>.md`
+  (`name`, `description`, and `tools` narrowed to what the job needs); Antigravity has no subagent format, so a
+  subagent is never the only home of a procedure or a rule. Its body points at `AGENTS.md`, the skills and the
+  rules sections and never copies them - a copy drifts the first time a rule changes. One is added only for work
+  that is better done without the author's context, such as reviewing a diff someone else wrote; never to re-run
+  a checklist the main agent already loads as a skill, and never for a score. Each one is listed in the Agent
+  Surface table of [`../index.md`](../index.md).
+- **Never add `.agents/` to `.gitignore`.** Discovery honours gitignore with no error and no warning, so an
+  ignored directory produces a repository whose rules and skills simply never load, and an agent that never
+  knows. Ignore individual files inside it if needed; never the directory.
 - **Workflows are procedures, not rules.** A repeatable sequence the user invokes by name belongs in
-  `.agent/workflows/`, mirroring `conductor/workflows/`. Adding, renaming or deleting either updates the
-  catalogue in [`../index.md`](../index.md) in the same turn.
+  `.agents/workflows/`, mirroring `conductor/workflows/`. Adding, renaming or deleting a rule, skill or
+  workflow updates the catalogue in [`../index.md`](../index.md) in the same turn.
 
 ### 18.1 Frontmatter fails silently, so verify it (MANDATORY)
 
@@ -160,10 +189,35 @@ with no error and no warning: it simply never appears. Use an em dash instead, o
 description in double quotes.
 
 The same silence covers every other authoring mistake here — an unknown key, a mistyped `trigger`, a
-malformed `globs`. So **verify, never assume**: after adding or editing anything under `.agent/`,
+malformed `globs`. So **verify, never assume**: after adding or editing anything under `.agents/`,
 confirm it actually registered instead of trusting that it did. A rule nobody can see is
 indistinguishable from a rule nobody wrote, and it fails in the direction that looks like success.
 
-**Relative links resolve from the file's own directory** — `.agent/rules/<name>.md` is two levels
-below the repo root, so a link into the docs is `../../conductor/<…>`. Verify the depth; a wrong one
-still renders as a link and fails only when someone follows it.
+**Relative links resolve from the file's own directory** — `.agents/rules/<name>.md` is two levels
+below the repo root and `.agents/skills/<name>/SKILL.md` three, so a link into the docs is
+`../../conductor/<…>` from a rule and `../../../conductor/<…>` from a skill. Verify the depth; a wrong
+one still renders as a link and fails only when someone follows it.
+
+### 18.2 File names are identifiers (MANDATORY)
+
+A file name under `conductor/` or `.agents/` is resolved by something - a link, a slash command, the skill
+registry - so renaming one is never cosmetic, and there is one convention per location:
+
+| Location | Convention | Example |
+|---|---|---|
+| `conductor/rules/` | `SCREAMING_SNAKE.md` | `CORE_RULES.md`, `AI_BEHAVIOR.md`, `ARCHITECTURE.md` |
+| `conductor/workflows/` and `.agents/workflows/` | lowercase-hyphen, identical in both, and equal to the slash command | `remove-filter.md` is `/remove-filter` |
+| `.agents/skills/<name>/` | lowercase-hyphen folder equal to the frontmatter `name`; the file is always `SKILL.md` | `logging/SKILL.md` |
+| `.agents/rules/` | lowercase-hyphen | `agent-surface-parity.md` |
+| `conductor/templates/` | `<NAME>_TEMPLATE.md` | `COMMIT_TEMPLATE.md` |
+| `conductor/guides/` | lowercase-hyphen | `bootstrap-ai.md` |
+| `conductor/knowledge/` | `KI-<nn>-NAME-IN-CAPS.md` | `KI-04-LOG-FILTERS.md` |
+| A folder's index, and the root map | `INDEX.md`, and `conductor/index.md` | - |
+| Repository root | `AGENTS.md`, `CLAUDE.md`, `README.md`, `CHANGELOG.md` | - |
+
+- **Rename and fix every inbound reference in the same turn**, then run a link checker. Zero broken relative
+  links is the definition of done.
+- **A case-only rename takes two steps on a case-insensitive filesystem** (`x.md` to `x.tmp` to `X.md`); a
+  direct one is a silent no-op.
+- **Anchor the search** when the old name is a suffix of another name - `(?<![\w-])architecture\.md` - or the
+  replacement breaks the neighbour.

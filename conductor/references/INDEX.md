@@ -25,6 +25,6 @@ _None yet._ Add the first entry when a perpetual reference is written.
 | One-off investigations, audits, root-cause write-ups | `analysis/` |
 | Step-by-step implementation plans | `plannings/` |
 | Reusable prompt templates | `templates/` |
-| Procedural runbooks (`/clean`, `/remove_filter`) | `workflows/` |
+| Procedural runbooks (`/clean`, `/remove-filter`) | `workflows/` |
 | Per-feature contracts an AI must read before editing | `knowledge/` (KIs) |
 | Global, project-wide rules | `rules/` |

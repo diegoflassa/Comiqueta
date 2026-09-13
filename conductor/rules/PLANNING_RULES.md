@@ -15,6 +15,11 @@ Plans, META_PLANNING synthesis, plan lifecycle, the deferred-item backlog, and a
 - **Naming:** `[CODE]_[desc]_plan.md` if a ticket exists, else `[feature]_[desc]_plan.md`.
 - **Create a plan when** work spans 3+ files, crosses layers (UI+VM+data), fixes a blocking bug, gates behind a flag, or the approach is uncertain. Content: scope, steps, testing checklist, blockers, dependencies.
 - **META_PLANNING** (`META_PLANNING_*.md`) is consolidation scaffolding: synthesise the multi-model proposals into one canonical plan, write it, then archive the META_PLANNING and update `INDEX.md`. Never execute a META_PLANNING as-is.
+- **One planning request, one plan file (MANDATORY).** Whatever carried the request — a chat message, a pasted
+  template, a META_PLANNING — exactly **one** plan file is created in this repository: never an edition per model,
+  a file per proposal, or a split into several plans. If a live plan for the same task already exists, the new
+  one replaces it and the old file moves to `archived/` as obsolete in the same turn (§7.2), so one live plan
+  remains.
 
 ### 7.1 META_PLANNING Protocol (GLOBAL RULE)
 
@@ -30,26 +35,24 @@ A `META_PLANNING_*.md` file is a **consolidation prompt**: it collects planning 
 4. **MOVE the META_PLANNING file to `conductor/plannings/archived/`** after the synthesised plan is written and confirmed. It is scaffolding for the synthesis, never an execution target — but it is the only record of which proposals produced the canonical plan, so it is archived like any other plan (§7.2) and never deleted. Use a filesystem `mv`, never `git mv` (§2).
 5. **Update `conductor/plannings/INDEX.md`**: move the META_PLANNING row to the archived table, add the new canonical plan row with status `🔵 Backlog`.
 6. **Do NOT start implementing** during the META_PLANNING synthesis turn unless the user explicitly asks. Synthesis = planning only.
-7. **One surviving edition at completion.** When a synthesis produces **multiple editions of the same
-   plan** (e.g. a Sonnet edition and a Gemini edition — same task set, same numbering, different
-   executor tuning), all editions stay live and in sync while the work is in progress (§7.1a). **Once
-   the planning is finished** — every task closed, or the plan declared obsolete — archive **exactly
-   one** edition to `conductor/plannings/archived/` and **delete** the others.
-    - **Which one survives:** prefer the **Claude-tuned** edition. If no Claude edition exists, keep
-      the edition that was actually executed.
-    - **Before deleting**, port any execution notes, revision history, or decisions that exist *only*
-      in a doomed edition into the surviving one. The survivor must be a complete record on its own.
-    - **Timing is strict:** never delete a sibling edition while any task is still open — the
-      editions are two views of one live backlog until the last task closes.
-    - This is a **narrow carve-out** from §7.2's never-delete rule. It applies only to redundant
-      editions of a *single* plan, never to distinct plans.
+  7. **One file.** A synthesis produces **one** plan file (§7). Do not write a sibling edition for
+    another model or a file per proposal. Route each task inside it per §24: **one recommended model**
+    from the pool with its fixed configuration (§24.6), and a **fallback from a different provider only
+    when it produces code of the same quality** (§24.4). **The plan is written by `Claude 5.0 Opus · Think ON · Effort Extra High`.**
+     - If sibling editions already exist from before this rule, they stay in sync (§7.1a) until the
+       work finishes; then archive the edition that was executed and delete the other, porting any
+       notes that exist only in the doomed file. That carve-out from §7.2 applies only to those
+       leftover siblings, never to distinct plans.
 
 > **Rationale:** META_PLANNINGs accumulate noise. The synthesis step produces a clean, deduplicated, actionable plan that any AI can execute without re-reading the original proposals.
 
 ### 7.1a Multi-Edition Plan Sync (GLOBAL RULE)
 
-When one task set is published as **more than one planning file** (e.g. a Sonnet edition and a Gemini
-edition), those files are **two views of ONE backlog, not two backlogs**. They must never disagree.
+**New plans are one file.** Do not create a second edition. This section applies only when sibling
+files already exist.
+
+When leftover sibling files of one task set are still live, those files are **two views of ONE backlog,
+not two backlogs**. They must never disagree.
 
 - **Same task IDs, same numbering, forever.** Task IDs are authoritative — never renumber them in one
   edition without renumbering every sibling identically.
@@ -171,13 +174,17 @@ correct when it is later moved, split, or copied into another plan.
 
 ### 24.2 Annotation format (MANDATORY)
 
-Three fields: **Model · Think · Effort**.
+**A routing is one model from the pool (§24.6), written with its configuration exactly as the pool table
+gives it.** The configuration belongs to the model, not to the task: never raise or lower an effort, and never
+switch thinking on or off, to suit a task — pick a different pool model instead.
 
-| Field | Values | Meaning |
+| Line | Written as | Required |
 |---|---|---|
-| Model | one model from the pool declared at the head of the plan | who executes the task |
-| Think | `ON` / `OFF` | whether extended thinking is required |
-| Effort | `Low` / `Medium` / `High` | reasoning budget for the run |
+| Recommended | `Recommended: <routing string from §24.6>` | always |
+| Fallback | `Fallback: <routing string from §24.6>`, or `Fallback: none — <why>` | always — `none` is an answer |
+| Fallback notes | `Fallback notes: <what the fallback needs that the recommended model does not>` | only when needed |
+
+For example: `Recommended: Claude 5.0 Opus · Think ON · Effort Extra High` and `Fallback: Grok 4.6 · Effort High`.
 
 It appears in **two** places per task: in the plan's routing table, and again at the head of the task
 body. The duplication is deliberate — a task body is read on its own, far from the table, and a
@@ -189,7 +196,7 @@ implicit one is not.
 
 ### 24.3 Correctness first (MANDATORY)
 
-**Pick the model most likely to execute that specific task correctly.** Cost and speed are not the
+**Pick the model most likely to execute that specific task correctly** — that is the recommended model. Cost and speed are not the
 criterion. They enter only as a tiebreaker between two candidates genuinely equally likely to
 succeed — and when they do, name both and say why the cheaper one still suffices.
 
@@ -200,31 +207,41 @@ succeed — and when they do, name both and say why the cheaper one still suffic
   one is required. A bare model name records the conclusion and discards the reasoning, so the next
   person to touch the row cannot tell whether it was judged or copied.
 
-### 24.4 Two routings per task: preferred and fallback (MANDATORY)
+### 24.4 A recommended model, and a fallback only when it matches (MANDATORY)
 
-**Every deferred task carries two routings.** §24.1 still holds — the choice is made per task —
-but each task records it twice:
+**Every deferred task names one recommended model and, only when one exists, a fallback from a different
+provider that produces code of the same quality.** §24.1 still holds — both choices are made per task.
 
-| Option | Meaning | Written as |
-|---|---|---|
-| **A — preferred** | the model to use when it is available | `A: <model> · <Think> · <Effort>` |
-| **B — fallback** | what to use when A is rate-limited, deprecated, or missing from the picker | `B: <model> · <Think> · <Effort>` |
+| Routing | Meaning |
+|---|---|
+| **Recommended** | the model most likely to execute this task correctly (§24.3) |
+| **Fallback** | what runs when the recommended model is rate-limited, withdrawn, or missing from the picker |
+| **Fallback notes** | what the fallback needs to reach the same quality — a file to read first, an invariant it is known to miss, a narrower edit scope |
 
-Both appear in both places §24.2 requires. In the table the routings alone suffice; at the head of
-the task body **each option carries its own one-line justification**. Two model names sharing one
-sentence is one recommendation written twice, not two.
+Both routings appear in both places §24.2 requires. In the table the routings alone suffice; at the head of
+the task body **each one carries its own one-line justification**. Two model names sharing one sentence is one
+recommendation written twice, not two.
 
-Why two: the available pool is an operational constraint that changes without warning — a quota is
-hit mid-plan, a preview model is withdrawn, an account loses a provider. A task carrying only the
-routing that was legal the day it was written gets silently substituted by whoever opens it next, and
-the recorded reasoning is lost. Recording both means the substitution **was judged in advance by
-whoever had the context**.
+- **A different provider, always.** Recommended Claude → fallback Grok or Gemini; recommended Grok → Claude or
+  Gemini; recommended Gemini → Claude or Grok. A second model from the same provider is not a fallback: the
+  quota, outage or account problem that stops one stops both.
+- **The same code quality, or no fallback.** When no model from another provider will produce code as good as
+  the recommended one on this task, write `Fallback: none — <why>`, and the task waits for the recommended model
+  instead of running on a weaker one. The explicit `none` records that the question was judged; a missing line
+  looks forgotten.
+- **Fallback notes are written before the fallback is recorded.** A fallback that matches only with extra
+  guidance matches only once that guidance is in the task body (§24.5) — a fallback justified by notes nobody
+  wrote is just a downgrade.
+- **Say which capability drove a split** when the two routings differ in kind: large-context sweep, deep
+  non-deterministic reasoning, long mechanical edit.
+- **The decision guide is [KI-05](../knowledge/KI-05-MODEL-SELECTION.md)** — the tier of every pool model,
+  which models count as the same quality, and the evidence that corrects both.
 
-- **The two options may name the same model** — say so in both rows rather than inventing a different
-  pick for variety.
-- **They may also disagree sharply, and that is the point.** Say which capability drove the split:
-  large-context sweep, deep non-deterministic reasoning, long mechanical edit.
-- **Neither may be left blank or "same as above".** An unrouted option is an unrouted task.
+Why a fallback at all: the available pool is an operational constraint that changes without warning — a quota
+is hit mid-plan, a preview model is withdrawn, an account loses a provider. A task carrying only the routing
+that was legal the day it was written gets silently substituted by whoever opens it next, and the recorded
+reasoning is lost. Recording the fallback — or recording that none is good enough — means the substitution
+**was judged in advance by whoever had the context**.
 
 ### 24.5 Prefer the cheapest model that still guarantees the outcome (MANDATORY)
 
@@ -245,6 +262,33 @@ candidates are both judged able to deliver the same correct result: **route to t
   task stays at the tier §24.3 chose.
 - **Record the reasoning, not just the outcome.** A tier that dropped with no recorded justification
   reads as an unreviewed cost cut, and the next executor cannot tell whether it was judged or guessed.
-- **Applies to both options of §24.4, independently**, and **is revisited when the task changes**:
+- **Applies to the recommended model and the fallback of §24.4, independently**, and **is revisited when the task changes**:
   if scope grows or the contract turns out ambiguous, the tier goes back up before execution, not
   after a failed attempt.
+
+### 24.6 One file, one pool (MANDATORY)
+
+**One plan file** (§7). Do not write a second edition for another model. Every task inside it is routed to
+**models from this pool only, each written with exactly the routing string below.** **The plan is written by
+`Claude 5.0 Opus · Think ON · Effort Extra High`.**
+
+**Pool (2026-09-13):** seven models from three providers. No other model is named.
+
+| Model | Provider | Routing string — configuration included |
+|---|---|---|
+| Claude 5.0 Opus | Anthropic | `Claude 5.0 Opus · Think ON · Effort Extra High` |
+| Claude 5.0 Sonnet | Anthropic | `Claude 5.0 Sonnet · Think ON · Effort Extra High` |
+| Claude 5.0 Haiku | Anthropic | `Claude 5.0 Haiku · Think ON` |
+| Grok 4.6 | xAI | `Grok 4.6 · Effort High` |
+| Grok 4.2 | xAI | `Grok 4.2 · Think ON` |
+| Gemini 3.2 Pro High | Google | `Gemini 3.2 Pro High` |
+| Gemini 3.8 Flash High | Google | `Gemini 3.8 Flash High` |
+
+Which of them a task needs, and which count as the same quality from another provider, is
+[KI-05](../knowledge/KI-05-MODEL-SELECTION.md). **When the pool changes, this table and KI-05 change in
+the same turn.**
+
+**Routings written before this pool** — `A:` / `B:` lines, `Grok 4.20 Reasoning`, a fallback from the same
+provider, an effort chosen per task — are re-routed under §24.2–§24.4 **when their task is next planned,
+edited or picked up for execution, and before it runs**. Never in a bulk sweep: a routing rewritten
+mechanically is a routing nobody judged.

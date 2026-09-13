@@ -7,7 +7,8 @@ One-line summaries. Fetch an individual KI file **only** if the current task mat
 | KI-01 | KI-01-VIEWER-PINCH-ZOOM-FIX.md | Viewer zoom (2-finger) + pan (1-finger), border-clamped | Touching viewer gesture handling / zoom / pan | `ViewerScreen.kt`, `globalIsPinchZoomActive`, `isPinchGestureInProgress`, `maxTranslateX/Y` |
 | KI-02 | KI-02-VIEWER-PINCH-ZOOM-NAN-FIX.md | NaN state corruption in zoom matrix | Reproducing NaN in zoom offsets / transform math after pinch | `ViewerScreen.kt`, `ViewerViewModel.kt`, `pageFlip/` gesture files |
 | KI-03 | KI-03-TOKEN-AUDIT-AND-PRUNING.md | Token budget audit + index pruning rules | Editing `conductor/index.md` / running `token_audit` | `conductor/index.md`, `CLAUDE.md`, `RULES.md` |
-| KI-04 | KI-04-LOG-FILTERS.md | Log filter catalogue (SOT for every `[Comiqueta][X]` tag) | Adding/renaming/removing a log filter, running `/remove_filter` | `TimberLogger.kt`, all `TimberLogger.log*` call sites |
+| KI-04 | KI-04-LOG-FILTERS.md | Log filter catalogue (SOT for every `[Comiqueta][X]` tag) | Adding/renaming/removing a log filter, running `/remove-filter` | `TimberLogger.kt`, all `TimberLogger.log*` call sites |
+| KI-05 | KI-05-MODEL-SELECTION.md | Choosing the model for a deferred task: three tiers over the seven-model pool, the recommended model picked by the task's hardest step, a fallback only from a different provider at the same tier or higher, fallback notes, and an evidence log that corrects the tiers | Writing a plan task, a backlog row or a handoff; judging whether a fallback matches | `conductor/rules/PLANNING_RULES.md` §24 |
 | KI-TBD | KI-TBD.md | **Master index of all deferred / not-yet-implemented items** | Planning next work, checking what is outstanding before starting a task | (index only — see linked KIs) |
 | KI-AUTHORING | KI-AUTHORING.md | KI authoring rules: index maintenance, present-tense spec, self-sufficiency, size limits | Creating, renaming, revising, or deleting any KI | (this directory) |
 
@@ -25,15 +26,15 @@ Per-module test inventory, known gaps, and verification commands live in [`TEST_
 
 | Skill | Exclusive purpose |
 |---|---|
-| [testing-setup](../skills/testing-setup/SKILL.md) | Test infrastructure (unit / UI / screenshot / E2E) |
-| [r8-analyzer](../skills/r8-analyzer/SKILL.md) | R8/ProGuard keep-rule audit + APK size |
-| [perfetto-trace-analysis](../skills/perfetto-trace-analysis/SKILL.md) | Runtime jank / latency / memory root-cause via traces |
-| [android-cli](../skills/android-cli/SKILL.md) | ADB / device orchestration (deploy, logcat, screenshots) |
-| [edge-to-edge](../skills/edge-to-edge/SKILL.md) | Compose system-bar / IME inset handling |
-| [adaptive](../skills/adaptive/SKILL.md) | Adaptive Compose layouts for window-size classes, foldables, large screens |
-| [android-intent-security](../skills/android-intent-security/SKILL.md) | Intent-surface security — exported components, `PendingIntent`, deep links, redirection |
-| [android-profiler](../skills/android-profiler/SKILL.md) | Record + analyse Android Studio Profiler / Perfetto traces — CPU, memory, jank, power |
-| [engage-sdk-integration](../skills/engage-sdk-integration/SKILL.md) | Integrate + debug the Play Engage SDK — content clusters, recommendations, continuation |
-| [navigation-event](../skills/navigation-event/SKILL.md) | Intercept back gestures, run Predictive Back animations via `NavigationEventDispatcher` |
-| [play-billing-library-version-upgrade](../skills/play-billing-library-version-upgrade/SKILL.md) | Upgrade / migrate Google Play Billing Library across major versions |
-| [play-policy-insights](../skills/play-policy-insights/SKILL.md) | Audit the app against Google Play policy — data safety, permissions, account deletion |
+| [testing-setup](../../.agents/skills/testing-setup/SKILL.md) | Test infrastructure (unit / UI / screenshot / E2E) |
+| [r8-analyzer](../../.agents/skills/r8-analyzer/SKILL.md) | R8/ProGuard keep-rule audit + APK size |
+| [perfetto-trace-analysis](../../.agents/skills/perfetto-trace-analysis/SKILL.md) | Runtime jank / latency / memory root-cause via traces |
+| [android-cli](../../.agents/skills/android-cli/SKILL.md) | ADB / device orchestration (deploy, logcat, screenshots) |
+| [edge-to-edge](../../.agents/skills/edge-to-edge/SKILL.md) | Compose system-bar / IME inset handling |
+| [adaptive](../../.agents/skills/adaptive/SKILL.md) | Adaptive Compose layouts for window-size classes, foldables, large screens |
+| [android-intent-security](../../.agents/skills/android-intent-security/SKILL.md) | Intent-surface security — exported components, `PendingIntent`, deep links, redirection |
+| [android-profiler](../../.agents/skills/android-profiler/SKILL.md) | Record + analyse Android Studio Profiler / Perfetto traces — CPU, memory, jank, power |
+| [engage-sdk-integration](../../.agents/skills/engage-sdk-integration/SKILL.md) | Integrate + debug the Play Engage SDK — content clusters, recommendations, continuation |
+| [navigation-event](../../.agents/skills/navigation-event/SKILL.md) | Intercept back gestures, run Predictive Back animations via `NavigationEventDispatcher` |
+| [play-billing-library-version-upgrade](../../.agents/skills/play-billing-library-version-upgrade/SKILL.md) | Upgrade / migrate Google Play Billing Library across major versions |
+| [play-policy-insights](../../.agents/skills/play-policy-insights/SKILL.md) | Audit the app against Google Play policy — data safety, permissions, account deletion |

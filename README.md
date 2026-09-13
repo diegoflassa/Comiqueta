@@ -58,7 +58,13 @@ Comiqueta is a premium comics viewer application for Android, designed for a mod
 2. **Sync Gradle:**
    Open the project in Android Studio and let Gradle sync automatically.
 
-3. **Build Debug APK:**
+3. **Git hooks (once per clone):**
+   ```bash
+   pip install pre-commit
+   pre-commit install
+   ```
+
+4. **Build Debug APK:**
    ```bash
    ./gradlew assembleDebug
    ```
@@ -108,6 +114,8 @@ Comiqueta is a premium comics viewer application for Android, designed for a mod
 ./gradlew lint
 ```
 
+CI (`.github/workflows/android-ci.yml`) runs detekt, ktlint and Android Lint on push. Scanner exclusions for Gradle-blind checks live in `.harness-score.json`.
+
 **Code Coverage (Kover):**
 ```bash
 ./gradlew koverHtmlReport
@@ -138,7 +146,7 @@ Comiqueta follows **Clean Architecture** with **MVI (Model-View-Intent)** patter
 - **Repository pattern** for data abstraction
 - **Flow-based reactive updates**
 
-For detailed architecture documentation, see [architecture.md](conductor/rules/architecture.md).
+For detailed architecture documentation, see [ARCHITECTURE.md](conductor/rules/ARCHITECTURE.md).
 
 ## 📝 Development Guidelines
 
@@ -154,7 +162,7 @@ See [CORE_RULES.md](conductor/rules/CORE_RULES.md) for coding standards:
 
 ## 📚 Documentation
 
-- **[Architecture](conductor/rules/architecture.md)** — Module graph, MVI pattern, navigation, data layer, key files.
+- **[Architecture](conductor/rules/ARCHITECTURE.md)** — Module graph, MVI pattern, navigation, data layer, key files.
 - **[Rules](conductor/rules/CORE_RULES.md)** — Coding standards, build configuration, quality gates.
 - **[Workflows](conductor/workflows/INDEX.md)** — Build, test, and distribution commands.
 
@@ -233,10 +241,10 @@ trees are structurally identical, so the same relative path is the counterpart i
 
 **Shared** — change one, change all three: stability, git safety, token economy, code style, KI-sync
 discipline, planning protocol, log-filter format, composable extraction, string-resource ownership, the
-regression-test rule, the changelog rule, and everything in `ai_behavior.md` and `GRADLE_RULES.md`.
+regression-test rule, the changelog rule, and everything in `AI_BEHAVIOR.md` and `GRADLE_RULES.md`.
 
 **Not shared** — adapt or omit, never copy: module graphs, DI framework, logging API, persistence, build
-types, locale sets, and everything in `architecture.md`. Slotify is Kotlin Multiplatform on Koin;
+types, locale sets, and everything in `ARCHITECTURE.md`. Slotify is Kotlin Multiplatform on Koin;
 Comiqueta and BipSale are Android-only on Hilt.
 
 ## 📄 License

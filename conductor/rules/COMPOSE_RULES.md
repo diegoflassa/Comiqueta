@@ -18,7 +18,7 @@
 - Primitive state APIs are mandatory: `mutableIntStateOf` / `mutableFloatStateOf` / `mutableLongStateOf` / `mutableDoubleStateOf`. Never `mutableStateOf(0)`.
 - Hoist state. A `@Composable` that takes a `XxxUiState` and `(Event) -> Unit` callbacks is the correct shape. See `INSTRUMENTED_TEST_STANDARD.md` § Two-layer composition.
 - `collectAsStateWithLifecycle()` always. Never `collectAsState()`.
-- `rememberSaveable` **per field, never for a whole `XxxUIState` object** — and only for state the user would otherwise have to re-enter or re-find by hand. Save what the user paid for with their own time and what is still true after the process died: the current page index (as `PageCurlState` already does), a search query, the id of the comic or category being worked on, navigation arguments. **Never save** transient or externally-owned state — loading/scanning flags, dialog or bottom-sheet visibility, SAF-permission-granted or worker-running booleans, or an operation's result. Those describe what the dead process was *doing*, so restoring them shows a spinner nothing will dismiss, or a "scan in progress" flag whose real subject died with the process. Anything not explicitly saved must re-derive to its default. Recovering an interrupted scan is a persistence concern, not a saved-state one — see [`architecture.md` § Persistence & I/O](architecture.md).
+- `rememberSaveable` **per field, never for a whole `XxxUIState` object** — and only for state the user would otherwise have to re-enter or re-find by hand. Save what the user paid for with their own time and what is still true after the process died: the current page index (as `PageCurlState` already does), a search query, the id of the comic or category being worked on, navigation arguments. **Never save** transient or externally-owned state — loading/scanning flags, dialog or bottom-sheet visibility, SAF-permission-granted or worker-running booleans, or an operation's result. Those describe what the dead process was *doing*, so restoring them shows a spinner nothing will dismiss, or a "scan in progress" flag whose real subject died with the process. Anything not explicitly saved must re-derive to its default. Recovering an interrupted scan is a persistence concern, not a saved-state one — see [`ARCHITECTURE.md` § Persistence & I/O](ARCHITECTURE.md).
 - `derivedStateOf { ... }` for any computed value whose inputs change less often than the reads.
 - **State derivation belongs in the ViewModel.** Mapping, filtering, sorting, grouping, formatting, and any `if` / `when` chain that turns domain data into what the screen renders is computed in the ViewModel and arrives as a ready field on `XxxUIState`. Wrapping it in `remember { }` fixes the recomposition cost but leaves it in the wrong layer — it is then reachable only through an instrumented test when it is plain unit-test material. `XxxScreen` reads its state and decides how to *look*, nothing more. (§12 already requires this for list data; it holds for every derived field.)
 
@@ -129,7 +129,7 @@
 ## 16. AI Output Style (when generating Compose for this repo)
 
 - One composable per file. Shared/reusable composables go in the core UI module's `components/`; feature-local components stay in their feature module.
-- No comments unless behaviour is non-obvious (see `ai_behavior.md` §6 Human-Voice Comments).
+- No comments unless behaviour is non-obvious (see `AI_BEHAVIOR.md` §6 Human-Voice Comments).
 - Functions ≤ 80 lines. Split if larger.
 - No deprecated APIs.
 

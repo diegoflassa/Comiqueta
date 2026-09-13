@@ -58,13 +58,13 @@ Emit the `[REDACTED]` placeholder rather than dropping the field, so the message
 
 ### 8.4 Protected filters
 
-**Every filter listed in [`KI-04-LOG-FILTERS.md`](../knowledge/KI-04-LOG-FILTERS.md) is protected.** None may be stripped by `/remove_filter`, `/clean`, or any "log hygiene" sweep unless the user explicitly names that exact filter and confirms. A filter present in code but absent from the catalogue is still protected — catalogue it rather than deleting it.
+**Every filter listed in [`KI-04-LOG-FILTERS.md`](../knowledge/KI-04-LOG-FILTERS.md) is protected.** None may be stripped by `/remove-filter`, `/clean`, or any "log hygiene" sweep unless the user explicitly names that exact filter and confirms. A filter present in code but absent from the catalogue is still protected — catalogue it rather than deleting it.
 
-`logI` / `logW` / `logE` are intentional production signal and are **never** touched by `/remove_filter`, regardless of filter.
+`logI` / `logW` / `logE` are intentional production signal and are **never** touched by `/remove-filter`, regardless of filter.
 
 ### 8.5 Renaming or removing a filter
 
-Filter names are public string contracts. Any rename or removal updates, **in the same turn**: the KI-04 row, this section if it names the filter, [`workflows/remove_filter.md`](../workflows/remove_filter.md) if it names the filter, every production `TimberLogger.log*` call site, and every test assertion on the tag. One-turn change or none.
+Filter names are public string contracts. Any rename or removal updates, **in the same turn**: the KI-04 row, this section if it names the filter, [`workflows/remove-filter.md`](../workflows/remove-filter.md) if it names the filter, every production `TimberLogger.log*` call site, and every test assertion on the tag. One-turn change or none.
 
 ### 8.6 Choosing the level - what survives into `release` (MANDATORY)
 

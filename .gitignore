@@ -14,6 +14,9 @@
 # Android Studio profiler captures
 /captures
 
+# Python bytecode (tools/hooks)
+__pycache__/
+
 # === Files ===
 
 # Firebase admin SDK service account
@@ -24,6 +27,10 @@ firebase_app_distribution.properties
 
 # Machine-local config
 local.properties
+
+# Environment files (credentials)
+.env
+.env.*
 
 # Signing keystore
 keystore.jks
