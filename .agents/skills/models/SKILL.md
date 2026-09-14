@@ -12,7 +12,7 @@ Full spec (source of truth) - [PLANNING_RULES.md](../../../conductor/rules/PLANN
   routing decision, made now by whoever still has the context.
 - **One model per task, decided per task.** A plan of eight tasks makes eight choices.
 - **Only the pool, only its configuration** (§24.6): Claude 5.0 Opus, Claude 5.0 Sonnet, Claude 5.0 Haiku,
-  Grok 4.6, Grok 4.2, Gemini 3.2 Pro High, Gemini 3.8 Flash High - each written with the routing string the pool
+  Grok 4.6, Grok 4.2, Gemini 3.2 Pro High, Gemini 3.8 Flash High, GPT-5.6 Sol, Grok 4.20 (Reasoning), Grok 4.20 (Non-Reasoning), GPT-5.6 Sol Fast - each written with the routing string the pool
   table gives it. Never tune an effort or a thinking switch per task; pick another pool model instead.
 - **Recommended, always** - the model most likely to execute the task correctly, with a one-line justification.
 - **Fallback only when it matches** (§24.4) - from a **different provider** than the recommended model, and only

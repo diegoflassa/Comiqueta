@@ -272,7 +272,7 @@ candidates are both judged able to deliver the same correct result: **route to t
 **models from this pool only, each written with exactly the routing string below.** **The plan is written by
 `Claude 5.0 Opus · Think ON · Effort Extra High`.**
 
-**Pool (2026-09-13):** seven models from three providers. No other model is named.
+**Pool (2026-09-13):** eleven models from four providers. No other model is named.
 
 | Model | Provider | Routing string — configuration included |
 |---|---|---|
@@ -283,6 +283,10 @@ candidates are both judged able to deliver the same correct result: **route to t
 | Grok 4.2 | xAI | `Grok 4.2 · Think ON` |
 | Gemini 3.2 Pro High | Google | `Gemini 3.2 Pro High` |
 | Gemini 3.8 Flash High | Google | `Gemini 3.8 Flash High` |
+| GPT-5.6 Sol | OpenAI | `GPT-5.6 Sol` |
+| Grok 4.20 (Reasoning) | xAI | `Grok 4.20 (Reasoning)` |
+| Grok 4.20 (Non-Reasoning) | xAI | `Grok 4.20 (Non-Reasoning)` |
+| GPT-5.6 Sol Fast | OpenAI | `GPT-5.6 Sol Fast` |
 
 Which of them a task needs, and which count as the same quality from another provider, is
 [KI-05](../knowledge/KI-05-MODEL-SELECTION.md). **When the pool changes, this table and KI-05 change in

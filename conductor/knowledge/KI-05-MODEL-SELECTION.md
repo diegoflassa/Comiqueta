@@ -6,7 +6,7 @@
 
 ## Problem
 
-PLANNING_RULES §24 makes every deferred task name one recommended model from a fixed pool of seven, and a
+PLANNING_RULES §24 makes every deferred task name one recommended model from a fixed pool of eleven, and a
 fallback from a different provider only when it produces code of the same quality. The rule says *what* is
 recorded. This KI is the judgement behind it: which model a task needs, which models from other providers count
 as the same quality for that kind of task, and how that judgement is corrected when a model surprises. Source of truth: [PLANNING_RULES.md](../rules/PLANNING_RULES.md) §24.2 (format), §24.4 (recommended and fallback), §24.5 (cheapest that still guarantees the outcome) and §24.6 (the pool).
@@ -22,8 +22,8 @@ model is the failure that ships bugs, while under-trusting one only costs a stro
 
 | Tier | What the task risks | Models |
 |---|---|---|
-| **T1 - judgement** | A decision still open, where a wrong answer compiles and passes tests: money, auth, crypto, concurrency, a schema migration, a cross-layer design, a root cause not yet found, synthesising competing plans | Claude 5.0 Opus · Grok 4.6 |
-| **T2 - specified execution** | A slip inside decisions already made and written down: files named, contract quoted, invariants and acceptance checks in the task body, an exemplar to copy | Claude 5.0 Sonnet · Grok 4.2 · Gemini 3.2 Pro High |
+| **T1 - judgement** | A decision still open, where a wrong answer compiles and passes tests: money, auth, crypto, concurrency, a schema migration, a cross-layer design, a root cause not yet found, synthesising competing plans | Claude 5.0 Opus · Grok 4.6 · GPT-5.6 Sol · Grok 4.20 (Reasoning) |
+| **T2 - specified execution** | A slip inside decisions already made and written down: files named, contract quoted, invariants and acceptance checks in the task body, an exemplar to copy | Claude 5.0 Sonnet · Grok 4.2 · Gemini 3.2 Pro High · GPT-5.6 Sol Fast · Grok 4.20 (Non-Reasoning) |
 | **T3 - mechanical** | A slip in an edit with no decision in it: a rename, a string or resource sweep, a documentation sync, a formatting pass | Claude 5.0 Haiku · Gemini 3.8 Flash High |
 
 The routing string of each model - its configuration included - is in PLANNING_RULES §24.6 and is not repeated
@@ -52,13 +52,17 @@ here.
 
 | Recommended | Fallback candidates - same tier first, then higher |
 |---|---|
-| Claude 5.0 Opus | Grok 4.6 |
-| Grok 4.6 | Claude 5.0 Opus |
-| Claude 5.0 Sonnet | Grok 4.2 · Gemini 3.2 Pro High · then Grok 4.6 |
-| Grok 4.2 | Claude 5.0 Sonnet · Gemini 3.2 Pro High · then Claude 5.0 Opus |
-| Gemini 3.2 Pro High | Claude 5.0 Sonnet · Grok 4.2 · then Claude 5.0 Opus · Grok 4.6 |
-| Claude 5.0 Haiku | Gemini 3.8 Flash High · then Grok 4.2 · Gemini 3.2 Pro High · Grok 4.6 |
-| Gemini 3.8 Flash High | Claude 5.0 Haiku · then Claude 5.0 Sonnet · Grok 4.2 · Claude 5.0 Opus · Grok 4.6 |
+| Claude 5.0 Opus | Grok 4.6 · GPT-5.6 Sol · Grok 4.20 (Reasoning) |
+| Grok 4.6 | Claude 5.0 Opus · GPT-5.6 Sol |
+| GPT-5.6 Sol | Claude 5.0 Opus · Grok 4.6 · Grok 4.20 (Reasoning) |
+| Grok 4.20 (Reasoning) | Claude 5.0 Opus · GPT-5.6 Sol |
+| Claude 5.0 Sonnet | Grok 4.2 · Gemini 3.2 Pro High · GPT-5.6 Sol Fast · Grok 4.20 (Non-Reasoning) · then Grok 4.6 · GPT-5.6 Sol · Grok 4.20 (Reasoning) |
+| Grok 4.2 | Claude 5.0 Sonnet · Gemini 3.2 Pro High · GPT-5.6 Sol Fast · then Claude 5.0 Opus · GPT-5.6 Sol |
+| Gemini 3.2 Pro High | Claude 5.0 Sonnet · Grok 4.2 · GPT-5.6 Sol Fast · Grok 4.20 (Non-Reasoning) · then Claude 5.0 Opus · Grok 4.6 · GPT-5.6 Sol · Grok 4.20 (Reasoning) |
+| GPT-5.6 Sol Fast | Claude 5.0 Sonnet · Grok 4.2 · Gemini 3.2 Pro High · Grok 4.20 (Non-Reasoning) · then Claude 5.0 Opus · Grok 4.6 · Grok 4.20 (Reasoning) |
+| Grok 4.20 (Non-Reasoning) | Claude 5.0 Sonnet · Gemini 3.2 Pro High · GPT-5.6 Sol Fast · then Claude 5.0 Opus · GPT-5.6 Sol |
+| Claude 5.0 Haiku | Gemini 3.8 Flash High · then Grok 4.2 · Gemini 3.2 Pro High · GPT-5.6 Sol Fast · Grok 4.20 (Non-Reasoning) · Grok 4.6 · GPT-5.6 Sol · Grok 4.20 (Reasoning) |
+| Gemini 3.8 Flash High | Claude 5.0 Haiku · then Claude 5.0 Sonnet · Grok 4.2 · GPT-5.6 Sol Fast · Grok 4.20 (Non-Reasoning) · Claude 5.0 Opus · Grok 4.6 · GPT-5.6 Sol · Grok 4.20 (Reasoning) |
 
 ### 4. Fallback notes
 
