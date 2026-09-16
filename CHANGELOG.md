@@ -3,15 +3,17 @@
 All notable changes to this project. Governed by [`conductor/rules/CORE_RULES.md`](conductor/rules/CORE_RULES.md) — one line per work unit (not per commit), appended to `## Unreleased` in the same turn the work lands:
 
 ```
-- TEXT_OF_THE_FIX (CODE_OF_THE_FIX)
+- Categoria: descrição completa (CÓDIGO)
 ```
 
-Omit the `(CODE)` suffix when no ticket exists. On a release cut, retitle `## Unreleased` to `## [X.Y.Z] YYYY-MM-DD` and add a fresh empty `## Unreleased` above it.
+The category is a concise Portuguese label (e.g. `Testado:`, `Corrigido:`, `Planejado:`, `Adicionado:`). Omit the `(CÓDIGO)` suffix when no ticket exists. Entries are consecutive — no blank line between them. On a release cut, retitle `## Unreleased` to `## [X.Y.Z] YYYY-MM-DD` and add a fresh empty `## Unreleased` above it.
 
 > History before 2026-07-21 lives in git only — this file starts here.
 
 ## Unreleased
 
+- Regra: correção de bugs pela causa raiz — antes de alterar uma função, buscar todos os seus chamadores e corrigir onde eles convergem, não só o caminho relatado; sincronizada nos três repositórios (CORE_RULES §25)
+- Regra: formato de entrada do changelog sincronizado nos três repositórios — categoria em português, uma linha física por item, sem linhas em branco entre entradas, cabeçalho de release `## [X.Y.Z] YYYY-MM-DD` (CORE_RULES §14)
 - **The KI index points at the skills folder that exists.** The Skills heading in `conductor/knowledge/INDEX.md` named `conductor/skills/`, which the move to `.agents/skills/` removed; it now links to `.agents/skills/`, where its rows already pointed
 - **Claude 5.0 Opus writes the plan.** Plans are written by `Claude 5.0 Opus · Think ON · Effort Extra High` instead of Grok 4.6, identically in Slotify, Comiqueta and BipSale (PLANNING_RULES §7.1, §24.6; the `planning` and `models` skills). A live plan that still names Grok 4.6 as its planner is re-routed when it is next touched
 - **Subagent policy written; none defined here.** DOC_GOVERNANCE §18 allows a Claude Code subagent only when a fresh context is the point. None earns its upkeep in this repository today: change volume is low, the recent work is mostly documentation and builds, and the real gap is test coverage, which a reviewer does not close. The harness score stays at 95% on purpose (AGT-01, AGT-02)

@@ -44,6 +44,7 @@ Do not create a new rules file when an existing one owns the subject.
 | Strings and locales | [UI_RULES](UI_RULES.md) §10 |
 | Regression tests | [CORE_RULES](CORE_RULES.md) §12 |
 | Room migrations | [CORE_RULES](CORE_RULES.md) §13 |
+| Changelog format, entry shape, spacing | [CORE_RULES](CORE_RULES.md) §14 |
 | External docs, contracts, machine paths | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) §16 |
 | Where a new rule goes, file size budget | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) §17 |
 | `.agents/` rules, skills and workflows; Claude Code subagents; file names | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) §18–§18.2 |

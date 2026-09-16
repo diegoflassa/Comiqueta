@@ -23,7 +23,8 @@ has to edit before pasting is a block that failed.
    analysis that produced them.
 4. **Decisions already made**, with their reasoning, so a fresh session does not re-litigate them.
 5. **Open questions** waiting on the user, stated as questions.
-6. **Bootstrap line** — read `AGENTS.md` first, then the specific rules files the remaining work touches.
+6. **Resumption command** — start the prompt with: "Continue the latest session. Recall its saved digest, inspect the current worktree, and resume from the recorded next action."
+7. **Bootstrap line** — read `AGENTS.md` first, then the specific rules files the remaining work touches.
 
 ## Procedure
 
