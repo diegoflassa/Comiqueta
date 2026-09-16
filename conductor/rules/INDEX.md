@@ -14,7 +14,7 @@ Do not create a new rules file when an existing one owns the subject.
 
 | File | Owns | Load when | Size |
 |---|---|---|---|
-| [AI_BEHAVIOR.md](AI_BEHAVIOR.md) | Behavioural rules for every model — think before coding, simplicity, correctness first, KI sync, human-voice comments, deliverables in a box, task list on start. | Every task. | 4 KB |
+| [AI_BEHAVIOR.md](AI_BEHAVIOR.md) | Behavioural rules for every model — think before coding, simplicity, correctness first, KI sync, human-voice comments, deliverables in a box, task list on start, the 600-line file size limit. | Every task. | 8 KB |
 | [CORE_RULES.md](CORE_RULES.md) | Standards, git safety, token economy, code style, KI discipline, regression tests, changelog, cross-project sync. **Holds the master index for the whole rule set.** | Every non-trivial change. Open the index, jump to the §N. | 24 KB |
 | [PLANNING_RULES.md](PLANNING_RULES.md) | §7 — when a plan is written, META_PLANNING synthesis, plan lifecycle and archiving, the deferred-item backlog, agent-generated planning artefacts. | Starting multi-file work, opening a META_PLANNING, or touching `KI-TBD.md`. | 11 KB |
 | [LOGGING_RULES.md](LOGGING_RULES.md) | §8 — filter format, coverage, redaction by build variant, protected filters, and choosing the level that survives release. | Writing or reviewing any log line or failure branch. | 9 KB |
@@ -37,6 +37,7 @@ Do not create a new rules file when an existing one owns the subject.
 | Token economy, large-file protocol | [CORE_RULES](CORE_RULES.md) §3 |
 | Encoding, console evidence, chunked writes, token spec | [AGENT_IO_RULES](AGENT_IO_RULES.md) §20–§22 |
 | Naming, no inline FQN, enum vs sealed, when an interface is justified | [CORE_RULES](CORE_RULES.md) §5 |
+| File size — 200–400 line target, 600-line limit, decomposing a file past it | [AI_BEHAVIOR](AI_BEHAVIOR.md) §9 |
 | KI writing, splitting, sync | [CORE_RULES](CORE_RULES.md) §6 |
 | Plans, META_PLANNING, backlog hygiene | [PLANNING_RULES](PLANNING_RULES.md) §7 |
 | Log format, coverage, redaction, level | [LOGGING_RULES](LOGGING_RULES.md) §8 |

@@ -12,6 +12,7 @@ The category is a concise Portuguese label (e.g. `Testado:`, `Corrigido:`, `Plan
 
 ## Unreleased
 
+- Regra: limite de tamanho de arquivo — arquivos de implementação mantidos à mão (código de produção e de teste, scripts, configuração executável) miram 200–400 linhas físicas e nunca terminam uma tarefa acima de 600; arquivo novo, alterado ou legado editado acima do limite é decomposto por responsabilidade na mesma tarefa, sem divisões artificiais, com exceções apenas para gerados, vendorizados, lockfiles e formatos que exigem artefato único; sincronizada nos três repositórios (AI_BEHAVIOR §9)
 - Regra: correção de bugs pela causa raiz — antes de alterar uma função, buscar todos os seus chamadores e corrigir onde eles convergem, não só o caminho relatado; sincronizada nos três repositórios (CORE_RULES §25)
 - Regra: formato de entrada do changelog sincronizado nos três repositórios — categoria em português, uma linha física por item, sem linhas em branco entre entradas, cabeçalho de release `## [X.Y.Z] YYYY-MM-DD` (CORE_RULES §14)
 - **The KI index points at the skills folder that exists.** The Skills heading in `conductor/knowledge/INDEX.md` named `conductor/skills/`, which the move to `.agents/skills/` removed; it now links to `.agents/skills/`, where its rows already pointed

@@ -23,7 +23,7 @@ failed to parse ([DOC_GOVERNANCE.md](conductor/rules/DOC_GOVERNANCE.md) §18.1).
 
 ## Critical Rules (must hold before any action)
 
-Rules 1-4 always apply. The rest are **triggers**: when a trigger fires, load the named skill **before** acting -
+Rules 1-4 and 22 always apply. The rest are **triggers**: when a trigger fires, load the named skill **before** acting -
 the full spec lives there and in the rules section it links, not here. File-anchored rules, and how an agent
 that does not discover `.agents/` reaches them, follow the numbered rules.
 
@@ -68,6 +68,8 @@ that does not discover `.agents/` reaches them, follow the numbered rules.
 20. **Cross-project rule sync (MANDATORY):** a shared AI-workflow rule added or changed here is written into the two sibling projects in the same turn - in each one's own words, stack and numbering, never as a pointer to another repository. → CORE_RULES §15.
 
 21. **Agent surface (MANDATORY):** Antigravity reads `.agents/` - rules only when always-on or tied to a kind of file, skills at `.agents/skills/<name>/SKILL.md` (never under `conductor/`), slash commands in `.agents/workflows/`. File names are identifiers: a rename fixes every inbound link in the same turn. → [DOC_GOVERNANCE.md](conductor/rules/DOC_GOVERNANCE.md) §18–§18.2.
+
+22. **File size:** a hand-maintained implementation file - production or test code, a script, an executable config - targets 200-400 physical lines and never ends a task above 600; a new, changed or edited legacy file past 600 is decomposed by responsibility in the same task, with no artificial split. → [AI_BEHAVIOR.md](conductor/rules/AI_BEHAVIOR.md) §9.
 
 **How an agent reaches `.agents/`.** Antigravity registers `.agents/skills/` and loads `.agents/rules/` on its own.
 Claude Code does not: when a trigger above names a skill, open `.agents/skills/<name>/SKILL.md` and follow it

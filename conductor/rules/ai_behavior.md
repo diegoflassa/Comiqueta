@@ -75,3 +75,30 @@ Make this update the moment the new task begins, before running any part of it. 
 This section covers the **start** of a task or subtask. When each one finishes, mark it done in the same turn — in the plan file, where one exists — and then **stop and ask the operator before starting the next task or subtask**. Authorization for the whole job does not waive this stop; build/commit authorization never comes bundled with it.
 
 **Working if:** the most-correct end-state regardless of diff size, no known-wrong patches shipped to save effort, clarifying questions before implementation rather than after, KIs that match the code.
+
+## 9. File Size Limit (MANDATORY)
+A hand-maintained implementation file stays small enough to hold one responsibility and to be read whole.
+
+- **Applies to** every file someone maintains by hand that the build, the tests or a tool executes: production code, test code, scripts, and executable configuration such as build scripts and CI workflow definitions. Documentation is not measured here — KIs split by `CORE_RULES.md §6.3` and rules files by the token budget in `DOC_GOVERNANCE.md` — and reading a large file is `CORE_RULES.md §4`, not this rule.
+- **Target 200–400 physical lines. Hard limit 600 physical lines**, measured after the project's standard formatter has run.
+- **Counting is objective:** every physical line counts — blank lines, comments, imports, declarations and support code kept in the same file. The number is the newline count (`wc -l`), plus one when the last line has no trailing newline.
+- **A file this task creates or changes that ends above 600 lines is decomposed in the same task**, into as many files as it takes for every resulting file to be at or under the limit.
+- **A legacy file above 600 lines is decomposed in the same task that edits it.** Reading one does not trigger this, and it is not a licence for a repository-wide refactor. If a safe decomposition depends on an architectural decision nobody has taken, stop and ask for it.
+- **The number of files follows the real responsibilities, never arithmetic.** Each resulting file is a cohesive unit someone would maintain on its own, named for its domain or responsibility.
+- **The split obeys the project.** Module and layer boundaries, source sets, visibility, DI, navigation, tests and every local rule apply to the new files, and the same task updates imports, wiring, tests, KIs, the changelog and any documentation that names the old file.
+- **Behaviour is preserved exactly** — public contracts, the order of effects and test coverage survive the move unchanged.
+- **Artificial splits are forbidden:**
+  - `Part1`/`Part2` files or any equivalent numbering;
+  - wrappers that only forward calls;
+  - single-use abstractions with no architectural reason (§2);
+  - catch-all files grouping unrelated leftovers;
+  - several statements crammed onto one line to game the count;
+  - stripping readability, needed comments or formatting to get under the limit.
+- **Exceptions are strict:**
+  - generated files;
+  - vendored third-party code;
+  - lockfiles;
+  - a format whose external tool provably requires a single artifact.
+
+  If the format can be split, the exception does not apply. Every exception is named and justified in the task's final report. Difficulty, deadline and diff size are never exceptions.
+- **The task is incomplete while a required decomposition is outstanding.**
