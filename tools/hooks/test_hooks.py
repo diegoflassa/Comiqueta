@@ -74,11 +74,66 @@ class CheckAgentDocsTest(unittest.TestCase):
         self.assertEqual(0, code)
         return json.loads(out)["hookSpecificOutput"]["additionalContext"] if out else ""
 
+    def skill_pointer(self, root, name, description, source=None):
+        return self.write(root, ".claude/skills/%s/SKILL.md" % name,
+                          '---\nname: %s\ndescription: "%s"\n---\n\nThe skill is [%s](../../../.agents/skills/%s/SKILL.md).\n'
+                          % (name, description, name, source or name))
+
     def test_valid_skill_is_silent(self):
         with tempfile.TemporaryDirectory() as root:
             path = self.write(root, ".agents/skills/demo/SKILL.md",
                               '---\nname: demo\ndescription: "Does a thing. Use when a thing is needed."\n---\n\n# Demo\n')
+            pointer = self.skill_pointer(root, "demo", "Does a thing. Use when a thing is needed.")
             self.assertEqual("", self.findings(root, path))
+            self.assertEqual("", self.findings(root, pointer))
+
+    def test_skill_and_pointer_are_checked_as_a_pair(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = self.write(root, ".agents/skills/demo/SKILL.md", '---\nname: demo\ndescription: "Does a thing."\n---\n')
+            self.assertIn("no Claude Code pointer", self.findings(root, source))
+            orphan = self.skill_pointer(root, "gone", "Did a thing.")
+            self.assertIn("no source", self.findings(root, orphan))
+
+    def test_folded_source_description_matches_its_quoted_copy(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = self.write(root, ".agents/skills/demo/SKILL.md",
+                                "---\nname: demo\ndescription: >\n  Does a\n  thing.\nlicense: x\nmetadata:\n  author: y\n---\n")
+            pointer = self.skill_pointer(root, "demo", "Does a thing.")
+            self.assertEqual("", self.findings(root, source))
+            self.assertEqual("", self.findings(root, pointer))
+
+    def test_pointer_description_drift_is_reported(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = self.write(root, ".agents/skills/demo/SKILL.md", '---\nname: demo\ndescription: "Does a new thing."\n---\n')
+            pointer = self.skill_pointer(root, "demo", "Does a thing.")
+            self.assertIn("differs from", self.findings(root, pointer))
+            self.assertIn("differs from", self.findings(root, source))
+
+    def test_pointer_shape_is_reported(self):
+        with tempfile.TemporaryDirectory() as root:
+            for name in ("demo", "other"):
+                self.write(root, ".agents/skills/%s/SKILL.md" % name, '---\nname: %s\ndescription: "Does a thing."\n---\n' % name)
+            extra = self.write(root, ".claude/skills/demo/SKILL.md",
+                               '---\nname: demo\ndescription: "Does a thing."\nlicense: x\n---\n\n'
+                               'The skill is [demo](../../../.agents/skills/demo/SKILL.md).\n')
+            self.assertIn("exactly `name` and `description`", self.findings(root, extra))
+            renamed = self.write(root, ".claude/skills/other/SKILL.md",
+                                 '---\nname: demo\ndescription: "Does a thing."\n---\n\n'
+                                 'The skill is [other](../../../.agents/skills/other/SKILL.md).\n')
+            self.assertIn("folder name", self.findings(root, renamed))
+            misdirected = self.skill_pointer(root, "demo", "Does a thing.", source="other")
+            self.assertIn("links to its source", self.findings(root, misdirected))
+
+    def test_workflow_pointer_is_user_only(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = self.write(root, ".agents/workflows/tidy.md", "---\ndescription: Tidy up.\n---\n")
+            self.assertIn("no Claude Code pointer", self.findings(root, source))
+            body = "---\n%s---\n\nThe workflow is [tidy](../../.agents/workflows/tidy.md).\n"
+            pointer = self.write(root, ".claude/commands/tidy.md", body % 'description: "Tidy up."\n')
+            self.assertIn("disable-model-invocation: true", self.findings(root, pointer))
+            self.write(root, ".claude/commands/tidy.md", body % 'description: "Tidy up."\ndisable-model-invocation: true\n')
+            self.assertEqual("", self.findings(root, pointer))
+            self.assertEqual("", self.findings(root, source))
 
     def test_unquoted_colon_and_wrong_name_are_reported(self):
         with tempfile.TemporaryDirectory() as root:
@@ -104,6 +159,30 @@ class CheckAgentDocsTest(unittest.TestCase):
             path = self.write(root, "src/Main.kt", "fun main() {}\n")
             self.assertEqual("", self.findings(root, path))
             self.assertEqual((0, ""), run("check_agent_docs.py", "not json", root))
+
+
+class ClaudePointerParityTest(unittest.TestCase):
+    """This repository's own surface: one Claude Code pointer per skill and per workflow, each passing the check."""
+
+    root = os.path.dirname(os.path.dirname(HOOKS))
+
+    def names(self, rel, suffix):
+        folder = os.path.join(self.root, *rel.split("/"))
+        if suffix == "/SKILL.md":
+            return sorted(n for n in os.listdir(folder) if os.path.isfile(os.path.join(folder, n, "SKILL.md")))
+        return sorted(n[:-len(suffix)] for n in os.listdir(folder) if n.endswith(suffix))
+
+    def test_every_skill_and_workflow_has_exactly_one_pointer(self):
+        self.assertEqual(self.names(".agents/skills", "/SKILL.md"), self.names(".claude/skills", "/SKILL.md"))
+        self.assertEqual(self.names(".agents/workflows", ".md"), self.names(".claude/commands", ".md"))
+
+    def test_every_pointer_passes_the_document_check(self):
+        pointers = [".claude/skills/%s/SKILL.md" % n for n in self.names(".claude/skills", "/SKILL.md")]
+        pointers += [".claude/commands/%s.md" % n for n in self.names(".claude/commands", ".md")]
+        self.assertTrue(pointers)
+        done = subprocess.run([sys.executable, os.path.join(HOOKS, "check_agent_docs.py")] + pointers, cwd=self.root,
+                              stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=60)
+        self.assertEqual((0, ""), (done.returncode, done.stderr))
 
 
 if __name__ == "__main__":

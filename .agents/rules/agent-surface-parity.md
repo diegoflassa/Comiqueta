@@ -1,7 +1,7 @@
 ---
-description: The .agents surface Antigravity discovers - rules only when always-on or tied to a kind of file, skills for everything that binds at a recognisable moment, workflows as slash commands - with the names and frontmatter each one needs. Use when creating, renaming or editing any file under .agent.
+description: The .agents surface Antigravity discovers - rules only when always-on or tied to a kind of file, skills for everything that binds at a recognisable moment, workflows as slash commands - and the Claude Code pointer each skill and workflow gets under .claude, with the names and frontmatter each one needs. Use when creating, renaming or editing any file under .agents, .claude/skills or .claude/commands.
 trigger: glob
-globs: ".agents/**/*.md"
+globs: ".agents/**/*.md,.claude/skills/**/*.md,.claude/commands/*.md"
 ---
 
 # Agent surface parity
@@ -33,5 +33,9 @@ Full spec (source of truth) - [DOC_GOVERNANCE.md](../../conductor/rules/DOC_GOVE
   ones.
 - **Discovery honours `.gitignore` with no error and no warning.** Ignore individual files inside `.agents/` if
   needed, never the directory.
-- **Claude Code does not discover `.agents/`.** Every skill and file-anchored rule stays named in `AGENTS.md`, which
-  `CLAUDE.md` imports.
+- **Every skill and workflow has one Claude Code pointer** - `.claude/skills/<name>/SKILL.md` or
+  `.claude/commands/<name>.md`: the same name, the source's `description`, a body that only links to the source,
+  never a copy or a symlink. Adding, renaming or deleting one, or changing its `description`, does the same to the
+  pointer in the same turn.
+- **Claude Code loads no `.agents/rules/`.** Every skill trigger and file-anchored rule stays named in `AGENTS.md`,
+  which `CLAUDE.md` imports.

@@ -6,8 +6,9 @@ sequence, skills catalogue and KI index → [conductor/index.md](conductor/index
 pre-load KIs.
 
 **Before acting on the first prompt of a session:** confirm this repository's skills are registered - every folder
-under `.agents/skills/` should appear among the available skills. A missing one means its `SKILL.md` frontmatter
-failed to parse ([DOC_GOVERNANCE.md](conductor/rules/DOC_GOVERNANCE.md) §18.1). The `initialize` skill runs this check.
+under `.agents/skills/` should appear among the available skills - in Claude Code through its `.claude/skills/`
+pointer. A missing one means a missing pointer or frontmatter that failed to parse
+([DOC_GOVERNANCE.md](conductor/rules/DOC_GOVERNANCE.md) §18.1). The `initialize` skill runs this check.
 
 ---
 
@@ -67,14 +68,16 @@ that does not discover `.agents/` reaches them, follow the numbered rules.
 
 20. **Cross-project rule sync (MANDATORY):** a shared AI-workflow rule added or changed here is written into the two sibling projects in the same turn - in each one's own words, stack and numbering, never as a pointer to another repository. → CORE_RULES §15.
 
-21. **Agent surface (MANDATORY):** Antigravity reads `.agents/` - rules only when always-on or tied to a kind of file, skills at `.agents/skills/<name>/SKILL.md` (never under `conductor/`), slash commands in `.agents/workflows/`. File names are identifiers: a rename fixes every inbound link in the same turn. → [DOC_GOVERNANCE.md](conductor/rules/DOC_GOVERNANCE.md) §18–§18.2.
+21. **Agent surface (MANDATORY):** Antigravity reads `.agents/` - rules only when always-on or tied to a kind of file, skills at `.agents/skills/<name>/SKILL.md` (never under `conductor/`), slash commands in `.agents/workflows/`. Claude Code reaches each skill and workflow through a pointer at `.claude/skills/<name>/SKILL.md` or `.claude/commands/<name>.md`, added, renamed or deleted with its source. File names are identifiers: a rename fixes every inbound link in the same turn. → [DOC_GOVERNANCE.md](conductor/rules/DOC_GOVERNANCE.md) §18–§18.2.
 
 22. **File size:** a hand-maintained implementation file - production or test code, a script, an executable config - targets 200-400 physical lines and never ends a task above 600; a new, changed or edited legacy file past 600 is decomposed by responsibility in the same task, with no artificial split. → [AI_BEHAVIOR.md](conductor/rules/AI_BEHAVIOR.md) §9.
 
 **How an agent reaches `.agents/`.** Antigravity registers `.agents/skills/` and loads `.agents/rules/` on its own.
-Claude Code does not: when a trigger above names a skill, open `.agents/skills/<name>/SKILL.md` and follow it
-before acting; before editing a file that matches a row below, open that rule. `.agents/rules/00-always.md` is
-always on in Antigravity, and its content is rules 1-3 above.
+Claude Code registers every skill and workflow through its pointer in `.claude/skills/` or `.claude/commands/`
+(`/handoff`, `/clean`), so a skill named by a trigger above loads by name; it loads no `.agents/rules/`, so before
+editing a file that matches a row below, open that rule. An agent with neither surface opens
+`.agents/skills/<name>/SKILL.md` itself when a trigger names it. `.agents/rules/00-always.md` is always on in
+Antigravity, and its content is rules 1-3 above.
 
 | Files being edited | Rule to open |
 |---|---|
@@ -159,5 +162,5 @@ On-demand — load only when the task matches:
 - **Knowledge:** [conductor/knowledge/INDEX.md](conductor/knowledge/INDEX.md) - lazy-load a KI only when the task
   matches its row.
 - **Agent surface:** `.agents/rules/` (always-on and file-anchored rules), `.agents/skills/` (procedures and
-  moment-bound rules), `.agents/workflows/` (slash commands) - [DOC_GOVERNANCE.md](conductor/rules/DOC_GOVERNANCE.md)
-  §18–§18.2.
+  moment-bound rules), `.agents/workflows/` (slash commands), and their Claude Code pointers in `.claude/skills/`
+  and `.claude/commands/` - [DOC_GOVERNANCE.md](conductor/rules/DOC_GOVERNANCE.md) §18–§18.2.

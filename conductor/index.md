@@ -38,8 +38,8 @@ Coverage state → [TEST_COVERAGE.md](knowledge/TEST_COVERAGE.md) · Deferred wo
 ### Skills (Lazy-Load) → [`.agents/skills/`](../.agents/skills/)
 
 > Skills live at `.agents/skills/<name>/SKILL.md` - **never under `conductor/`** - because that is the only place
-> Antigravity discovers them. Read a skill only when its exclusive purpose matches the task; never pre-load. Claude Code does not
-> discover `.agents/skills/` - it opens a skill when a trigger in `AGENTS.md` names it.
+> Antigravity discovers them. Read a skill only when its exclusive purpose matches the task; never pre-load. Claude Code
+> registers each one through its pointer at `.claude/skills/<name>/SKILL.md`, so `/<name>` loads it in Claude Code.
 > Project skills carry this repository's rules as checklists; the Android skills are Google's, kept verbatim.
 
 #### Project skills
@@ -92,6 +92,8 @@ Coverage state → [TEST_COVERAGE.md](knowledge/TEST_COVERAGE.md) · Deferred wo
 | `.agents/rules/*.md` | Rules anchored to a kind of file - Compose widgets, Gradle, Room migrations, and the agent surface itself | `description`, `trigger: glob`, `globs` |
 | `.agents/skills/<name>/SKILL.md` | Every rule that binds at a recognisable moment, and every procedure | `name`, `description` |
 | `.agents/workflows/*.md` | Slash commands - each follows a runbook in `workflows/` or a template in `templates/` | `description` |
+| `.claude/skills/<name>/SKILL.md` | Claude Code pointer to each skill - `/<name>`, matched on the source's `description`; a link, never a copy | `name`, `description` - the source's |
+| `.claude/commands/<name>.md` | Claude Code pointer to each workflow - `/<name>`, typed by the user only | `description` - the source's; `disable-model-invocation: true` |
 | `.claude/settings.json` + `tools/hooks/` | Claude Code hooks - a gate before git writes and destructive commands, a frontmatter and link check after an AI document is edited | `hooks` object |
 | `.agents/hooks.json` | Antigravity counterpart of those scripts — **`"enabled": false`** until tool names are confirmed | `enabled`, matchers |
 

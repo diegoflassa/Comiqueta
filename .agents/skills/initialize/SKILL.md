@@ -14,8 +14,11 @@ Loads this repository's context lazily. **Reads only - it changes no file, runs 
 4. Read [conductor/knowledge/INDEX.md](../../../conductor/knowledge/INDEX.md). Fetch a KI only when the task
    matches it - never pre-load KIs, plans or references.
 5. **Confirm the skills registered.** Every folder under `.agents/skills/` must appear among the available
-   skills. A missing one means its frontmatter failed to parse
-   ([DOC_GOVERNANCE.md](../../../conductor/rules/DOC_GOVERNANCE.md) §18.1) - say which, before anything else.
+   skills - in Claude Code as `/<name>`, through its `.claude/skills/<name>/SKILL.md` pointer. A missing one means a
+   missing pointer or frontmatter that failed to parse
+   ([DOC_GOVERNANCE.md](../../../conductor/rules/DOC_GOVERNANCE.md) §18.1) - say which, before anything else. Run
+   `python tools/hooks/check_agent_docs.py` on the pointers to tell the two apart; a pointer folder created during the
+   session registers only after a restart.
 6. Report the git state - branch, clean or dirty, and any uncommitted file under `.agents/` or `conductor/`.
 
 End with a short summary of what was loaded and what was deliberately not.

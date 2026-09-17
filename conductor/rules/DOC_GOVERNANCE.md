@@ -124,8 +124,8 @@ Both cannot be obeyed, so one is silently ignored - and it will be whichever the
 
 More than one agent surface reads this repository: `AGENTS.md` + `conductor/` (Claude Code, Gemini CLI,
 Copilot) and `.agents/` (Antigravity, which also accepts `.agent/`; this repository uses `.agents/`, the name
-Antigravity lists first and the one Codex and harness-score read). Two surfaces holding the same rule diverge by default, and nothing
-detects it.
+Antigravity lists first and the one Codex and harness-score read), plus `.claude/` (Claude Code's own pointers into
+`.agents/`). Two surfaces holding the same rule diverge by default, and nothing detects it.
 
 Antigravity discovers three kinds of file under `.agents/`, and each has exactly one job:
 
@@ -134,6 +134,14 @@ Antigravity discovers three kinds of file under `.agents/`, and each has exactly
 | `.agents/rules/*.md` | Only what must load without the model choosing it - `always_on`, or `glob` for a kind of file | `description`, `trigger`, `globs` |
 | `.agents/skills/<name>/SKILL.md` | Every rule that binds at a recognisable moment, and every procedure - loaded when its `description` matches the task | `name`, `description` |
 | `.agents/workflows/*.md` | Slash commands the user invokes by name, each following a runbook in `conductor/workflows/` or a template in `conductor/templates/` | `description` |
+
+Claude Code registers skills and slash commands only under `.claude/`, so every skill and workflow above has
+exactly one **pointer** there. Invoking it in Claude Code loads the pointer, which sends the agent to the source:
+
+| Path | Points at | Frontmatter |
+|---|---|---|
+| `.claude/skills/<name>/SKILL.md` | `.agents/skills/<name>/SKILL.md` - `/<name>`, and matched on its `description` like any skill | `name`, `description` - both the source's |
+| `.claude/commands/<name>.md` | `.agents/workflows/<name>.md` - `/<name>`, typed by the user only | `description` - the source's; `disable-model-invocation: true` |
 
 - **`conductor/rules/` is the single source of truth.** Every rule or skill under `.agents/` is a **pointer**: a
   checklist of at most ~25 lines plus a link to the section that owns the spec. Never a second copy of the
@@ -158,11 +166,21 @@ Antigravity discovers three kinds of file under `.agents/`, and each has exactly
   stale description is worse than a missing one: it fires on the wrong tasks and stays quiet on the right ones.
 - **Only the surfaces this repository is worked with.** Antigravity reads `.agents/`, and Claude Code reads
   `CLAUDE.md` and `.claude/`. No folder, file or frontmatter key for any other agent runtime is added. Claude
-  Code does not discover `.agents/` on its own, so `AGENTS.md` names every skill and file-anchored rule an
-  agent must open, and `CLAUDE.md` imports `AGENTS.md`.
+  Code does not discover `.agents/`: it reaches skills and workflows through their pointers and loads no
+  `.agents/rules/`, so `AGENTS.md` still names every skill trigger and file-anchored rule, and `CLAUDE.md`
+  imports `AGENTS.md`.
+- **A pointer is a link, never a copy.** Its body only sends the agent to its source, and its `description` is
+  the source's, so both match the same tasks. Adding, renaming or deleting a skill or workflow, or changing its
+  `description`, does the same to its pointer in the same turn. No symlink either: Git on Windows checks one out
+  as a plain text file. The slash command is the folder or file name, never `name`. `check_agent_docs.py`
+  reports a missing pointer, an orphan, a wrong link or a differing `description` from either side, and
+  `test_hooks.py` fails when the two sets differ.
+- **Antigravity does not read `.claude/`** (checked 2026-09-17 in the installed IDE): its agent reads only
+  `.agents/`, and the VS Code Chat panel it ships reads `.claude/skills/` only with the experimental
+  `chat.useClaudeSkills` setting, off by default. Check again after an IDE update before relying on it.
 - **Hooks enforce what the rules only say.** Claude Code runs committed scripts from `.claude/settings.json`:
   `tools/hooks/guard_git.py` (PreToolUse) asks before a git write or a recursive forced delete (CORE_RULES §2), and before a Gradle build (CORE_RULES §1);
-  `tools/hooks/check_agent_docs.py` (PostToolUse) reports frontmatter and link problems in an edited AI document.
+  `tools/hooks/check_agent_docs.py` (PostToolUse) reports frontmatter and link problems in an edited AI document, and a pointer out of step with its source.
   A hook never denies and never blocks silently - it asks, or it reports - and `tools/hooks/test_hooks.py` pins it.
   Antigravity's counterpart is `.agents/hooks.json`, shipped with `"enabled": false` until its tool names
   are confirmed in the IDE (`run_command` / `write_to_file` are guesses). A matcher naming the wrong tool
@@ -189,13 +207,19 @@ with no error and no warning: it simply never appears. Use an em dash instead, o
 description in double quotes.
 
 The same silence covers every other authoring mistake here — an unknown key, a mistyped `trigger`, a
-malformed `globs`. So **verify, never assume**: after adding or editing anything under `.agents/`,
-confirm it actually registered instead of trusting that it did. A rule nobody can see is
+malformed `globs`. So **verify, never assume**: after adding or editing anything under `.agents/` or
+`.claude/`, confirm it actually registered instead of trusting that it did. A rule nobody can see is
 indistinguishable from a rule nobody wrote, and it fails in the direction that looks like success.
+
+In Claude Code, typing `/` offers every registered skill and command. A `.claude/skills/` or `.claude/commands/`
+folder that did not exist when the session started registers only after a restart. A listed skill is still not
+proof: Claude Code registers one whose frontmatter failed to parse, with no `description` to match on, so run
+`check_agent_docs.py` on it as well.
 
 **Relative links resolve from the file's own directory** — `.agents/rules/<name>.md` is two levels
 below the repo root and `.agents/skills/<name>/SKILL.md` three, so a link into the docs is
-`../../conductor/<…>` from a rule and `../../../conductor/<…>` from a skill. Verify the depth; a wrong
+`../../conductor/<…>` from a rule and `../../../conductor/<…>` from a skill. A pointer under
+`.claude/skills/` sits at a skill's depth and one under `.claude/commands/` at a rule's. Verify the depth; a wrong
 one still renders as a link and fails only when someone follows it.
 
 ### 18.2 File names are identifiers (MANDATORY)
@@ -209,6 +233,7 @@ registry - so renaming one is never cosmetic, and there is one convention per lo
 | `conductor/workflows/` and `.agents/workflows/` | lowercase-hyphen, identical in both, and equal to the slash command | `remove-filter.md` is `/remove-filter` |
 | `.agents/skills/<name>/` | lowercase-hyphen folder equal to the frontmatter `name`; the file is always `SKILL.md` | `logging/SKILL.md` |
 | `.agents/rules/` | lowercase-hyphen | `agent-surface-parity.md` |
+| `.claude/skills/<name>/` and `.claude/commands/` | identical to the skill folder or workflow file it points at, and equal to the slash command | `.claude/skills/logging/SKILL.md` is `/logging` |
 | `conductor/templates/` | `<NAME>_TEMPLATE.md` | `COMMIT_TEMPLATE.md` |
 | `conductor/guides/` | lowercase-hyphen | `bootstrap-ai.md` |
 | `conductor/knowledge/` | `KI-<nn>-NAME-IN-CAPS.md` | `KI-04-LOG-FILTERS.md` |
