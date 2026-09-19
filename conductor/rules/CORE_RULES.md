@@ -48,6 +48,7 @@ single lookup for all of them. Load only the file the row points at.
 | **10** | [String Resource Ownership](UI_RULES.md#10-string-resource-ownership-global--mandatory) *(M)* | [UI_RULES](UI_RULES.md) |
 | **11** | [Extension Functions](#11-extension-functions) | — |
 | **12** | [Regression Test Rule](#12-regression-test-rule-global--mandatory) *(M)* | — |
+|     **12.1** |     [A failing test is never edited into passing](#121-a-failing-test-is-never-edited-into-passing-mandatory) *(M)* | — |
 | **13** | [Database Migration Safety](#13-database-migration-safety-global--mandatory) *(M)* | — |
 | **14** | [Changelog Rule](#14-changelog-rule-global--mandatory) *(M)* | — |
 | **15** | [Cross-Project Rule Sync](#15-cross-project-rule-sync-global--mandatory) *(M)* | — |
@@ -223,6 +224,27 @@ Use them when they make the call site read better and keep behaviour next to its
 - A bug fix without a pinning test is an incomplete change, same severity as a stale KI (§6).
 
 > **Rationale:** a fix without a pinning test can silently regress on the next refactor — nothing in the suite would catch it reverting.
+
+### 12.1 A failing test is never edited into passing (MANDATORY)
+
+**When a test goes red, the first hypothesis is that the application is wrong.** Read the code it covers
+before touching it, and say what was found. A test edited until it agrees with the code only proves the code
+agrees with itself.
+
+- **An existing test is evidence, not an obstacle.** It was written when the behaviour was understood, and it
+  has survived every change since — so the older it is, the higher the bar to touch it at all.
+- **It changes only when a deliberate change to the code made its expectation obsolete** — a contract that
+  moved, a decision that was reversed, a rename. The change records which one, in the same turn.
+- **Never weakened to get green:** no deleted case, no loosened assertion, no widened tolerance, no ignore or
+  skip, no expectation rewritten to whatever the code now returns. That turns a failure into silence, which
+  is worse than red.
+- **A test that is genuinely wrong is corrected, not removed** — and the correction says what it was proving,
+  why that was wrong, and how the new version still fails against the defect the old one was meant to catch.
+- **Deleting a test needs the same justification as deleting the behaviour it covers.** Either that behaviour
+  is gone, or something else still pins it.
+
+> **Rationale:** a red test is the only thing in the process that still remembers what the code used to
+> promise. Editing it to match the new code destroys that record and ships the defect with a green suite.
 
 ## 13. Database Migration Safety (GLOBAL — MANDATORY)
 
