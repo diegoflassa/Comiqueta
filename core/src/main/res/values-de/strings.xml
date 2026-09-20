@@ -1,3 +1,10 @@
 <resources>
     <string name="all">Alle</string>
+    <string name="scan_notification_channel_name">Comic-Scan</string>
+    <string name="scan_notification_title">Comics werden gescannt</string>
+    <string name="scan_notification_content">Comicsammlung wird verarbeitet…</string>
+    <string name="scanning_current_comic">Verarbeitung: %s</string>
+    <string name="scanning_progress_detail">Verarbeitung: %1$s (%2$d/%3$d Dateien, %4$d Comics)</string>
+    <string name="scanning_progress_no_name">Scan: %1$d/%2$d Dateien, %3$d Comics</string>
+    <string name="back_button_desc">Zurück</string>
 </resources>

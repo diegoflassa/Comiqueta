@@ -1,7 +1,7 @@
 [versions]
 
 #Common
-gradle = "9.2.1"
+gradle = "9.4.1"
 kotlin = "2.4.20"
 
 #Project build.gradle
@@ -10,7 +10,7 @@ hilt-android-gradle-plugin = "2.60.1"
 #App
 firebase-perf-gradle = "2.0.2"
 firebase-appdistribution-gradle = "5.3.0"
-androidx-room = "2.8.4"
+androidx-room = "2.8.5"
 
 #Project build.gradle
 google-services = "4.5.0"
@@ -20,7 +20,7 @@ firebase-perf-plugin = "2.0.2"
 #Common
 core-ktx = "1.19.0"
 material = "1.14.0"
-ui-text-google-fonts = "1.12.0"
+ui-text-google-fonts = "1.12.1"
 
 #Common Testing
 junit = "4.13.2"
@@ -28,7 +28,7 @@ junit-ktx = "1.3.0"
 ax-test-rules = "1.7.0"
 ax-test-runner = "1.7.0"
 uiautomator = "2.4.0"
-benchmark-macro-junit4 = "1.4.1"
+benchmark-macro-junit4 = "1.5.0"
 
 #Unit Tests
 org-jetbrains-kotlinx-coroutines-test = "1.11.0"
@@ -38,20 +38,20 @@ org-mockito-kotlin = "6.3.0"
 app-cash-turbine = "1.2.1"
 androidx-paging-common = "3.5.1"
 com-google-truth = "1.4.5"
-org-robolectric = "4.16.1"
+org-robolectric = "4.17"
 
 #Firebase
-firebase-bom = "34.18.0"
+firebase-bom = "34.19.0"
 
 #Timber
 com-jakewharton-timber = "5.0.1"
 
 #Compose
-compose-bom = "2026.08.00"
+compose-bom = "2026.09.00"
 ax-constraintlayout-compose = "1.1.2"
 ax-activity-compose = "1.13.0"
 lifecycle-viewmodel-compose = "2.11.0"
-ax-navigation-compose = "2.10.0"
+ax-navigation-compose = "2.10.1"
 kotlinx-serialization-json = "1.11.0"
 ax-paging-runtime-ktx = "3.5.1"
 ax-paging-compose = "3.5.1"
@@ -66,11 +66,11 @@ ax-navigation3-viewmodel = "2.11.0"
 ax-navigation3-adaptive = "1.3.0"
 
 #Room
-room-runtime = "2.8.4"
-room-compiler = "2.8.4"
-room-ktx = "2.8.4"
-room-paging = "2.8.4"
-room-testing = "2.8.4"
+room-runtime = "2.8.5"
+room-compiler = "2.8.5"
+room-ktx = "2.8.5"
+room-paging = "2.8.5"
+room-testing = "2.8.5"
 
 #Dagger & Hilt
 hilt-android = "2.60.1"
@@ -130,7 +130,7 @@ org-github-junrar = "8.1.1"
 com-google-android-play-app-update = "2.1.0"
 
 #Ads
-play-services-ads-api = "25.4.0"
+play-services-ads-api = "25.5.0"
 
 #Messaging Platform
 com-google-android-ump-messaging-platform = "4.0.0"

@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="all">Todos</string>
+    <string name="scan_notification_channel_name">Escaneo de cómics</string>
+    <string name="scan_notification_title">Escaneando cómics</string>
+    <string name="scan_notification_content">Procesando la colección de cómics…</string>
+    <string name="scanning_current_comic">Procesando: %s</string>
+    <string name="scanning_progress_detail">Procesando: %1$s (%2$d/%3$d archivos, %4$d cómics)</string>
+    <string name="scanning_progress_no_name">Escaneo: %1$d/%2$d archivos, %3$d cómics</string>
+    <string name="back_button_desc">Atrás</string>
 </resources>

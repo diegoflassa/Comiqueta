@@ -23,7 +23,8 @@ data class HomeUIState(
     val scanTotalFiles: Int = 0,
     val scanProcessedFiles: Int = 0,
     val scanFinished: Boolean = false,
-    val scanResultMessage: String? = null
+    val scanResultMessage: String? = null,
+    val isAddFolderInFlight: Boolean = false,
 )
 
 @androidx.compose.runtime.Immutable

@@ -27,6 +27,7 @@ import dev.diegoflassa.comiqueta.ui.home.HomeIntent
 @Composable
 fun EmptyStateContent(
     modifier: Modifier = Modifier,
+    addFolderInFlight: Boolean = false,
     onIntent: ((HomeIntent) -> Unit)? = null
 ) {
     Box(
@@ -48,7 +49,10 @@ fun EmptyStateContent(
             )
             Spacer(modifier = Modifier.height(16.dp.scaled()))
             ExtendedFloatingActionButton(
-                onClick = { onIntent?.invoke(HomeIntent.AddFolderClicked) },
+                onClick = {
+                    if (addFolderInFlight) return@ExtendedFloatingActionButton
+                    onIntent?.invoke(HomeIntent.AddFolderClicked)
+                },
                 icon = {
                     Icon(
                         Icons.Filled.Add,

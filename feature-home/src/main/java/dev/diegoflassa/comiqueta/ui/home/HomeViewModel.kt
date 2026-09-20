@@ -78,9 +78,16 @@ class HomeViewModel @Inject constructor(
 
     private var lastRetryAction: (() -> Unit)? = null
 
+    private val addFolderGuard = HomeAddFolderGuard()
+
     init {
         loadCategories()
-        observeScanWorker()
+        viewModelScope.observeHomeScanWorker(
+            workManager = workManager,
+            applicationContext = applicationContext,
+            uiState = _uiState,
+            loadPaginatedComics = { loadPaginatedComics() },
+        )
     }
 
     private fun hasGeneralStoragePermission(): Boolean {
@@ -248,6 +255,12 @@ class HomeViewModel @Inject constructor(
 
                 is HomeIntent.AddFolderClicked -> {
                     TimberLogger.logD(TAG, "[Comiqueta][Home] Intent: AddFolderClicked received.")
+                    if (!addFolderGuard.claim()) {
+                        TimberLogger.logI(TAG, "[Comiqueta][Home] Add folder blocked")
+                        return@launch
+                    }
+                    _uiState.update { it.copy(isAddFolderInFlight = true) }
+                    TimberLogger.logI(TAG, "[Comiqueta][Home] Add folder claimed")
                     if (!hasGeneralStoragePermission()) {
                         _effect.send(
                             HomeEffect.ShowToast(
@@ -260,6 +273,10 @@ class HomeViewModel @Inject constructor(
                         return@launch
                     }
                     _effect.send(HomeEffect.OpenFolderPicker)
+                }
+
+                is HomeIntent.FolderPickerCancelled -> {
+                    releaseAddFolder()
                 }
 
                 is HomeIntent.CheckInitialFolderPermission -> {
@@ -308,10 +325,15 @@ class HomeViewModel @Inject constructor(
                                 applicationContext.getString(R.string.storage_permission_denied_limited)
                             )
                         )
+                        releaseAddFolder()
                     }
                 }
                 is HomeIntent.FolderSelected -> {
-                    handleFolderSelected(intent.uri)
+                    try {
+                        handleFolderSelected(intent.uri)
+                    } finally {
+                        releaseAddFolder()
+                    }
                 }
 
                 is HomeIntent.RetryLoadComics -> {
@@ -541,58 +563,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun observeScanWorker() {
-        viewModelScope.launch {
-            workManager
-                .getWorkInfosByTagFlow(SafFolderScanWorker.TAG)
-                .collectLatest { workInfos ->
-                    val workInfo = workInfos.firstOrNull { it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED }
-                        ?: workInfos.firstOrNull { it.state.isFinished }
-
-                    val progress = workInfo?.progress?.getInt(SafFolderScanWorker.KEY_PROGRESS, 0) ?: 0
-                    
-                    val currentComicName = workInfo?.progress?.getString(SafFolderScanWorker.KEY_CURRENT_COMIC_NAME)
-                    val processedComicsCount = workInfo?.progress?.getInt(SafFolderScanWorker.KEY_PROCESSED_COMICS_COUNT, 0) ?: 0
-                    val scanTotalFiles = workInfo?.progress?.getInt(SafFolderScanWorker.KEY_TOTAL_FILES_COUNT, 0) ?: 0
-                    val scanProcessedFiles = workInfo?.progress?.getInt(SafFolderScanWorker.KEY_PROCESSED_FILES_COUNT, 0) ?: 0
-                    
-                    _uiState.update {
-                        it.copy(
-                            isScanningFolders = workInfo?.state == WorkInfo.State.RUNNING || workInfo?.state == WorkInfo.State.ENQUEUED,
-                            scanProgress = if (workInfo?.state == WorkInfo.State.RUNNING) progress else if (it.scanFinished) 100 else 0,
-                            currentComicName = if (workInfo?.state == WorkInfo.State.RUNNING) currentComicName
-                                ?: it.currentComicName else if (it.scanFinished) it.currentComicName else null,
-                            processedComicsCount = if (workInfo?.state == WorkInfo.State.RUNNING) processedComicsCount else if (it.scanFinished) it.processedComicsCount else 0,
-                            scanTotalFiles = if (workInfo?.state == WorkInfo.State.RUNNING) scanTotalFiles else if (it.scanFinished) it.scanTotalFiles else 0,
-                            scanProcessedFiles = if (workInfo?.state == WorkInfo.State.RUNNING) scanProcessedFiles else if (it.scanFinished) it.scanProcessedFiles else 0
-                        )
-                    }
-
-                    if (workInfo != null && workInfo.state.isFinished && !_uiState.value.scanFinished) {
-                        _uiState.update { it.copy(scanFinished = true) }
-                        when (workInfo.state) {
-                            WorkInfo.State.SUCCEEDED -> {
-                                TimberLogger.logD(TAG, "[Comiqueta][Home] Scan SUCCEEDED. Refreshing.")
-                                val message = applicationContext.getString(R.string.scan_completed)
-                                _uiState.update { it.copy(scanResultMessage = message) }
-                                loadPaginatedComics()
-                            }
-
-                            WorkInfo.State.FAILED -> {
-                                val errorMessage =
-                                    workInfo.outputData.getString(SafFolderScanWorker.KEY_ERROR_MESSAGE)
-                                _uiState.update {
-                                    it.copy(
-                                        scanResultMessage = errorMessage
-                                            ?: applicationContext.getString(R.string.scan_failed)
-                                    )
-                                }
-                            }
-
-                            else -> {}
-                        }
-                    }
-                }
-        }
+    private fun releaseAddFolder() {
+        addFolderGuard.release()
+        _uiState.update { it.copy(isAddFolderInFlight = false) }
+        TimberLogger.logI(TAG, "[Comiqueta][Home] Add folder released")
     }
 }

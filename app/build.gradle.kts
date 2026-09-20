@@ -41,7 +41,7 @@ firebaseAppDistributionDefault {
 
     val googleAppCredentials = System.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     val ciProjectPropertyCredentialsFile =
-        project.properties["comiqueta.ci.serviceCredentialsFile"]?.toString()
+        project.providers.gradleProperty("comiqueta.ci.serviceCredentialsFile").orNull
 
     if (googleAppCredentials != null && googleAppCredentials.isNotBlank()) {
         serviceCredentialsFile = googleAppCredentials

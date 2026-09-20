@@ -14,10 +14,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import dev.diegoflassa.comiqueta.core.data.timber.TimberLogger
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaTheme
 import dev.diegoflassa.comiqueta.core.theme.ComiquetaThemeContent
 import dev.diegoflassa.comiqueta.core.theme.bottomAppBarSelectedIcon
@@ -35,17 +44,35 @@ fun BottomNavItem(
     label: String,
     type: BottomNavItems = BottomNavItems.UNKNOWN,
     isSelected: Boolean,
+    iconSize: Dp = ComiquetaTheme.dimen.bottomAppBarIconSize.scaled(),
+    textStyle: TextStyle = ComiquetaTheme.typography.bottomAppBarText,
     onClick: ((BottomNavItems) -> Unit)? = null,
 ) {
+    var bounceLocked by remember { mutableStateOf(false) }
+    LaunchedEffect(bounceLocked) {
+        if (bounceLocked) {
+            delay(350)
+            bounceLocked = false
+            TimberLogger.logI("BottomNavItem", "[Comiqueta][Home] Nav bounce released")
+        }
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
-            .clickable(onClick = { onClick?.invoke(type) }),
+            .clickable(enabled = !bounceLocked, onClick = {
+                if (bounceLocked) {
+                    TimberLogger.logI("BottomNavItem", "[Comiqueta][Home] Nav bounce blocked")
+                    return@clickable
+                }
+                bounceLocked = true
+                TimberLogger.logI("BottomNavItem", "[Comiqueta][Home] Nav bounce claimed")
+                onClick?.invoke(type)
+            }),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            modifier = Modifier.size(ComiquetaTheme.dimen.bottomAppBarIconSize.scaled()),
+            modifier = Modifier.size(iconSize),
             imageVector = icon,
             contentDescription = contentDescription,
             tint = if (isSelected) ComiquetaTheme.colorScheme.bottomAppBarSelectedIcon else ComiquetaTheme.colorScheme.bottomAppBarUnselectedIcon
@@ -53,7 +80,7 @@ fun BottomNavItem(
         Text(
             text = label,
             color = if (isSelected) ComiquetaTheme.colorScheme.bottomAppBarSelectedText else ComiquetaTheme.colorScheme.bottomAppBarUnselectedText,
-            style = ComiquetaTheme.typography.bottomAppBarText
+            style = textStyle
         )
     }
 }

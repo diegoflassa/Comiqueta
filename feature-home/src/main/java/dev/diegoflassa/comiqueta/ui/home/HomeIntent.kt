@@ -53,6 +53,7 @@ sealed interface HomeIntent {
     // --- Intents for folder handling ---
     data object AddFolderClicked : HomeIntent
     data class FolderSelected(val uri: Uri) : HomeIntent
+    data object FolderPickerCancelled : HomeIntent
     data object ScanComicsFolders : HomeIntent
 
     // --- Intents for permissions handling ---

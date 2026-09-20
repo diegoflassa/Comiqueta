@@ -175,4 +175,25 @@ class HomeViewModelTest {
                 cancelAndIgnoreRemainingEvents()
             }
         }
+
+    @Test
+    fun `AddFolderClicked claims the guard and a second click is ignored`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            viewModel.effect.test {
+                viewModel.reduce(HomeIntent.AddFolderClicked)
+                advanceUntilIdle()
+                assertThat(awaitItem()).isEqualTo(HomeEffect.OpenFolderPicker)
+                assertThat(viewModel.uiState.value.isAddFolderInFlight).isTrue()
+
+                viewModel.reduce(HomeIntent.AddFolderClicked)
+                advanceUntilIdle()
+                expectNoEvents()
+                assertThat(viewModel.uiState.value.isAddFolderInFlight).isTrue()
+
+                viewModel.reduce(HomeIntent.FolderPickerCancelled)
+                advanceUntilIdle()
+                assertThat(viewModel.uiState.value.isAddFolderInFlight).isFalse()
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
 }
