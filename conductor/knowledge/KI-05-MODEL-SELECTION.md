@@ -1,12 +1,12 @@
 # KI-05: Choosing the Model for a Task
 
 **Scope:** every task written down for a later turn - plan tasks, `KI-TBD.md` rows, handoff prompts. No source file.
-**Last verified:** 2026-09-13
+**Last verified:** 2026-09-23 (Claude 5.0 Fable added to the pool)
 **Reflects code:** `6dbb14a`
 
 ## Problem
 
-PLANNING_RULES §24 makes every deferred task name one recommended model from a fixed pool of eleven, and a
+PLANNING_RULES §24 makes every deferred task name one recommended model from a fixed pool of twelve, and a
 fallback from a different provider only when it produces code of the same quality. The rule says *what* is
 recorded. This KI is the judgement behind it: which model a task needs, which models from other providers count
 as the same quality for that kind of task, and how that judgement is corrected when a model surprises. Source of truth: [PLANNING_RULES.md](../rules/PLANNING_RULES.md) §24.2 (format), §24.4 (recommended and fallback), §24.5 (cheapest that still guarantees the outcome) and §24.6 (the pool).
@@ -15,14 +15,14 @@ as the same quality for that kind of task, and how that judgement is corrected w
 
 ### 1. Three tiers
 
-Every pool model sits in one tier. **The placement is this repository's working judgement as of 2026-09-13, not a
-vendor benchmark**, and only the evidence log (§5) moves a model. It follows each provider's own line-up -
+Every pool model sits in one tier. **The placement is this repository's working judgement as of 2026-09-13
+(Claude 5.0 Fable added 2026-09-23), not a vendor benchmark**, and only the evidence log (§5) moves a model. It follows each provider's own line-up -
 frontier, mid, fast - and where a placement was uncertain the model went to the **lower** tier: over-trusting a
 model is the failure that ships bugs, while under-trusting one only costs a stronger model than the task needed.
 
 | Tier | What the task risks | Models |
 |---|---|---|
-| **T1 - judgement** | A decision still open, where a wrong answer compiles and passes tests: money, auth, crypto, concurrency, a schema migration, a cross-layer design, a root cause not yet found, synthesising competing plans | Claude 5.0 Opus · Grok 4.6 · GPT-5.6 Sol · Grok 4.20 (Reasoning) |
+| **T1 - judgement** | A decision still open, where a wrong answer compiles and passes tests: money, auth, crypto, concurrency, a schema migration, a cross-layer design, a root cause not yet found, synthesising competing plans | Claude 5.0 Opus · Grok 4.6 · GPT-5.6 Sol · Grok 4.20 (Reasoning) · Claude 5.0 Fable |
 | **T2 - specified execution** | A slip inside decisions already made and written down: files named, contract quoted, invariants and acceptance checks in the task body, an exemplar to copy | Claude 5.0 Sonnet · Grok 4.2 · Gemini 3.2 Pro High · GPT-5.6 Sol Fast · Grok 4.20 (Non-Reasoning) |
 | **T3 - mechanical** | A slip in an edit with no decision in it: a rename, a string or resource sweep, a documentation sync, a formatting pass | Claude 5.0 Haiku · Gemini 3.8 Flash High |
 
@@ -38,7 +38,12 @@ here.
    risk is judgement, it stays T1 whatever is written.
 3. **Pick within the tier.** The model the evidence log shows succeeding on this kind of task; with no evidence,
    the first model in its tier row. Between genuine equals the cheaper one wins (§24.5), and the justification
-   says so.
+   says so. **Claude 5.0 Opus is first in the T1 row for exactly this reason** — the
+   no-evidence default never lands on Claude 5.0 Fable.
+4. **Claude 5.0 Fable is reserved, not routine.** Before naming it, check that the task is genuinely T1 at
+   all (step 2) and that Claude 5.0 Opus — or, once re-tiered, Claude 5.0 Sonnet or Claude 5.0 Haiku —
+   cannot deliver the outcome. A routing to Fable states in one line why the rest of the Claude line was
+   not enough; a routing that cannot say so recommends Opus instead.
 
 ### 3. The fallback
 
@@ -53,6 +58,7 @@ here.
 | Recommended | Fallback candidates - same tier first, then higher |
 |---|---|
 | Claude 5.0 Opus | Grok 4.6 · GPT-5.6 Sol · Grok 4.20 (Reasoning) |
+| Claude 5.0 Fable | Grok 4.6 · GPT-5.6 Sol · Grok 4.20 (Reasoning) |
 | Grok 4.6 | Claude 5.0 Opus · GPT-5.6 Sol |
 | GPT-5.6 Sol | Claude 5.0 Opus · Grok 4.6 · Grok 4.20 (Reasoning) |
 | Grok 4.20 (Reasoning) | Claude 5.0 Opus · GPT-5.6 Sol |

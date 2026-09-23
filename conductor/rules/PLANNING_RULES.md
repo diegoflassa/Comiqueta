@@ -272,13 +272,14 @@ candidates are both judged able to deliver the same correct result: **route to t
 **models from this pool only, each written with exactly the routing string below.** **The plan is written by
 `Claude 5.0 Opus · Think ON · Effort Extra High`.**
 
-**Pool (2026-09-13):** eleven models from four providers. No other model is named.
+**Pool (2026-09-23):** twelve models from four providers. No other model is named.
 
 | Model | Provider | Routing string — configuration included |
 |---|---|---|
 | Claude 5.0 Opus | Anthropic | `Claude 5.0 Opus · Think ON · Effort Extra High` |
 | Claude 5.0 Sonnet | Anthropic | `Claude 5.0 Sonnet · Think ON · Effort Extra High` |
 | Claude 5.0 Haiku | Anthropic | `Claude 5.0 Haiku · Think ON` |
+| Claude 5.0 Fable | Anthropic | `Claude 5.0 Fable · Think ON · Effort Extra High` |
 | Grok 4.6 | xAI | `Grok 4.6 · Effort High` |
 | Grok 4.2 | xAI | `Grok 4.2 · Think ON` |
 | Gemini 3.2 Pro High | Google | `Gemini 3.2 Pro High` |
@@ -287,6 +288,13 @@ candidates are both judged able to deliver the same correct result: **route to t
 | Grok 4.20 (Reasoning) | xAI | `Grok 4.20 (Reasoning)` |
 | Grok 4.20 (Non-Reasoning) | xAI | `Grok 4.20 (Non-Reasoning)` |
 | GPT-5.6 Sol Fast | OpenAI | `GPT-5.6 Sol Fast` |
+
+**Claude 5.0 Fable is an escalation, not a default.** It costs usage credits beyond the rest of the
+pool and exists for the hardest, longest-running tasks. A routing recommends Claude 5.0 Opus,
+Claude 5.0 Sonnet or Claude 5.0 Haiku whenever any of them can deliver the outcome — Fable is named
+only when the task's own judgement calls for it and the rest of the Claude line is judged
+insufficient, with that reason stated in the task body (KI rule 2.4, the model-selection KI this
+table's own footer names).
 
 Which of them a task needs, and which count as the same quality from another provider, is
 [KI-05](../knowledge/KI-05-MODEL-SELECTION.md). **When the pool changes, this table and KI-05 change in
