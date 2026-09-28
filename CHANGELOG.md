@@ -12,6 +12,7 @@ The category is a concise Portuguese label (e.g. `Testado:`, `Corrigido:`, `Plan
 
 ## Unreleased
 
+- Regra: 200–400 linhas continuam o alvo de leitura; 600 passa a ser o alvo de decomposição, não teto rígido; 601–625 é margem excepcional de 25 linhas só com justificativa concreta de coesão ou legibilidade e não é meta nova; acima de 625 a decomposição na mesma tarefa é obrigatória (AI_BEHAVIOR §9)
 - Corrigido: a barra inferior da Home e o botão circular seguem a proporção 360 x 56 na largura da janela, com geometria unificada no componente, sem Scaffold FAB separado (HOME-BAR)
 - Planejado: corrigir as proporções da barra inferior da Home e do botão circular pela referência 360 x 56, com geometria unificada, separação de responsabilidades, testes de regressão e validação em celular e tablet, sem implementação nesta etapa (HOME-BAR)
 - Regra: skills e workflows viram comandos do Claude Code — cada skill de `.agents/skills/` ganha um ponteiro em `.claude/skills/<nome>/SKILL.md` e cada workflow de `.agents/workflows/` um em `.claude/commands/<nome>.md` (`/handoff`, `/clean`), com a `description` da fonte e um corpo que só aponta para ela, nunca cópia nem symlink; workflows só por invocação do usuário (`disable-model-invocation: true`); `check_agent_docs.py` acusa ponteiro ausente, órfão, link errado ou `description` divergente, `test_hooks.py` falha quando os conjuntos diferem, e o Antigravity não lê `.claude/`; sincronizada nos três repositórios (DOC_GOVERNANCE §18)

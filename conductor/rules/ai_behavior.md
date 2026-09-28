@@ -80,10 +80,12 @@ This section covers the **start** of a task or subtask. When each one finishes, 
 A hand-maintained implementation file stays small enough to hold one responsibility and to be read whole.
 
 - **Applies to** every file someone maintains by hand that the build, the tests or a tool executes: production code, test code, scripts, and executable configuration such as build scripts and CI workflow definitions. Documentation is not measured here — KIs split by `CORE_RULES.md §6.3` and rules files by the token budget in `DOC_GOVERNANCE.md` — and reading a large file is `CORE_RULES.md §4`, not this rule.
-- **Target 200–400 physical lines. Hard limit 600 physical lines**, measured after the project's standard formatter has run.
+- **Target 200–400 physical lines. Decomposition target 600 physical lines. Hard cap 625.** 601–625 is a 25-line exceptional margin, never a new target. Measured after the project's standard formatter has run.
 - **Counting is objective:** every physical line counts — blank lines, comments, imports, declarations and support code kept in the same file. The number is the newline count (`wc -l`), plus one when the last line has no trailing newline.
-- **A file this task creates or changes that ends above 600 lines is decomposed in the same task**, into as many files as it takes for every resulting file to be at or under the limit.
-- **A legacy file above 600 lines is decomposed in the same task that edits it.** Reading one does not trigger this, and it is not a licence for a repository-wide refactor. If a safe decomposition depends on an architectural decision nobody has taken, stop and ask for it.
+- **601–625 needs a concrete cohesion or readability justification** in the task report. The margin never justifies an artificial wrapper, unreadable compaction, or growing toward 625 as routine.
+- **A file this task creates or changes that ends above 625 lines is decomposed in the same task**, into as many files as it takes for every resulting file to sit at or under the 600 target — 625 is not where a split aims.
+- **A file that ends at 601–625 stays only when those extra lines keep one cohesive unit that would be worse split.** Otherwise decompose to the 600 target.
+- **A legacy file above 625 lines is decomposed in the same task that edits it.** A legacy file at 601–625 is decomposed unless the same cohesion justification holds. Reading one does not trigger this, and it is not a licence for a repository-wide refactor. If a safe decomposition depends on an architectural decision nobody has taken, stop and ask for it.
 - **The number of files follows the real responsibilities, never arithmetic.** Each resulting file is a cohesive unit someone would maintain on its own, named for its domain or responsibility.
 - **The split obeys the project.** Module and layer boundaries, source sets, visibility, DI, navigation, tests and every local rule apply to the new files, and the same task updates imports, wiring, tests, KIs, the changelog and any documentation that names the old file.
 - **Behaviour is preserved exactly** — public contracts, the order of effects and test coverage survive the move unchanged.

@@ -70,7 +70,7 @@ that does not discover `.agents/` reaches them, follow the numbered rules.
 
 21. **Agent surface (MANDATORY):** Antigravity reads `.agents/` - rules only when always-on or tied to a kind of file, skills at `.agents/skills/<name>/SKILL.md` (never under `conductor/`), slash commands in `.agents/workflows/`. Claude Code reaches each skill and workflow through a pointer at `.claude/skills/<name>/SKILL.md` or `.claude/commands/<name>.md`, added, renamed or deleted with its source. File names are identifiers: a rename fixes every inbound link in the same turn. → [DOC_GOVERNANCE.md](conductor/rules/DOC_GOVERNANCE.md) §18–§18.2.
 
-22. **File size:** a hand-maintained implementation file - production or test code, a script, an executable config - targets 200-400 physical lines and never ends a task above 600; a new, changed or edited legacy file past 600 is decomposed by responsibility in the same task, with no artificial split. → [AI_BEHAVIOR.md](conductor/rules/AI_BEHAVIOR.md) §9.
+22. **File size:** a hand-maintained implementation file - production or test code, a script, an executable config - targets 200-400 physical lines; 600 is the decomposition target; 601-625 is an exceptional 25-line margin only with a concrete cohesion or readability justification and is not a new target; above 625, decompose by responsibility in the same task, with no artificial split. → [AI_BEHAVIOR.md](conductor/rules/AI_BEHAVIOR.md) §9.
 
 **How an agent reaches `.agents/`.** Antigravity registers `.agents/skills/` and loads `.agents/rules/` on its own.
 Claude Code registers every skill and workflow through its pointer in `.claude/skills/` or `.claude/commands/`
