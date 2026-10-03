@@ -31,6 +31,7 @@ Per-module test inventory, known gaps, and verification commands live in [`TEST_
 | [r8-analyzer](../../.agents/skills/r8-analyzer/SKILL.md) | R8/ProGuard keep-rule audit + APK size |
 | [perfetto-trace-analysis](../../.agents/skills/perfetto-trace-analysis/SKILL.md) | Runtime jank / latency / memory root-cause via traces |
 | [android-cli](../../.agents/skills/android-cli/SKILL.md) | ADB / device orchestration (deploy, logcat, screenshots) |
+| [log-analysis](../../.agents/skills/log-analysis/SKILL.md) | Read-only analysis of large log files, targeted by the app filter |
 | [edge-to-edge](../../.agents/skills/edge-to-edge/SKILL.md) | Compose system-bar / IME inset handling |
 | [adaptive](../../.agents/skills/adaptive/SKILL.md) | Adaptive Compose layouts for window-size classes, foldables, large screens |
 | [android-intent-security](../../.agents/skills/android-intent-security/SKILL.md) | Intent-surface security — exported components, `PendingIntent`, deep links, redirection |

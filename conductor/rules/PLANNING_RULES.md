@@ -229,6 +229,9 @@ recommendation written twice, not two.
   the recommended one on this task, write `Fallback: none — <why>`, and the task waits for the recommended model
   instead of running on a weaker one. The explicit `none` records that the question was judged; a missing line
   looks forgotten.
+- **GPT-6 Astra always has a fallback, and it is a T1 model.** `Fallback: none` is never written for a T0
+  recommendation: the fallback is a T1 model from another provider (KI rule 3) - the one case where the fallback
+  sits a tier below the recommended model.
 - **Fallback notes are written before the fallback is recorded.** A fallback that matches only with extra
   guidance matches only once that guidance is in the task body (§24.5) — a fallback justified by notes nobody
   wrote is just a downgrade.
@@ -272,7 +275,7 @@ candidates are both judged able to deliver the same correct result: **route to t
 **models from this pool only, each written with exactly the routing string below.** **The plan is written by
 `Claude 5.0 Opus · Think ON · Effort Extra High`.**
 
-**Pool (2026-09-23):** twelve models from four providers. No other model is named.
+**Pool (2026-10-02):** twenty-three models from four providers, in four tiers (T0-T3, in the model-selection KI). No other model is named.
 
 | Model | Provider | Routing string — configuration included |
 |---|---|---|
@@ -288,13 +291,26 @@ candidates are both judged able to deliver the same correct result: **route to t
 | Grok 4.20 (Reasoning) | xAI | `Grok 4.20 (Reasoning)` |
 | Grok 4.20 (Non-Reasoning) | xAI | `Grok 4.20 (Non-Reasoning)` |
 | GPT-5.6 Sol Fast | OpenAI | `GPT-5.6 Sol Fast` |
+| Claude Opus 5.5 | Anthropic | `Claude Opus 5.5 · Think ON · Effort Extra High` |
+| Claude Sonnet 5.5 | Anthropic | `Claude Sonnet 5.5 · Think ON · Effort Extra High` |
+| Claude Fable 5.1 | Anthropic | `Claude Fable 5.1 · Think ON · Effort Extra High` |
+| Claude Haiku 4.5 | Anthropic | `Claude Haiku 4.5 · Think ON · Effort Extra High` |
+| Claude Opus 4.8 | Anthropic | `Claude Opus 4.8 · Think ON · Effort Extra High` |
+| Claude Opus 4.7 | Anthropic | `Claude Opus 4.7 · Think ON · Effort Extra High` |
+| Claude Opus 4.6 | Anthropic | `Claude Opus 4.6 · Think ON · Effort Extra High` |
+| Claude Sonnet 4.6 | Anthropic | `Claude Sonnet 4.6 · Think ON · Effort Extra High` |
+| GPT-6 Astra | OpenAI | `GPT-6 Astra · Think ON · Effort Extra High` |
+| GPT-6 Luna | OpenAI | `GPT-6 Luna · Think ON · Effort Extra High` |
+| GPT-6 Sol | OpenAI | `GPT-6 Sol · Think ON · Effort Extra High` |
 
-**Claude 5.0 Fable is an escalation, not a default.** It costs usage credits beyond the rest of the
-pool and exists for the hardest, longest-running tasks. A routing recommends Claude 5.0 Opus,
-Claude 5.0 Sonnet or Claude 5.0 Haiku whenever any of them can deliver the outcome — Fable is named
+**Claude 5.0 Fable and Claude Fable 5.1 are escalations, not defaults.** They cost usage credits beyond the rest of the
+pool and exist for the hardest, longest-running tasks. A routing recommends Claude 5.0 Opus,
+Claude 5.0 Sonnet or Claude 5.0 Haiku whenever any of them can deliver the outcome — a Fable is named
 only when the task's own judgement calls for it and the rest of the Claude line is judged
 insufficient, with that reason stated in the task body (KI rule 2.4, the model-selection KI this
 table's own footer names).
+
+**GPT-6 Astra is tier T0 - the most capable model of the pool, used only when the problem is very difficult.** A routing names it only when the task is a T1 judgement that no T1 model alone is judged able to solve, with that reason stated in one line in the task body (KI rule 2.5); otherwise it recommends a T1 model. **A T0 recommendation always has a fallback, and the fallback is always a T1 model** from another provider (KI rule 3) - `Fallback: none` is never written for it. GPT-6 Astra is never named as the fallback of another model.
 
 Which of them a task needs, and which count as the same quality from another provider, is
 [KI-05](../knowledge/KI-05-MODEL-SELECTION.md). **When the pool changes, this table and KI-05 change in

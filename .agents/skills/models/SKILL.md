@@ -12,12 +12,13 @@ Full spec (source of truth) - [PLANNING_RULES.md](../../../conductor/rules/PLANN
   routing decision, made now by whoever still has the context.
 - **One model per task, decided per task.** A plan of eight tasks makes eight choices.
 - **Only the pool, only its configuration** (§24.6): Claude 5.0 Opus, Claude 5.0 Sonnet, Claude 5.0 Haiku,
-  Grok 4.6, Grok 4.2, Gemini 3.2 Pro High, Gemini 3.8 Flash High, GPT-5.6 Sol, Grok 4.20 (Reasoning), Grok 4.20 (Non-Reasoning), GPT-5.6 Sol Fast - each written with the routing string the pool
+  Grok 4.6, Grok 4.2, Gemini 3.2 Pro High, Gemini 3.8 Flash High, GPT-5.6 Sol, Grok 4.20 (Reasoning), Grok 4.20 (Non-Reasoning), GPT-5.6 Sol Fast, Claude Opus 5.5, Claude Sonnet 5.5, Claude Fable 5.1, Claude Haiku 4.5, Claude Opus 4.8, Claude Opus 4.7, Claude Opus 4.6, Claude Sonnet 4.6, GPT-6 Astra, GPT-6 Luna, GPT-6 Sol - each written with the routing string the pool
   table gives it. Never tune an effort or a thinking switch per task; pick another pool model instead.
 - **Recommended, always** - the model most likely to execute the task correctly, with a one-line justification.
 - **Fallback only when it matches** (§24.4) - from a **different provider** than the recommended model, and only
   when it produces code of the same quality; otherwise `Fallback: none - <why>`. **Fallback notes** carry any
   extra guidance it needs, written into the task body before the fallback is recorded.
+- **GPT-6 Astra is T0 - reserved for very difficult problems** (the most capable model) and always carries a T1 fallback from another provider; `Fallback: none` is never written for it, and it is never the fallback of another model. Say in one line why no T1 model is enough.
 - **Write them in two places** - the plan's routing table and the head of the task body, each routing with its
   own justification. A reader who must scroll back to a table will not scroll back.
 - **Declare the pool at the head of the plan, with the date.** The picker changes.

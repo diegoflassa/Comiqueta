@@ -54,6 +54,7 @@ Coverage state → [TEST_COVERAGE.md](knowledge/TEST_COVERAGE.md) · Deferred wo
 | [interfaces](../.agents/skills/interfaces/SKILL.md) | An interface only with more than one implementation, used or highly likely | Declaring, extracting or reviewing an interface |
 | [ki-sync](../.agents/skills/ki-sync/SKILL.md) | KIs as present-tense specs, updated in the same turn | After changing behaviour, structure or a contract |
 | [logging](../.agents/skills/logging/SKILL.md) | Log filter format, coverage, redaction and level | Adding or reviewing a log line or failure branch |
+| [log-analysis](../.agents/skills/log-analysis/SKILL.md) | Read-only analysis of large log files - targeted reading by the app filter, from the last process start | The operator supplies a log or asks to diagnose from one |
 | [models](../.agents/skills/models/SKILL.md) | One recommended model from the pool, and a fallback from another provider only when it matches | Writing a plan task, backlog row or handoff |
 | [planning](../.agents/skills/planning/SKILL.md) | Writing a plan, and synthesising META_PLANNING proposals | Any planning request in the chat, or a META_PLANNING |
 | [reference-docs](../.agents/skills/reference-docs/SKILL.md) | External documents copied in, versioned and indexed | A task depends on a document from outside |
