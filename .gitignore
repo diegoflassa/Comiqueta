@@ -47,4 +47,5 @@ version.properties
 conductor/plannings/*
 !conductor/plannings/archived/
 conductor/knowledge/KI-TBD.md
+conductor/knowledge/KI-TBD-HISTORY.md
 /.kilo/

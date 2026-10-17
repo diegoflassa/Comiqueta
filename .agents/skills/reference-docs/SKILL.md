@@ -5,7 +5,7 @@ description: "External documents - contracts, specs, PDFs, mockups, exported thr
 
 # Reference documents
 
-Full spec (source of truth) - [DOC_GOVERNANCE.md](../../../conductor/rules/DOC_GOVERNANCE.md) §16 to §16.2.
+Full spec (source of truth) - [DOC_GOVERNANCE.md](../../../conductor/rules/DOC_GOVERNANCE.md) §16 to §16.2, and §26.
 
 - **Copy it into `conductor/references/` before using it, in the same turn.** A document that exists only in
   `Downloads/`, an e-mail or a chat paste is not available to this project.
@@ -15,3 +15,6 @@ Full spec (source of truth) - [DOC_GOVERNANCE.md](../../../conductor/rules/DOC_G
   moves to `references/superseded/<basename>_<YYYY-MM-DD>.<ext>` with an index row saying what changed.
 - **No machine-absolute path in any tracked document.** No `D:\users\...`, no other checkout, no chat
   permalink. A clone of this repository alone must be enough to do any task in it.
+- **No tracked file points at a gitignored one** - source code, tests and comments included. Run
+  `git check-ignore -v <path>` before a path goes into any tracked file; an answer means a clone does not have it
+  (DOC_GOVERNANCE §26). The exceptions are the configuration seam and the agent entry points, nothing else.

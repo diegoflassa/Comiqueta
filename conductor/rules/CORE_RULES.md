@@ -70,6 +70,7 @@ single lookup for all of them. Load only the file the row points at.
 |     **24.6** |     [One file, one pool](PLANNING_RULES.md#246-one-file-one-pool-mandatory) *(M)* | [PLANNING_RULES](PLANNING_RULES.md) |
 
 | **25** | [Root-Cause Bug Fixes](#25-root-cause-bug-fixes-global--mandatory) *(M)* | — |
+| **26** | [A Tracked File Never Points at an Ignored One](DOC_GOVERNANCE.md#26-a-tracked-file-never-points-at-an-ignored-one-global---mandatory) *(M)* | [DOC_GOVERNANCE](DOC_GOVERNANCE.md) |
 
 *(M) = MANDATORY. "—" in the last column means this file.*
 

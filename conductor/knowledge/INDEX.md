@@ -11,6 +11,7 @@ One-line summaries. Fetch an individual KI file **only** if the current task mat
 | KI-05 | KI-05-MODEL-SELECTION.md | Choosing the model for a deferred task: three tiers over the seven-model pool, the recommended model picked by the task's hardest step, a fallback only from a different provider at the same tier or higher, fallback notes, and an evidence log that corrects the tiers | Writing a plan task, a backlog row or a handoff; judging whether a fallback matches | `conductor/rules/PLANNING_RULES.md` §24 |
 | KI-06 | KI-06-HOME-BOTTOM-BAR.md | Home bar 360×56 uniform scale, full-width cutout path, integrated circular action, inset/banner ownership | Touching Home bottom bar, FAB/cutout, `HomeBottomBarGeometry`, or `bottomBarShape` | `HomeBottomAppBar.kt`, `HomeBottomBarGeometry.kt`, `Shapes.kt`, `HomeScreenContent.kt` |
 | KI-TBD | KI-TBD.md | **Master index of all deferred / not-yet-implemented items** | Planning next work, checking what is outstanding before starting a task | (index only — see linked KIs) |
+| KI-TBD-HISTORY | KI-TBD-HISTORY.md | **Closed-item history** - every KI-TBD entry closed since 2026-10-16, newest first, with what shipped and its evidence; nothing in it is open | Tracing when and how a backlog item closed, or a suspected regression | (history only - untracked like KI-TBD) |
 | KI-AUTHORING | KI-AUTHORING.md | KI authoring rules: index maintenance, present-tense spec, self-sufficiency, size limits | Creating, renaming, revising, or deleting any KI | (this directory) |
 
 Do NOT pre-load. Index first, fetch on match.

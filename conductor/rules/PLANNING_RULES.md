@@ -74,9 +74,9 @@ not two backlogs**. They must never disagree.
 - ✅ **MOVE** completed or expired plans to `conductor/plannings/archived/` for permanent record.
 - 🔒 **`archived/` is version-controlled; the rest of `conductor/plannings/` is not.** `.gitignore`
   ignores `conductor/plannings` and re-includes `archived/`, so the permanent record has history and
-  survives a lost machine, while live plans and `KI-TBD.md` stay untracked. Two consequences: archiving
+  survives a lost machine, while live plans, `KI-TBD.md` and `KI-TBD-HISTORY.md` stay untracked. Two consequences: archiving
   a plan is a real commit-worthy change, and §6.2 still binds — a tracked document may never link to a
-  live plan or to `KI-TBD.md`, only to an archived one.
+  live plan, to `KI-TBD.md` or to `KI-TBD-HISTORY.md`, only to an archived plan.
 - **Status Transitions:**
   - **Ready → Active**: Update plan with start date, update `INDEX.md` status.
   - **Active → Completed**: Create/update corresponding KI, link bidirectionally, move to archived.
@@ -98,8 +98,10 @@ is already in production.
   edited constantly and line numbers drift within the day.
 - **Link when the entry is picked up, not retroactively in a sweep.** A bulk back-link pass done from
   titles alone produces confident-looking links nobody ever verified against the entry body.
-- **On completion, close both ends in the same turn:** the TBD entry moves to the closed-item history
-  with its evidence trail, and the plan is archived (§7.2). An entry that merely *looks* done stays open
+- **On completion, close both ends in the same turn:** the moment the task that finishes a TBD entry is
+  done, the entry is **removed from every table in `KI-TBD.md` and archived in `KI-TBD-HISTORY.md`**, the
+  closed-item history beside it, with its evidence trail; an entry several tasks share closes with the last
+  of them. The plan is archived when its last task is (§7.2). An entry that merely *looks* done stays open
   until someone proves it.
 - **A blocked entry still gets a task**, created with the blocked status and the blocker named. A blocker
   that lives only in someone's memory is indistinguishable from an item nobody looked at.
@@ -112,7 +114,7 @@ either of them (§6.2) — state the fact in prose instead.
 
 `KI-TBD.md` is a **worklist, not an archive**. One test decides any line in it: **would an executor
 picking this up tomorrow need it?** If not, it does not belong there. Finished work belongs in the
-closed-item history, bulky evidence in `conductor/analysis/`, and a standing check in a rules file (§17).
+closed-item history (`KI-TBD-HISTORY.md`), bulky evidence in `conductor/analysis/`, and a standing check in a rules file (§17).
 
 **Tidy it in the same turn you touch an entry, never in a periodic sweep.** A backlog only reaches the
 state where it needs a dedicated cleanup pass because every prior session deferred the cleanup — and by
@@ -120,8 +122,10 @@ then each verdict can silently delete the only record that some work is still ou
 
 **What must not accumulate there:**
 
-- **Closed work.** The moment an item is done end to end it moves to the history document with its
-  evidence trail, in the same turn, and its index row goes with it (§7.3).
+- **Closed work.** The moment an item is done end to end it is removed from every table here and archived
+  in `KI-TBD-HISTORY.md` in the same turn (§7.3): newest first, under its number and title with the closing
+  date, the plan and task that closed it, what shipped, the evidence, and the entry as it stood at closure.
+  Nothing in the history is open work; its numbers stay retired.
 - **Raw evidence.** Logcat dumps, crash captures and long narrative analysis go to `conductor/analysis/`
   and are cited from the entry. An entry states the *conclusion* and what remains; it is not the place
   to re-read a capture.

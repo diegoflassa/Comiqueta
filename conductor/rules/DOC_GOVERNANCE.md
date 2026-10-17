@@ -246,3 +246,40 @@ registry - so renaming one is never cosmetic, and there is one convention per lo
   direct one is a silent no-op.
 - **Anchor the search** when the old name is a suffix of another name - `(?<![\w-])architecture\.md` - or the
   replacement breaks the neighbour.
+
+---
+
+## 26. A Tracked File Never Points at an Ignored One (GLOBAL - MANDATORY)
+
+**A clone has only what is committed.** What `.gitignore` excludes lives on one machine, so a committed file that
+links to it, names its path, includes it or reads it points at nothing for a clone, for CI, for another contributor and
+for the next session on a fresh checkout - and nobody finds out, because it resolves for whoever wrote it. §16.2 is the
+same defect for absolute paths.
+
+**Every tracked file is bound, and every way of pointing:** source and tests (KDoc, comments, string literals), build
+scripts, rules, skills, KIs, the changelog and the README; a Markdown link, a path in prose, a file name, an include, a
+`read`.
+
+- **Ask git, not memory.** Before a path is written into a tracked file, run `git check-ignore -v <path>`. An answer means
+  the file is untracked, whether it exists on this machine or not. Check the path as the repository presents it, not a
+  neighbouring copy.
+- **State the fact, or cite a tracked home.** Say it in prose, copy what matters into `conductor/references/` (§16), or
+  cite the tracked document that holds it: an archived plan, a KI, the code. A live plan and the ordered backlog are not
+  tracked homes (§6.2).
+- **A work-unit id is not a file.** `PLAN_12`, `T4` and `#75` identify work - a changelog suffix is one - so there is
+  nothing to open and they are outside this rule.
+- **What the rule leaves alone, and nothing else:**
+  1. `.gitignore`, which has to name what it ignores.
+  2. **The configuration seam.** The build, the CI workflow, the tracked `.example` template and the setup guide may name
+     the machine-local files they consume, produce or document - the properties files, the signing keystore, the
+     service-account key. A clone is buildable because the template and the guide say how to make them, and the build
+     fails loudly without them (§23).
+  3. **The agent entry points and the rules** - `AGENTS.md`, `CLAUDE.md`, `conductor/index.md`, `conductor/guides/`,
+     `.agents/`, `.claude/` and `conductor/rules/` - may *name* where the live plans and the ordered backlog are kept in
+     a checkout: their job is to tell an agent how to work there, and nothing built from the repository reads them. They
+     never *link* to them (§6.2).
+- **A reference found is fixed in the turn it is found,** in the file being edited. What predates this rule is debt,
+  entered in the ordered backlog until it is paid, and it does not license a new one.
+
+> **Rationale:** a document is only as good as the claim that a clone is complete (§16.2, §15). `git` checks that claim
+> in a second; memory never does.
